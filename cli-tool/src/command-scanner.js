@@ -87,8 +87,8 @@ function scanCommandsInDirectory(commandsDir, category) {
         
         commands.push({
           name: commandName,
-          displayName: metadata.title || commandName,
-          description: metadata.description || `${commandName} command`,
+          displayName: createShortDisplayName(commandName, metadata.title),
+          description: createShortDescription(metadata.description, commandName),
           category: category,
           filePath: filePath,
           checked: metadata.defaultChecked || false
@@ -146,6 +146,104 @@ function parseCommandMetadata(content, commandName) {
 }
 
 /**
+ * Creates a short display name from command name for better console display
+ * @param {string} commandName - The command name
+ * @param {string} title - The full title from markdown
+ * @returns {string} Short display name
+ */
+function createShortDisplayName(commandName, title) {
+  // Define mapping for common command names to short display names
+  const shortNames = {
+    'api-endpoint': 'API Endpoint',
+    'debug': 'Debug',
+    'lint': 'Lint',
+    'test': 'Test',
+    'refactor': 'Refactor',
+    'typescript-migrate': 'TS Migration',
+    'npm-scripts': 'NPM Scripts',
+    'component': 'Component',
+    'hooks': 'Hooks',
+    'state-management': 'State Mgmt',
+    'middleware': 'Middleware',
+    'route': 'Route',
+    'database': 'Database',
+    'components': 'Components',
+    'services': 'Services',
+    'composables': 'Composables',
+    'django-model': 'Django Model',
+    'flask-route': 'Flask Route',
+    'git-workflow': 'Git Workflow',
+    'project-setup': 'Project Setup'
+  };
+  
+  // Return predefined short name if available
+  if (shortNames[commandName]) {
+    return shortNames[commandName];
+  }
+  
+  // If title is short enough, use it
+  if (title && title.length <= 15) {
+    return title;
+  }
+  
+  // Create short name from command name
+  return commandName
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Creates a short description for better console display
+ * @param {string} description - The full description
+ * @param {string} commandName - The command name
+ * @returns {string} Short description
+ */
+function createShortDescription(description, commandName) {
+  // Define short descriptions for common commands
+  const shortDescriptions = {
+    'api-endpoint': 'Generate API endpoint',
+    'debug': 'Debug issues',
+    'lint': 'Fix linting issues',
+    'test': 'Run tests',
+    'refactor': 'Refactor code',
+    'typescript-migrate': 'Migrate to TypeScript',
+    'npm-scripts': 'Manage NPM scripts',
+    'component': 'Create component',
+    'hooks': 'React hooks helper',
+    'state-management': 'Manage state',
+    'middleware': 'Create middleware',
+    'route': 'Create route',
+    'database': 'Database operations',
+    'components': 'Create components',
+    'services': 'Create services',
+    'composables': 'Create composables',
+    'django-model': 'Create Django model',
+    'flask-route': 'Create Flask route',
+    'git-workflow': 'Git workflow helper',
+    'project-setup': 'Setup project'
+  };
+  
+  // Return predefined short description if available
+  if (shortDescriptions[commandName]) {
+    return shortDescriptions[commandName];
+  }
+  
+  // If description exists and is short enough, use it
+  if (description && description.length <= 40) {
+    return description;
+  }
+  
+  // Truncate long descriptions
+  if (description && description.length > 40) {
+    return description.substring(0, 37) + '...';
+  }
+  
+  // Fallback to command name
+  return `${commandName.replace('-', ' ')} command`;
+}
+
+/**
  * Get commands available for a specific language and framework combination
  * @param {string} language - The language template
  * @param {string} framework - The framework (optional)
@@ -171,5 +269,7 @@ module.exports = {
   getAvailableCommands,
   getCommandsForLanguageAndFramework,
   scanCommandsInDirectory,
-  parseCommandMetadata
+  parseCommandMetadata,
+  createShortDisplayName,
+  createShortDescription
 };

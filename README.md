@@ -333,6 +333,41 @@ When you select automation hooks during setup, Claude Code will automatically ex
 
 ### How Hook Selection Works
 
+#### Understanding Hook Events
+
+Hooks are **automatic events** that execute at specific moments in Claude Code's workflow:
+
+- **PreToolUse**: Before Claude uses a tool (Write, Edit, Bash, etc.)
+- **PostToolUse**: After Claude uses a tool
+- **Stop**: At the end of a coding session
+- **Notification**: When a system notification occurs
+
+#### Practical Example: Auto-formatting with Prettier
+
+When you select the **"PostToolUse: Auto-format JS/TS files with Prettier"** hook, here's what happens:
+
+```bash
+# 1. Claude modifies a TypeScript file
+✏️  Claude edits: src/components/Button.tsx
+
+# 2. The PostToolUse hook triggers automatically
+🔧 PostToolUse Hook triggered:
+   → Detecting file: src/components/Button.tsx
+   → File is .tsx (TypeScript React) ✓
+   → Running: npx prettier --write "src/components/Button.tsx"
+   → Code formatted successfully ✅
+
+# 3. The file is automatically formatted
+📝 Result: Button.tsx is now properly formatted
+```
+
+Without the hook, you'd need to manually run:
+```bash
+npx prettier --write src/components/Button.tsx
+```
+
+#### Interactive Selection
+
 During the interactive setup, you can choose which hooks to enable:
 
 ```bash
@@ -347,7 +382,8 @@ During the interactive setup, you can choose which hooks to enable:
     ◯ Notification: Log Claude Code notifications
 ```
 
-- **Space** - Toggle hook selection
+**Controls:**
+- **Space** - Toggle specific hook on/off
 - **Enter** - Confirm selection
 - **← Back** - Return to previous step
 

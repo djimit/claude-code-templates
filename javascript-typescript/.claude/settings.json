@@ -26,8 +26,8 @@
     "defaultMode": "allowEdits"
   },
   "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "30000",
-    "BASH_MAX_OUTPUT_LENGTH": "10000",
+    "BASH_DEFAULT_TIMEOUT_MS": "60000",
+    "BASH_MAX_OUTPUT_LENGTH": "20000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "NODE_ENV": "development"
   },
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [[ \"$(echo $STDIN_JSON | jq -r '.tool_input.file_path' | grep -E '\\.js$|\\.jsx$|\\.ts$|\\.tsx$')\" != \"\" && $(echo $STDIN_JSON | jq -r '.tool_input.content' | grep -E 'console\\.log') != \"\" ]]; then echo 'Warning: console.log statements should be removed before committing' >&2; exit 2; fi"
+            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"); CONTENT=$(echo $STDIN_JSON | jq -r '.tool_input.content // \"\"); if [[ \"$FILE\" =~ \\.(js|jsx|ts|tsx)$ ]] && echo \"$CONTENT\" | grep -q 'console\\.log'; then echo 'Warning: console.log statements should be removed before committing' >&2; exit 2; fi"
           }
         ]
       },
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" == \"package.json\" ]]; then echo 'Checking for vulnerable dependencies...'; npx audit-ci --moderate; fi",
+            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" == \"package.json\" ]]; then echo 'Checking for vulnerable dependencies...'; npm audit --audit-level=moderate; fi",
             "timeout": 60
           }
         ]
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" =~ \\.(ts|tsx)$ ]] && grep -q 'import.*from.*\\*' \"$FILE\"; then echo 'Warning: Avoid wildcard imports for better tree-shaking' >&2; exit 2; fi"
+            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" =~ \\.(js|jsx|ts|tsx)$ ]] && grep -q 'import \\* from' \"$FILE\"; then echo 'Warning: Avoid wildcard imports for better tree-shaking' >&2; exit 2; fi"
           }
         ]
       },
@@ -99,7 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" =~ \\.(js|jsx|ts|tsx)$ && \"$FILE\" != *\".test.\"* && \"$FILE\" != *\".spec.\"* ]]; then TEST_FILE=$(echo \"$FILE\" | sed -E 's/\\.(js|jsx|ts|tsx)$/.test.\\1/'); if [ -f \"$TEST_FILE\" ]; then echo \"Running tests for modified file...\"; npx jest \"$TEST_FILE\" --passWithNoTests; fi; fi",
+            "command": "FILE=$(echo $STDIN_JSON | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" =~ \\.(js|jsx|ts|tsx)$ && \"$FILE\" != *\".test.\"* && \"$FILE\" != *\".spec.\"* ]]; then DIR=$(dirname \"$FILE\"); BASENAME=$(basename \"$FILE\" | sed -E 's/\\.(js|jsx|ts|tsx)$//'); for TEST_FILE in \"$DIR/$BASENAME.test.\"* \"$DIR/$BASENAME.spec.\"*; do if [ -f \"$TEST_FILE\" ]; then echo \"Running tests for $TEST_FILE...\"; if command -v jest >/dev/null 2>&1; then npx jest \"$TEST_FILE\" --passWithNoTests; elif command -v vitest >/dev/null 2>&1; then npx vitest run \"$TEST_FILE\"; fi; break; fi; done; fi",
             "timeout": 60
           }
         ]
@@ -132,7 +132,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [[ -f package.json && $(git status --porcelain | grep -E '\\.js$|\\.jsx$|\\.ts$|\\.tsx$') ]]; then echo 'Analyzing bundle size impact...'; npx bundlesize; fi",
+            "command": "if [[ -f package.json && $(git status --porcelain | grep -E '\\.js$|\\.jsx$|\\.ts$|\\.tsx$') ]]; then echo 'Analyzing bundle size impact...'; if command -v bundlesize >/dev/null 2>&1; then npx bundlesize; elif npm list webpack-bundle-analyzer >/dev/null 2>&1; then echo 'Use: npx webpack-bundle-analyzer build/static/js/*.js'; else echo 'No bundle analysis tool found'; fi; fi",
             "timeout": 60
           }
         ]

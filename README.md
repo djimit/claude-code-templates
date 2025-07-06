@@ -48,12 +48,13 @@ $ npx claude-code-templates
                     🚀 Setup Claude Code for any project language 🚀
 
 ✔ Project detection complete
+
 🔤 Select your programming language: 
   ❯ Common (Language-agnostic)
     JavaScript/TypeScript
-    - Python (Coming Soon)
-    - Rust (Coming Soon)  
-    - Go (Coming Soon)
+    Python
+    Rust
+    Go
 
 🎯 Select your framework (optional):
   ← Back
@@ -63,19 +64,50 @@ $ npx claude-code-templates
     Angular
     Node.js
 
-⚙️ Select additional features:
+📋 Select commands to include (use space to select): 
   ← Back
-  ❯ ◉ Enhanced testing commands
-    ◉ Code linting and formatting
-    ◯ Git hooks integration
-    ◯ Debugging helpers
+  ❯ ◯ API Endpoint - Generate API endpoint
+    ◉ Debug - Debug issues
+    ◉ Lint - Fix linting issues
+    ◯ NPM Scripts - Manage NPM scripts
+    ◉ Refactor - Refactor code
+    ◉ Test - Run tests
+    ◯ TS Migration - Migrate to TypeScript
+    ◯ Component - Create component
+    ◯ Hooks - React hooks helper
+    ◯ State Mgmt - Manage state
 
-🚀 Setup Claude Code for JavaScript/TypeScript with React?
+🔧 Select automation hooks to include (use space to select):
+  ← Back
+  ❯ ◉ PreToolUse: Block console.log statements in JS/TS files
+    ◉ PostToolUse: Auto-format JS/TS files with Prettier
+    ◉ PostToolUse: Run TypeScript type checking
+    ◯ PostToolUse: Warn about wildcard imports
+    ◯ PostToolUse: Run tests automatically for modified files
+    ◯ Stop: Run ESLint on changed files
+    ◯ Stop: Analyze bundle size impact
+    ◯ Notification: Log Claude Code notifications
+  
+🚀 Setup Claude Code for javascript-typescript with react (5 commands) (9 hooks) (1 MCP)?
   ← Back to modify settings
   ❯ ✅ Yes, proceed with setup
     ❌ No, cancel setup
 
-✅ Claude Code configuration setup complete!
+✅ Yes, proceed with setup
+  ⠋ Copying template files...✓ Copied javascript-typescript/CLAUDE.md → CLAUDE.md
+  ✓ Copied base configuration and commands javascript-typescript/.claude → .claude
+  ✓ Copied javascript-typescript/.mcp.json → .mcp.json
+  ✓ Copied framework commands javascript-typescript/examples/react-app/.claude/commands → .claude/commands
+  ✓ Added command: API Endpoint
+  ✓ Added command: Debug
+  ✓ Added command: Lint
+  ✓ Added command: Refactor
+  ✓ Added command: Test
+  📋 Installed 5 commands
+  🔧 Installed 9 automation hooks
+  🔧 Installed 1 MCP
+  ✔ Template files copied successfully
+  ✅ Claude Code configuration setup complete!
 ```
 
 That's it! The installer will auto-detect your project type and set up everything for you.
@@ -200,6 +232,132 @@ Each framework template includes ready-to-use commands:
 - **`/middleware`** - Create Express middleware
 - **`/api-endpoint`** - Generate complete API endpoints
 - **`/database`** - Set up database operations and models
+
+## 🔧 Automation Hooks
+
+When you select automation hooks during setup, Claude Code will automatically execute scripts at key moments to improve your development workflow. Here are the available hooks:
+
+### JavaScript/TypeScript Hooks
+
+#### PreToolUse Hooks (Execute Before Claude Uses Tools)
+
+**🗂️ Bash Command Logging**
+- **When**: Before any bash command execution
+- **What**: Logs all bash commands to `~/.claude/bash-command-log.txt`
+- **Purpose**: Track command history for debugging and auditing
+
+**🚫 Console.log Detection**
+- **When**: Before writing JavaScript/TypeScript files
+- **What**: Prevents files containing `console.log` statements from being saved
+- **Purpose**: Enforces clean code practices by blocking debug statements
+
+**🛡️ NPM Security Audit**
+- **When**: Before writing `package.json` files
+- **What**: Runs `npm audit --audit-level=moderate` to check for vulnerabilities
+- **Purpose**: Automatically scans for security issues in dependencies
+
+#### PostToolUse Hooks (Execute After Claude Uses Tools)
+
+**✨ Auto-formatting with Prettier**
+- **When**: After writing/editing JavaScript/TypeScript files
+- **What**: Runs `npx prettier --write` on the modified file
+- **Purpose**: Ensures consistent code formatting across your project
+
+**📝 TypeScript Type Checking**
+- **When**: After writing/editing TypeScript files
+- **What**: Runs `npx tsc --noEmit` to verify type correctness
+- **Purpose**: Catches type errors immediately after code changes
+
+**⚠️ Wildcard Import Detection**
+- **When**: After writing/editing JavaScript/TypeScript files
+- **What**: Warns about `import * from` statements
+- **Purpose**: Promotes better tree-shaking and bundle optimization
+
+**🧪 Automatic Test Execution**
+- **When**: After modifying JavaScript/TypeScript files
+- **What**: Automatically runs corresponding test files (`.test.` or `.spec.`)
+- **Purpose**: Ensures tests run immediately after code changes
+
+#### Notification Hooks
+
+**📢 General Notification Logging**
+- **When**: On any Claude Code notification
+- **What**: Logs notification events to `~/.claude/notifications.log`
+- **Purpose**: Track system events and debugging information
+
+#### Stop Hooks (Execute When Session Ends)
+
+**🔍 ESLint on Changed Files**
+- **When**: At the end of a coding session
+- **What**: Runs ESLint on all modified JavaScript/TypeScript files
+- **Purpose**: Final code quality check before committing
+
+**📊 Bundle Size Analysis**
+- **When**: At the end of a coding session
+- **What**: Analyzes bundle size impact using bundlesize or webpack-bundle-analyzer
+- **Purpose**: Monitor performance impact of code changes
+
+### Python Hooks
+
+#### PreToolUse Hooks
+- **🗂️ Bash Command Logging** - Track all bash commands
+- **🚫 Print Statement Detection** - Prevent files with `print()` statements
+- **🛡️ pip Security Check** - Audit dependencies when requirements.txt changes
+
+#### PostToolUse Hooks
+- **✨ Auto-formatting with Black** - Format Python code automatically
+- **📝 Type Checking with MyPy** - Verify type hints
+- **🧪 Automatic Test Execution** - Run pytest on modified files
+
+### Go Hooks
+
+#### PreToolUse Hooks
+- **🗂️ Bash Command Logging** - Track all bash commands
+- **🚫 Debug Statement Detection** - Prevent files with `fmt.Print` statements
+- **🛡️ go mod Security Check** - Audit dependencies when go.mod changes
+
+#### PostToolUse Hooks
+- **✨ Auto-formatting with gofmt** - Format Go code automatically
+- **🧪 Automatic Test Execution** - Run go test on modified files
+
+### Rust Hooks
+
+#### PreToolUse Hooks
+- **🗂️ Bash Command Logging** - Track all bash commands
+- **🚫 Debug Statement Detection** - Prevent files with `println!` statements
+- **🛡️ cargo Security Check** - Audit dependencies when Cargo.toml changes
+
+#### PostToolUse Hooks
+- **✨ Auto-formatting with rustfmt** - Format Rust code automatically
+- **🧪 Automatic Test Execution** - Run cargo test on modified files
+
+### How Hook Selection Works
+
+During the interactive setup, you can choose which hooks to enable:
+
+```bash
+🔧 Select automation hooks to include (use space to select):
+  ❯ ◉ PreToolUse: Block console.log statements in JS/TS files
+    ◉ PostToolUse: Auto-format JS/TS files with Prettier
+    ◉ PostToolUse: Run TypeScript type checking
+    ◯ PostToolUse: Warn about wildcard imports
+    ◯ PostToolUse: Run tests automatically for modified files
+    ◯ Stop: Run ESLint on changed files
+    ◯ Stop: Analyze bundle size impact
+    ◯ Notification: Log Claude Code notifications
+```
+
+- **Space** - Toggle hook selection
+- **Enter** - Confirm selection
+- **← Back** - Return to previous step
+
+### Hook Benefits
+
+- **🔄 Automatic Quality Assurance** - Code formatting, linting, and type checking happen automatically
+- **⚡ Faster Development** - No need to manually run formatting or testing commands
+- **🛡️ Security** - Automatic dependency auditing and vulnerability detection
+- **📊 Performance Monitoring** - Bundle size analysis and optimization warnings
+- **🧪 Test Coverage** - Automatic test execution ensures code quality
 
 ## 💡 Usage Examples
 

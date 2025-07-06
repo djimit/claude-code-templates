@@ -30,8 +30,9 @@ npx claude-code-templates
 The installer will:
 1. 🔍 **Auto-detect** your project type (JavaScript, Python, etc.)
 2. 🎯 **Ask about frameworks** (React, Django, Flask, etc.)
-3. ⚙️ **Let you choose features** (testing, linting, debugging)
-4. ✅ **Confirm before installing**
+3. 📋 **Let you choose commands** (testing, linting, debugging)
+4. 🔧 **Let you select automation hooks** (formatting, type checking, etc.)
+5. ✅ **Confirm before installing**
 
 ### Step 4: Start Using Claude Code
 ```bash
@@ -110,8 +111,8 @@ create-claude-config
 - **Common** - Universal configuration for any project
 - **JavaScript/TypeScript** - Modern JS/TS development with frameworks
 - **Python** - Python development with popular frameworks
-- **Rust** - Coming soon
-- **Go** - Coming soon
+- **Rust** - Rust development with Cargo and clippy
+- **Go** - Go development with modules and testing
 
 ## Supported Frameworks
 
@@ -130,22 +131,63 @@ create-claude-config
 
 - 🔍 **Auto-detection** - Automatically detects your project type
 - 🎯 **Framework-specific** - Includes framework-specific commands and configurations
+- 🔧 **Selective automation hooks** - Choose which automation features to enable
 - 💾 **Backup existing files** - Safely backs up existing CLAUDE.md and .claude directories
-- ⚙️ **Customizable** - Interactive prompts for feature selection
+- ⚙️ **Customizable** - Interactive prompts for command and hook selection
 - 🚀 **Quick setup** - Get started with Claude Code in seconds
+
+## 🔧 Automation Hooks
+
+The CLI allows you to selectively enable automation hooks that enhance your development workflow:
+
+### JavaScript/TypeScript Hooks
+- **Console.log Detection** - Prevents committing debug statements
+- **Prettier Auto-formatting** - Automatically formats code on save
+- **TypeScript Type Checking** - Validates types after each edit
+- **Import Validation** - Warns about performance-impacting wildcard imports
+- **Auto-testing** - Runs relevant tests when files change
+- **ESLint Integration** - Lints code before session ends
+
+### Python Hooks
+- **Print Statement Detection** - Warns about debug print statements
+- **Black Auto-formatting** - Formats Python code automatically
+- **Import Sorting** - Organizes imports with isort
+- **Flake8 Linting** - Checks code quality standards
+- **MyPy Type Checking** - Validates type hints
+- **Security Auditing** - Scans for vulnerabilities with bandit
+
+### Go Hooks
+- **Print Statement Detection** - Warns about fmt.Print statements
+- **Auto-formatting** - Formats code with gofmt and goimports
+- **Go Vet Analysis** - Runs static analysis checks
+- **Dependency Checking** - Lists and validates dependencies
+- **Auto-testing** - Runs tests for modified files
+
+### Rust Hooks
+- **Print Macro Detection** - Warns about println! statements
+- **Rustfmt Formatting** - Automatically formats Rust code
+- **Cargo Check** - Validates code compilation
+- **Clippy Linting** - Runs Rust's built-in linter
+- **Security Auditing** - Checks for vulnerable dependencies
 
 ## What Gets Installed
 
 ### Core Files
 - `CLAUDE.md` - Main configuration file for Claude Code
-- `.claude/settings.json` - Language-specific settings
+- `.claude/settings.json` - Language-specific settings with selected automation hooks
 - `.claude/commands/` - Custom commands for common tasks
-- `.claude/hooks/` - Automated hooks for development workflow
+
+### Automation Hooks
+Each language template includes selectable automation hooks for:
+- **PreToolUse**: Code quality checks before actions (e.g., detecting console.log statements)
+- **PostToolUse**: Automatic formatting and validation after edits (e.g., Prettier, ESLint, type checking)
+- **Stop**: Final checks before session ends (e.g., linting changed files, bundle analysis)
+- **Notification**: Logging and monitoring of Claude Code activities
 
 ### Language-Specific Commands
 Each language template includes optimized commands for:
-- Testing
-- Linting and formatting
+- Testing (Jest, pytest, Cargo test, Go test)
+- Linting and formatting (ESLint/Prettier, Black/flake8, clippy/rustfmt, gofmt/go vet)
 - Building and deployment
 - Debugging
 - Framework-specific operations
@@ -213,28 +255,40 @@ Target directory: /path/to/your/project
    - Shows relevant frameworks for your language
    - Auto-detected from dependencies
 
-4. **Feature Selection** ⚙️
+4. **Command Selection** 📋
    ```
-   ⚙️ Select additional features: 
+   📋 Select commands to include (use space to select):
    ◉ Enhanced testing commands
    ◉ Code linting and formatting  
    ◯ Git hooks integration
    ◯ Debugging helpers
    ```
 
-5. **Final Confirmation** 🚀
+5. **Hook Selection** 🔧
    ```
-   🚀 Setup Claude Code for javascript-typescript with react? (Y/n)
+   🔧 Select automation hooks to include (use space to select):
+   ◉ PreToolUse: Block files containing console.log statements
+   ◉ PostToolUse: Auto-format JavaScript/TypeScript files with Prettier
+   ◉ PostToolUse: Run TypeScript type checking after edits
+   ◯ PostToolUse: Run tests automatically for modified files
+   ◉ Stop: Run ESLint on changed files before stopping
    ```
-   - Review your choices
+
+6. **Final Confirmation** 🚀
+   ```
+   🚀 Setup Claude Code for javascript-typescript with react (5 commands) (9 hooks)? (Y/n)
+   ```
+   - Review your choices including selected commands and hooks
    - Type 'n' to cancel, 'y' or Enter to proceed
 
-6. **Installation** 📁
+7. **Installation** 📁
    ```
    📋 Existing CLAUDE.md backed up to CLAUDE.md.backup
    ✓ Copied javascript-typescript/CLAUDE.md → CLAUDE.md
-   ✓ Copied javascript-typescript/.claude → .claude
+   ✓ Copied javascript-typescript/.claude → .claude (with selected hooks)
    ✓ Copied react-specific commands → .claude/commands
+   📋 Installed 5 commands
+   🔧 Installed 9 automation hooks
    ✅ Claude Code configuration setup complete!
    ```
 

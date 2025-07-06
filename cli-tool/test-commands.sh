@@ -48,9 +48,35 @@ else
     echo "❌ React-specific commands missing"
 fi
 
-# Test 7: Interactive mode simulation (dry run)
+# Test 7: Check hooks functionality
+echo "🔸 Test 7: Check hooks functionality"
+if [ -f ".claude/settings.json" ]; then
+    if command -v jq >/dev/null 2>&1; then
+        if jq '.hooks' ".claude/settings.json" > /dev/null 2>&1; then
+            hook_count=$(jq '.hooks | keys | length' ".claude/settings.json")
+            if [ "$hook_count" -gt 0 ]; then
+                echo "✅ Hooks are properly configured ($hook_count hook types)"
+            else
+                echo "❌ No hooks found in settings.json"
+            fi
+        else
+            echo "❌ Invalid hooks structure in settings.json"
+        fi
+    else
+        echo "⚠️ jq not available, skipping detailed hook validation"
+        if grep -q '"hooks"' ".claude/settings.json"; then
+            echo "✅ Hooks section found in settings.json"
+        else
+            echo "❌ No hooks section found in settings.json"
+        fi
+    fi
+else
+    echo "❌ settings.json not found"
+fi
+
+# Test 8: Interactive mode simulation (dry run)
 cd "$TEST_DIR"
-echo "🔸 Test 7: Interactive mode dry run"
+echo "🔸 Test 8: Interactive mode dry run"
 # This will start interactive mode but we'll cancel it quickly
 timeout 5s claude-code-templates --dry-run || echo "✅ Interactive mode starts correctly"
 

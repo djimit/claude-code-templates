@@ -44,6 +44,26 @@ test-node: install-dev
 	@echo "✅ Node test completed"
 	@rm -rf /tmp/test-node
 
+test-hooks: install-dev
+	@echo "🔧 Testing Hooks functionality..."
+	@mkdir -p /tmp/test-hooks
+	@cd /tmp/test-hooks && claude-code-templates --language javascript-typescript --yes
+	@echo "Checking hooks installation..."
+	@cd /tmp/test-hooks && [ -f ".claude/settings.json" ] && echo "✅ settings.json created"
+	@cd /tmp/test-hooks && jq '.hooks' ".claude/settings.json" > /dev/null && echo "✅ Hooks structure valid"
+	@cd /tmp/test-hooks && [ $$(jq '.hooks | keys | length' ".claude/settings.json") -gt 0 ] && echo "✅ Hooks configured"
+	@rm -rf /tmp/test-hooks
+
+test-python-hooks: install-dev
+	@echo "🐍 Testing Python hooks..."
+	@mkdir -p /tmp/test-python-hooks
+	@cd /tmp/test-python-hooks && claude-code-templates --language python --yes
+	@cd /tmp/test-python-hooks && jq -r '.hooks.PostToolUse[].hooks[].command' ".claude/settings.json" | grep -q "black" && echo "✅ Python Black hook found"
+	@rm -rf /tmp/test-python-hooks
+
+test-all-hooks: test-hooks test-python-hooks
+	@echo "✅ All hooks tests completed"
+
 # Interactive test (manual)
 test-interactive: install-dev
 	@echo "🎯 Starting interactive test (you'll need to interact)..."
@@ -52,7 +72,7 @@ test-interactive: install-dev
 	@rm -rf /tmp/test-interactive
 
 # Run all tests
-test: test-basic test-detailed
+test: test-basic test-detailed test-all-hooks
 	@echo "🎉 All automated tests completed!"
 
 # Check version works
@@ -73,6 +93,9 @@ help:
 	@echo "  make test-react     - Test React scenario"
 	@echo "  make test-vue       - Test Vue scenario"
 	@echo "  make test-node      - Test Node scenario"
+	@echo "  make test-hooks     - Test hooks functionality"
+	@echo "  make test-python-hooks - Test Python-specific hooks"
+	@echo "  make test-all-hooks - Test all hooks functionality"
 	@echo "  make test-interactive - Manual interactive test"
 	@echo "  make test           - Run all automated tests"
 	@echo "  make pre-publish    - Full test before publishing"

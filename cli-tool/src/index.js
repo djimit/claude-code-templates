@@ -7,6 +7,7 @@ const { detectProject } = require('./utils');
 const { getTemplateConfig } = require('./templates');
 const { createPrompts, interactivePrompts } = require('./prompts');
 const { copyTemplateFiles } = require('./file-operations');
+const { getHooksForLanguage } = require('./hook-scanner');
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
@@ -22,10 +23,15 @@ async function createClaudeConfig(options = {}) {
   let config;
   if (options.yes) {
     // Use defaults
+    const selectedLanguage = options.language || projectInfo.detectedLanguage || 'common';
+    const availableHooks = getHooksForLanguage(selectedLanguage);
+    const defaultHooks = availableHooks.filter(hook => hook.checked).map(hook => hook.id);
+    
     config = {
-      language: options.language || projectInfo.detectedLanguage || 'common',
+      language: selectedLanguage,
       framework: options.framework || projectInfo.detectedFramework || 'none',
-      features: []
+      features: [],
+      hooks: defaultHooks
     };
   } else {
     // Interactive prompts with back navigation
@@ -40,6 +46,12 @@ async function createClaudeConfig(options = {}) {
   
   // Get template configuration
   const templateConfig = getTemplateConfig(config);
+  
+  // Add selected hooks to template config
+  if (config.hooks) {
+    templateConfig.selectedHooks = config.hooks;
+    templateConfig.language = config.language; // Ensure language is available for hook filtering
+  }
   
   if (options.dryRun) {
     console.log(chalk.yellow('🔍 Dry run - showing what would be copied:'));
@@ -72,6 +84,10 @@ async function createClaudeConfig(options = {}) {
   
   if (config.framework !== 'none') {
     console.log(chalk.yellow(`🎯 Framework-specific commands for ${config.framework} are available`));
+  }
+  
+  if (config.hooks && config.hooks.length > 0) {
+    console.log(chalk.magenta(`🔧 ${config.hooks.length} automation hooks have been configured`));
   }
 }
 

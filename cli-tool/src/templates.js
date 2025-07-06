@@ -47,30 +47,27 @@ const TEMPLATES_CONFIG = {
   },
   'python': {
     name: 'Python',
-    description: 'Configuration for Python projects (Coming Soon)',
+    description: 'Optimized for Python development',
     files: [
-      { source: 'common/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'common/.claude', destination: '.claude' }
-    ],
-    comingSoon: true
+      { source: 'python/CLAUDE.md', destination: 'CLAUDE.md' },
+      { source: 'python/.claude', destination: '.claude' }
+    ]
   },
   'rust': {
     name: 'Rust',
-    description: 'Configuration for Rust projects (Coming Soon)',
+    description: 'Optimized for Rust development',
     files: [
-      { source: 'common/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'common/.claude', destination: '.claude' }
-    ],
-    comingSoon: true
+      { source: 'rust/CLAUDE.md', destination: 'CLAUDE.md' },
+      { source: 'rust/.claude', destination: '.claude' }
+    ]
   },
   'go': {
     name: 'Go',
-    description: 'Configuration for Go projects (Coming Soon)',
+    description: 'Optimized for Go development',
     files: [
-      { source: 'common/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'common/.claude', destination: '.claude' }
-    ],
-    comingSoon: true
+      { source: 'go/CLAUDE.md', destination: 'CLAUDE.md' },
+      { source: 'go/.claude', destination: '.claude' }
+    ]
   }
 };
 

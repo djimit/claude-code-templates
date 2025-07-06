@@ -13,6 +13,7 @@ class CustomCheckboxPrompt extends inquirer.prompt.prompts.checkbox {
 inquirer.registerPrompt('checkbox', CustomCheckboxPrompt);
 const { getAvailableLanguages, getFrameworksForLanguage } = require('./templates');
 const { getCommandsForLanguageAndFramework } = require('./command-scanner');
+const { getHooksForLanguage } = require('./hook-scanner');
 
 async function interactivePrompts(projectInfo, options = {}) {
   const state = {
@@ -24,7 +25,7 @@ async function interactivePrompts(projectInfo, options = {}) {
   // Build steps array based on options
   if (!options.language) state.steps.push('language');
   if (!options.framework) state.steps.push('framework');
-  state.steps.push('commands', 'confirm');
+  state.steps.push('commands', 'hooks', 'confirm');
 
   while (state.currentStep < state.steps.length) {
     const stepName = state.steps[state.currentStep];
@@ -143,10 +144,37 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
         pageSize: 10
       };
 
+    case 'hooks':
+      const hookLanguage = currentAnswers.language || options.language;
+      
+      if (!hookLanguage || hookLanguage === 'common') {
+        return null; // Skip hooks selection for common templates
+      }
+      
+      const availableHooks = getHooksForLanguage(hookLanguage);
+      
+      if (availableHooks.length === 0) {
+        return null; // Skip if no hooks available
+      }
+      
+      return {
+        type: 'checkbox',
+        name: 'hooks',
+        message: 'Select automation hooks to include (use space to select):',
+        choices: availableHooks.map(hook => ({
+          value: hook.id,
+          name: `${hook.type}: ${hook.description}`,
+          checked: hook.checked
+        })),
+        prefix: chalk.magenta('🔧'),
+        pageSize: 15
+      };
+
     case 'confirm':
       const confirmLanguage = currentAnswers.language || options.language || 'common';
       const confirmFramework = currentAnswers.framework || options.framework || 'none';
       const commandCount = currentAnswers.commands ? currentAnswers.commands.length : 0;
+      const hookCount = currentAnswers.hooks ? currentAnswers.hooks.length : 0;
       
       let message = `Setup Claude Code for ${chalk.cyan(confirmLanguage)}`;
       if (confirmFramework !== 'none') {
@@ -154,6 +182,9 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
       }
       if (commandCount > 0) {
         message += ` (${chalk.yellow(commandCount)} commands)`;
+      }
+      if (hookCount > 0) {
+        message += ` (${chalk.magenta(hookCount)} hooks)`;
       }
       message += '?';
       
@@ -250,6 +281,37 @@ function createPrompts(projectInfo, options = {}) {
     }
   });
 
+  // Hook selection
+  prompts.push({
+    type: 'checkbox',
+    name: 'hooks',
+    message: 'Select automation hooks to include (use space to select):',
+    choices: (answers) => {
+      const selectedLanguage = answers.language || options.language;
+      
+      if (!selectedLanguage || selectedLanguage === 'common') {
+        return [];
+      }
+      
+      const availableHooks = getHooksForLanguage(selectedLanguage);
+      
+      return availableHooks.map(hook => ({
+        value: hook.id,
+        name: `${hook.type}: ${hook.description}`,
+        checked: hook.checked
+      }));
+    },
+    prefix: chalk.magenta('🔧'),
+    pageSize: 15,
+    when: (answers) => {
+      const selectedLanguage = answers.language || options.language;
+      if (!selectedLanguage || selectedLanguage === 'common') {
+        return false;
+      }
+      const availableHooks = getHooksForLanguage(selectedLanguage);
+      return availableHooks.length > 0;
+    }
+  });
   
   // Confirmation
   prompts.push({
@@ -259,6 +321,7 @@ function createPrompts(projectInfo, options = {}) {
       const language = answers.language || options.language || 'common';
       const framework = answers.framework || options.framework || 'none';
       const commandCount = answers.commands ? answers.commands.length : 0;
+      const hookCount = answers.hooks ? answers.hooks.length : 0;
       
       let message = `Setup Claude Code for ${chalk.cyan(language)}`;
       if (framework !== 'none') {
@@ -266,6 +329,9 @@ function createPrompts(projectInfo, options = {}) {
       }
       if (commandCount > 0) {
         message += ` (${chalk.yellow(commandCount)} commands)`;
+      }
+      if (hookCount > 0) {
+        message += ` (${chalk.magenta(hookCount)} hooks)`;
       }
       message += '?';
       

@@ -77,6 +77,20 @@ test_scenarios() {
         if [ "$language" != "common" ]; then
             run_test "settings.json exists for $language + $framework" \
                 "[ -f '.claude/settings.json' ]"
+            
+            # Test hooks functionality
+            run_test "settings.json contains hooks for $language" \
+                "grep -q '\"hooks\"' '.claude/settings.json'"
+            
+            run_test "settings.json has valid JSON structure" \
+                "jq . '.claude/settings.json' > /dev/null 2>&1"
+            
+            # Verify specific hook types exist for non-common languages
+            run_test "PreToolUse hooks exist for $language" \
+                "jq '.hooks.PreToolUse' '.claude/settings.json' | grep -q '\['"
+            
+            run_test "PostToolUse hooks exist for $language" \
+                "jq '.hooks.PostToolUse' '.claude/settings.json' | grep -q '\['"
         fi
         
         # Check for framework-specific commands
@@ -124,6 +138,85 @@ test_error_scenarios() {
         "! claude-code-templates --language javascript-typescript --framework invalid-framework --yes > /dev/null 2>&1"
 }
 
+# Test hooks functionality specifically
+test_hooks_functionality() {
+    echo -e "${YELLOW}🔧 Testing Hooks Functionality${NC}"
+    
+    local test_dir="$TEST_BASE_DIR/test-hooks"
+    mkdir -p "$test_dir"
+    cd "$test_dir"
+    
+    # Test JavaScript/TypeScript hooks
+    run_test "JS/TS installation with default hooks" \
+        "claude-code-templates --language javascript-typescript --yes > /dev/null 2>&1"
+    
+    run_test "JS/TS hooks count verification" \
+        "[ \$(jq '.hooks.PreToolUse | length' '.claude/settings.json') -gt 0 ]"
+    
+    run_test "JS/TS PostToolUse hooks verification" \
+        "[ \$(jq '.hooks.PostToolUse | length' '.claude/settings.json') -gt 0 ]"
+    
+    run_test "JS/TS Stop hooks verification" \
+        "[ \$(jq '.hooks.Stop | length' '.claude/settings.json') -gt 0 ]"
+    
+    # Test specific hook content
+    run_test "Console.log detection hook exists" \
+        "jq -r '.hooks.PreToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'console'"
+    
+    run_test "Prettier formatting hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'prettier'"
+    
+    run_test "TypeScript checking hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'tsc'"
+    
+    run_test "ESLint hook exists in Stop hooks" \
+        "jq -r '.hooks.Stop[].hooks[].command' '.claude/settings.json' | grep -q 'eslint'"
+    
+    # Test other languages
+    cd "$TEST_BASE_DIR"
+    
+    # Test Python hooks
+    mkdir -p "test-python-hooks"
+    cd "test-python-hooks"
+    
+    run_test "Python installation with hooks" \
+        "claude-code-templates --language python --yes > /dev/null 2>&1"
+    
+    run_test "Python Black formatter hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'black'"
+    
+    run_test "Python flake8 hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'flake8'"
+    
+    # Test Go hooks
+    cd "$TEST_BASE_DIR"
+    mkdir -p "test-go-hooks"
+    cd "test-go-hooks"
+    
+    run_test "Go installation with hooks" \
+        "claude-code-templates --language go --yes > /dev/null 2>&1"
+    
+    run_test "Go fmt hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'gofmt'"
+    
+    run_test "Go vet hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'go vet'"
+    
+    # Test Rust hooks
+    cd "$TEST_BASE_DIR"
+    mkdir -p "test-rust-hooks"
+    cd "test-rust-hooks"
+    
+    run_test "Rust installation with hooks" \
+        "claude-code-templates --language rust --yes > /dev/null 2>&1"
+    
+    run_test "Rust fmt hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'rustfmt'"
+    
+    run_test "Rust clippy hook exists" \
+        "jq -r '.hooks.PostToolUse[].hooks[].command' '.claude/settings.json' | grep -q 'clippy'"
+}
+
 # Test command variants
 test_command_variants() {
     echo -e "${YELLOW}🔧 Testing Command Variants${NC}"
@@ -149,6 +242,7 @@ test_command_variants() {
 # Run all tests
 echo "🏁 Starting test execution..."
 test_scenarios
+test_hooks_functionality
 test_error_scenarios
 test_command_variants
 

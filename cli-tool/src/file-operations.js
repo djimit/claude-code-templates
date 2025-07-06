@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
+const { getHooksForLanguage, filterHooksBySelection } = require('./hook-scanner');
 
 async function copyTemplateFiles(templateConfig, targetDir) {
   const templateDir = path.join(__dirname, '../templates');
@@ -74,6 +75,10 @@ async function copyTemplateFiles(templateConfig, targetDir) {
         }
         
         console.log(chalk.green(`✓ Copied base configuration and commands ${file.source} → ${file.destination}`));
+      } else if (file.source.includes('settings.json') && templateConfig.selectedHooks) {
+        // Handle settings.json with hook filtering
+        await processSettingsFile(sourcePath, destPath, templateConfig);
+        console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected hooks)`));
       } else {
         // Copy regular files (CLAUDE.md, settings.json, etc.)
         await fs.copy(sourcePath, destPath, { 
@@ -111,6 +116,43 @@ async function copyTemplateFiles(templateConfig, targetDir) {
     
     console.log(chalk.cyan(`📋 Installed ${templateConfig.selectedCommands.length} commands`));
   }
+  
+  // Report hook selection
+  if (templateConfig.selectedHooks && templateConfig.selectedHooks.length > 0) {
+    console.log(chalk.magenta(`🔧 Installed ${templateConfig.selectedHooks.length} automation hooks`));
+  }
+}
+
+async function processSettingsFile(sourcePath, destPath, templateConfig) {
+  try {
+    // Read the original settings file
+    const originalSettings = JSON.parse(await fs.readFile(sourcePath, 'utf8'));
+    
+    // If hooks are selected, filter them
+    if (templateConfig.selectedHooks && templateConfig.selectedHooks.length > 0) {
+      const availableHooks = getHooksForLanguage(templateConfig.language);
+      const filteredSettings = filterHooksBySelection(
+        originalSettings,
+        templateConfig.selectedHooks,
+        availableHooks
+      );
+      
+      // Write the filtered settings
+      await fs.ensureDir(path.dirname(destPath));
+      await fs.writeFile(destPath, JSON.stringify(filteredSettings, null, 2));
+    } else {
+      // No hooks selected, copy original without hooks
+      const settingsWithoutHooks = { ...originalSettings };
+      delete settingsWithoutHooks.hooks;
+      
+      await fs.ensureDir(path.dirname(destPath));
+      await fs.writeFile(destPath, JSON.stringify(settingsWithoutHooks, null, 2));
+    }
+  } catch (error) {
+    console.error(chalk.red(`Failed to process settings file: ${error.message}`));
+    // Fallback to copying original file
+    await fs.copy(sourcePath, destPath);
+  }
 }
 
 async function ensureDirectoryExists(dirPath) {
@@ -137,5 +179,6 @@ async function checkWritePermissions(targetDir) {
 module.exports = {
   copyTemplateFiles,
   ensureDirectoryExists,
-  checkWritePermissions
+  checkWritePermissions,
+  processSettingsFile
 };

@@ -1,7 +1,7 @@
 {
   "name": "claude-code-templates",
-  "version": "1.1.7",
-  "description": "CLI tool to setup Claude Code configurations for different programming languages",
+  "version": "1.2.1",
+  "description": "CLI tool to setup Claude Code configurations with selective automation hooks for different programming languages",
   "main": "src/index.js",
   "bin": {
     "create-claude-config": "bin/create-claude-config.js",
@@ -32,7 +32,14 @@
     "configuration",
     "template",
     "setup",
-    "cli"
+    "cli",
+    "hooks",
+    "automation",
+    "javascript",
+    "typescript",
+    "python",
+    "rust",
+    "go"
   ],
   "author": "Claude Code Templates",
   "license": "MIT",

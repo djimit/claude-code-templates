@@ -41,12 +41,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danipower/claude-code-templates.git"
+    "url": "git+https://github.com/davila7/claude-code-templates.git"
   },
   "bugs": {
-    "url": "https://github.com/danipower/claude-code-templates/issues"
+    "url": "https://github.com/davila7/claude-code-templates/issues"
   },
-  "homepage": "https://github.com/danipower/claude-code-templates#readme",
+  "homepage": "https://github.com/davila7/claude-code-templates#readme",
   "files": [
     "bin/",
     "src/",

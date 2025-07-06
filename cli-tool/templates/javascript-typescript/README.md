@@ -39,7 +39,7 @@ Copy the template manually for more control:
 
 ```bash
 # Clone the repository
-git clone https://github.com/danipower/claude-code-templates.git
+git clone https://github.com/davila7/claude-code-templates.git
 
 # Copy the JavaScript/TypeScript template
 cp claude-code-templates/javascript-typescript/CLAUDE.md your-project/

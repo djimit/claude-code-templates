@@ -330,7 +330,7 @@ If you prefer manual setup, you can copy templates directly:
 
 ```bash
 # Clone the repository
-git clone https://github.com/danipower/claude-code-templates.git
+git clone https://github.com/davila7/claude-code-templates.git
 
 # Copy templates for JavaScript/TypeScript + React
 cp -r claude-code-templates/javascript-typescript/CLAUDE.md your-project/
@@ -380,8 +380,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues** - [Report bugs or request features](https://github.com/danipower/claude-code-templates/issues)
-- **Discussions** - [Join community discussions](https://github.com/danipower/claude-code-templates/discussions)
+- **Issues** - [Report bugs or request features](https://github.com/davila7/claude-code-templates/issues)
+- **Discussions** - [Join community discussions](https://github.com/davila7/claude-code-templates/discussions)
 - **Documentation** - [Claude Code Official Docs](https://docs.anthropic.com/en/docs/claude-code)
 
 ---

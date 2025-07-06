@@ -3,16 +3,10 @@ const inquirer = require('inquirer');
 
 // Override the checkbox prompt to remove help text
 class CustomCheckboxPrompt extends inquirer.prompt.prompts.checkbox {
-  getHelpText() {
-    return ''; // Return empty string instead of help text
-  }
-  
-  // Override the render method to ensure help text is not shown
-  render() {
-    let message = super.render();
-    // Remove any help text that might still appear
-    message = message.replace(/\(Press.*?\)/g, '');
-    return message;
+  constructor(questions, rl, answers) {
+    super(questions, rl, answers);
+    // Set dontShowHints to true to suppress the help text
+    this.dontShowHints = true;
   }
 }
 

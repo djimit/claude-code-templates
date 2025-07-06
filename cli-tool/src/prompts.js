@@ -1,5 +1,22 @@
 const chalk = require('chalk');
 const inquirer = require('inquirer');
+
+// Override the checkbox prompt to remove help text
+class CustomCheckboxPrompt extends inquirer.prompt.prompts.checkbox {
+  getHelpText() {
+    return ''; // Return empty string instead of help text
+  }
+  
+  // Override the render method to ensure help text is not shown
+  render() {
+    let message = super.render();
+    // Remove any help text that might still appear
+    message = message.replace(/\(Press.*?\)/g, '');
+    return message;
+  }
+}
+
+inquirer.registerPrompt('checkbox', CustomCheckboxPrompt);
 const { getAvailableLanguages, getFrameworksForLanguage } = require('./templates');
 const { getCommandsForLanguageAndFramework } = require('./command-scanner');
 
@@ -105,7 +122,7 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
         return {
           type: 'checkbox',
           name: 'commands',
-          message: 'Select commands to include (use space to select):',
+          message: 'Select commands to include:',
           choices: [
             {
               value: 'basic-commands',
@@ -122,13 +139,14 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
       return {
         type: 'checkbox',
         name: 'commands',
-        message: 'Select commands to include (use space to select, enter to continue):',
+        message: 'Select commands to include:',
         choices: availableCommands.map(cmd => ({
           value: cmd.name,
           name: `${cmd.displayName} - ${cmd.description}`,
           checked: cmd.checked
         })),
-        prefix: chalk.cyan('📋')
+        prefix: chalk.cyan('📋'),
+        pageSize: 10
       };
 
     case 'confirm':
@@ -208,7 +226,7 @@ function createPrompts(projectInfo, options = {}) {
   prompts.push({
     type: 'checkbox',
     name: 'commands',
-    message: 'Select commands to include (use space to select):',
+    message: 'Select commands to include:',
     choices: (answers) => {
       const selectedLanguage = answers.language || options.language;
       const selectedFramework = answers.framework || options.framework;

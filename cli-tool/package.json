@@ -11,11 +11,19 @@
   },
   "scripts": {
     "start": "node bin/create-claude-config.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./test-commands.sh",
+    "test:detailed": "./test-detailed.sh",
+    "test:react": "make test-react",
+    "test:vue": "make test-vue", 
+    "test:node": "make test-node",
+    "test:all": "make test",
+    "dev:link": "npm link",
+    "dev:unlink": "npm unlink -g claude-code-templates",
+    "pretest": "npm run dev:link",
     "sync": "node scripts/sync-templates.js",
     "presync": "echo \"🔄 Starting template synchronization...\"",
     "postsync": "echo \"✅ Synchronization completed. Ready to publish!\"",
-    "prepublishOnly": "npm run sync"
+    "prepublishOnly": "npm run sync && npm run test"
   },
   "keywords": [
     "claude",

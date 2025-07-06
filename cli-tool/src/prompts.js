@@ -116,7 +116,7 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
         return {
           type: 'checkbox',
           name: 'commands',
-          message: 'Select commands to include:',
+          message: 'Select commands to include (use space to select):',
           choices: [
             {
               value: 'basic-commands',
@@ -133,7 +133,7 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
       return {
         type: 'checkbox',
         name: 'commands',
-        message: 'Select commands to include:',
+        message: 'Select commands to include (use space to select):',
         choices: availableCommands.map(cmd => ({
           value: cmd.name,
           name: `${cmd.displayName} - ${cmd.description}`,
@@ -220,7 +220,7 @@ function createPrompts(projectInfo, options = {}) {
   prompts.push({
     type: 'checkbox',
     name: 'commands',
-    message: 'Select commands to include:',
+    message: 'Select commands to include (use space to select):',
     choices: (answers) => {
       const selectedLanguage = answers.language || options.language;
       const selectedFramework = answers.framework || options.framework;

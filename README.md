@@ -8,33 +8,53 @@
 
 A comprehensive CLI tool that sets up optimized Claude Code configurations for different programming languages and frameworks. Features interactive setup, automation hooks, MCP server integration, and framework-specific commands.
 
-## 📖 Documentation
+ ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗
+██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝
+██║     ██║     ███████║██║   ██║██║  ██║█████╗  
+██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝  
+╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝███████╗
+ ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
 
-### For Users
-**👉 [Complete Usage Guide & CLI Documentation](./cli-tool/README.md)**
-- Interactive setup walkthrough
-- Command-line options and examples  
-- Step-by-step installation guide
-- Troubleshooting and FAQ
+ ██████╗ ██████╗ ██████╗ ███████╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝
+██║     ██║   ██║██║  ██║█████╗  
+██║     ██║   ██║██║  ██║██╔══╝  
+╚██████╗╚██████╔╝██████╔╝███████╗
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝
 
-### For Developers
-Continue reading this README for:
-- Project architecture and structure
-- Contributing guidelines
-- Development setup
-- Technical implementation details
+████████╗███████╗███╗   ███╗██████╗ ██╗      █████╗ ████████╗███████╗███████╗
+╚══██╔══╝██╔════╝████╗ ████║██╔══██╗██║     ██╔══██╗╚══██╔══╝██╔════╝██╔════╝
+   ██║   █████╗  ██╔████╔██║██████╔╝██║     ███████║   ██║   █████╗  ███████╗
+   ██║   ██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██╔══██║   ██║   ██╔══╝  ╚════██║
+   ██║   ███████╗██║ ╚═╝ ██║██║     ███████╗██║  ██║   ██║   ███████╗███████║
+   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝
 
-## 🚀 Quick Start
+                    🚀 Setup Claude Code for any project language 🚀
 
+## 📋 How to Use
+
+### Step 1: Navigate to Your Project
 ```bash
-# Navigate to your project
-cd your-project
+cd your-project-directory
+```
 
-# Run the installer (no installation required!)
+### Step 2: Run the Installer
+```bash
 npx claude-code-templates@latest
 ```
 
-**📋 [See detailed usage examples and options →](./cli-tool/README.md)**
+### Step 3: Follow the Interactive Setup
+The installer will:
+1. 🔍 **Auto-detect** your project type (JavaScript, Python, etc.)
+2. 🎯 **Ask about frameworks** (React, Django, Flask, etc.)
+3. 📋 **Let you choose commands** (testing, linting, debugging)
+4. 🔧 **Let you select automation hooks** (formatting, type checking, etc.)
+5. ✅ **Confirm before installing**
+
+### Step 4: Start Using Claude Code 🙌
+```bash
+claude
+```
 
 ## 🏗️ Project Architecture
 

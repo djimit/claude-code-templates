@@ -1,6 +1,6 @@
 {
   "name": "claude-code-templates",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "CLI tool to setup Claude Code configurations with framework-specific commands and automation hooks for JavaScript/TypeScript and Python projects",
   "main": "src/index.js",
   "bin": {
@@ -69,6 +69,7 @@
   "files": [
     "bin/",
     "src/",
+    "templates/",
     "README.md"
   ]
 }

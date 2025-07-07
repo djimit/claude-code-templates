@@ -267,7 +267,7 @@ function getHookDescription(hook, matcher, type) {
  * @returns {Array} Array of available hooks for the language
  */
 function getHooksForLanguage(language) {
-  const templateDir = path.join(__dirname, '../../', language);
+  const templateDir = path.join(__dirname, '../templates', language);
   const settingsPath = path.join(templateDir, '.claude', 'settings.json');
   
   return getHooksFromSettings(settingsPath);
@@ -399,7 +399,7 @@ function getDefaultMCPSelection(serverId) {
  * @returns {Array} Array of available MCPs for the language
  */
 function getMCPsForLanguage(language) {
-  const templateDir = path.join(__dirname, '../../', language);
+  const templateDir = path.join(__dirname, '../templates', language);
   const mcpPath = path.join(templateDir, '.mcp.json');
   
   return getMCPsFromFile(mcpPath);

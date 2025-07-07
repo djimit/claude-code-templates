@@ -4,7 +4,7 @@ const chalk = require('chalk');
 const { getHooksForLanguage, filterHooksBySelection, getMCPsForLanguage, filterMCPsBySelection } = require('./hook-scanner');
 
 async function copyTemplateFiles(templateConfig, targetDir) {
-  const templateDir = path.join(__dirname, '../../');
+  const templateDir = path.join(__dirname, '../templates');
   
   // Check if CLAUDE.md already exists
   const claudeFile = path.join(targetDir, 'CLAUDE.md');

@@ -29,5 +29,10 @@
       "Bash(claude-code-templates:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "python-sdk",
+    "memory-bank",
+    "sequential-thinking"
+  ]
 }

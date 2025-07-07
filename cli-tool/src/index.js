@@ -4,10 +4,10 @@ const fs = require('fs-extra');
 const path = require('path');
 const ora = require('ora');
 const { detectProject } = require('./utils');
-const { getTemplateConfig } = require('./templates');
+const { getTemplateConfig, TEMPLATES_CONFIG } = require('./templates');
 const { createPrompts, interactivePrompts } = require('./prompts');
 const { copyTemplateFiles } = require('./file-operations');
-const { getHooksForLanguage } = require('./hook-scanner');
+const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
@@ -24,14 +24,24 @@ async function createClaudeConfig(options = {}) {
   if (options.yes) {
     // Use defaults
     const selectedLanguage = options.language || projectInfo.detectedLanguage || 'common';
+    
+    // Check if selected language is coming soon
+    if (selectedLanguage && TEMPLATES_CONFIG[selectedLanguage] && TEMPLATES_CONFIG[selectedLanguage].comingSoon) {
+      console.log(chalk.red(`❌ ${selectedLanguage} is not available yet. Coming soon!`));
+      console.log(chalk.yellow('Available languages: common, javascript-typescript, python'));
+      return;
+    }
     const availableHooks = getHooksForLanguage(selectedLanguage);
     const defaultHooks = availableHooks.filter(hook => hook.checked).map(hook => hook.id);
+    const availableMCPs = getMCPsForLanguage(selectedLanguage);
+    const defaultMCPs = availableMCPs.filter(mcp => mcp.checked).map(mcp => mcp.id);
     
     config = {
       language: selectedLanguage,
       framework: options.framework || projectInfo.detectedFramework || 'none',
       features: [],
-      hooks: defaultHooks
+      hooks: defaultHooks,
+      mcps: defaultMCPs
     };
   } else {
     // Interactive prompts with back navigation
@@ -51,6 +61,12 @@ async function createClaudeConfig(options = {}) {
   if (config.hooks) {
     templateConfig.selectedHooks = config.hooks;
     templateConfig.language = config.language; // Ensure language is available for hook filtering
+  }
+  
+  // Add selected MCPs to template config
+  if (config.mcps) {
+    templateConfig.selectedMCPs = config.mcps;
+    templateConfig.language = config.language; // Ensure language is available for MCP filtering
   }
   
   if (options.dryRun) {
@@ -88,6 +104,10 @@ async function createClaudeConfig(options = {}) {
   
   if (config.hooks && config.hooks.length > 0) {
     console.log(chalk.magenta(`🔧 ${config.hooks.length} automation hooks have been configured`));
+  }
+  
+  if (config.mcps && config.mcps.length > 0) {
+    console.log(chalk.blue(`🔧 ${config.mcps.length} MCP servers have been configured`));
   }
 }
 

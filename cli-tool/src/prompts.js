@@ -13,7 +13,7 @@ class CustomCheckboxPrompt extends inquirer.prompt.prompts.checkbox {
 inquirer.registerPrompt('checkbox', CustomCheckboxPrompt);
 const { getAvailableLanguages, getFrameworksForLanguage } = require('./templates');
 const { getCommandsForLanguageAndFramework } = require('./command-scanner');
-const { getHooksForLanguage } = require('./hook-scanner');
+const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
 
 async function interactivePrompts(projectInfo, options = {}) {
   const state = {
@@ -25,7 +25,7 @@ async function interactivePrompts(projectInfo, options = {}) {
   // Build steps array based on options
   if (!options.language) state.steps.push('language');
   if (!options.framework) state.steps.push('framework');
-  state.steps.push('commands', 'hooks', 'confirm');
+  state.steps.push('commands', 'hooks', 'mcps', 'confirm');
 
   while (state.currentStep < state.steps.length) {
     const stepName = state.steps[state.currentStep];
@@ -170,11 +170,38 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
         pageSize: 15
       };
 
+    case 'mcps':
+      const mcpLanguage = currentAnswers.language || options.language;
+      
+      if (!mcpLanguage) {
+        return null; // Skip if no language selected
+      }
+      
+      const availableMCPs = getMCPsForLanguage(mcpLanguage);
+      
+      if (availableMCPs.length === 0) {
+        return null; // Skip if no MCPs available
+      }
+      
+      return {
+        type: 'checkbox',
+        name: 'mcps',
+        message: 'Select MCP servers to include (use space to select):',
+        choices: availableMCPs.map(mcp => ({
+          value: mcp.id,
+          name: `${mcp.name} - ${mcp.description}`,
+          checked: mcp.checked
+        })),
+        prefix: chalk.blue('🔧'),
+        pageSize: 15
+      };
+
     case 'confirm':
       const confirmLanguage = currentAnswers.language || options.language || 'common';
       const confirmFramework = currentAnswers.framework || options.framework || 'none';
       const commandCount = currentAnswers.commands ? currentAnswers.commands.length : 0;
       const hookCount = currentAnswers.hooks ? currentAnswers.hooks.length : 0;
+      const mcpCount = currentAnswers.mcps ? currentAnswers.mcps.length : 0;
       
       let message = `Setup Claude Code for ${chalk.cyan(confirmLanguage)}`;
       if (confirmFramework !== 'none') {
@@ -185,6 +212,9 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
       }
       if (hookCount > 0) {
         message += ` (${chalk.magenta(hookCount)} hooks)`;
+      }
+      if (mcpCount > 0) {
+        message += ` (${chalk.blue(mcpCount)} MCP)`;
       }
       message += '?';
       
@@ -312,6 +342,38 @@ function createPrompts(projectInfo, options = {}) {
       return availableHooks.length > 0;
     }
   });
+
+  // MCP selection
+  prompts.push({
+    type: 'checkbox',
+    name: 'mcps',
+    message: 'Select MCP servers to include (use space to select):',
+    choices: (answers) => {
+      const selectedLanguage = answers.language || options.language;
+      
+      if (!selectedLanguage) {
+        return [];
+      }
+      
+      const availableMCPs = getMCPsForLanguage(selectedLanguage);
+      
+      return availableMCPs.map(mcp => ({
+        value: mcp.id,
+        name: `${mcp.name} - ${mcp.description}`,
+        checked: mcp.checked
+      }));
+    },
+    prefix: chalk.blue('🔧'),
+    pageSize: 15,
+    when: (answers) => {
+      const selectedLanguage = answers.language || options.language;
+      if (!selectedLanguage) {
+        return false;
+      }
+      const availableMCPs = getMCPsForLanguage(selectedLanguage);
+      return availableMCPs.length > 0;
+    }
+  });
   
   // Confirmation
   prompts.push({
@@ -322,6 +384,7 @@ function createPrompts(projectInfo, options = {}) {
       const framework = answers.framework || options.framework || 'none';
       const commandCount = answers.commands ? answers.commands.length : 0;
       const hookCount = answers.hooks ? answers.hooks.length : 0;
+      const mcpCount = answers.mcps ? answers.mcps.length : 0;
       
       let message = `Setup Claude Code for ${chalk.cyan(language)}`;
       if (framework !== 'none') {
@@ -332,6 +395,9 @@ function createPrompts(projectInfo, options = {}) {
       }
       if (hookCount > 0) {
         message += ` (${chalk.magenta(hookCount)} hooks)`;
+      }
+      if (mcpCount > 0) {
+        message += ` (${chalk.blue(mcpCount)} MCP)`;
       }
       message += '?';
       

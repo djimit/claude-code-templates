@@ -1,7 +1,7 @@
 {
   "name": "claude-code-templates",
-  "version": "1.2.1",
-  "description": "CLI tool to setup Claude Code configurations with selective automation hooks for different programming languages",
+  "version": "1.3.0",
+  "description": "CLI tool to setup Claude Code configurations with framework-specific commands and automation hooks for JavaScript/TypeScript and Python projects",
   "main": "src/index.js",
   "bin": {
     "create-claude-config": "bin/create-claude-config.js",
@@ -20,10 +20,7 @@
     "dev:link": "npm link",
     "dev:unlink": "npm unlink -g claude-code-templates",
     "pretest": "npm run dev:link",
-    "sync": "node scripts/sync-templates.js",
-    "presync": "echo \"🔄 Starting template synchronization...\"",
-    "postsync": "echo \"✅ Synchronization completed. Ready to publish!\"",
-    "prepublishOnly": "npm run sync && npm run test"
+    "prepublishOnly": "npm run test"
   },
   "keywords": [
     "claude",
@@ -37,7 +34,14 @@
     "automation",
     "javascript",
     "typescript",
+    "react",
+    "vue",
+    "angular",
+    "nodejs",
     "python",
+    "django",
+    "flask",
+    "fastapi",
     "rust",
     "go"
   ],
@@ -65,8 +69,6 @@
   "files": [
     "bin/",
     "src/",
-    "scripts/",
-    "templates/",
     "README.md"
   ]
 }

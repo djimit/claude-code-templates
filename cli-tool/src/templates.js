@@ -7,7 +7,8 @@ const TEMPLATES_CONFIG = {
     description: 'Universal configuration for any project',
     files: [
       { source: 'common/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'common/.claude', destination: '.claude' }
+      { source: 'common/.claude', destination: '.claude' },
+      { source: 'common/.mcp.json', destination: '.mcp.json' }
     ]
   },
   'javascript-typescript': {
@@ -50,23 +51,45 @@ const TEMPLATES_CONFIG = {
     description: 'Optimized for Python development',
     files: [
       { source: 'python/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'python/.claude', destination: '.claude' }
-    ]
+      { source: 'python/.claude', destination: '.claude' },
+      { source: 'python/.mcp.json', destination: '.mcp.json' }
+    ],
+    frameworks: {
+      'django': {
+        name: 'Django',
+        additionalFiles: [
+          { source: 'python/examples/django-app/.claude/commands', destination: '.claude/commands' },
+          { source: 'python/examples/django-app/CLAUDE.md', destination: 'CLAUDE.md' }
+        ]
+      },
+      'flask': {
+        name: 'Flask',
+        additionalFiles: [
+          { source: 'python/examples/flask-app/.claude/commands', destination: '.claude/commands' }
+        ]
+      },
+      'fastapi': {
+        name: 'FastAPI',
+        additionalFiles: [
+          { source: 'python/examples/fastapi-app/.claude/commands', destination: '.claude/commands' }
+        ]
+      }
+    }
   },
   'rust': {
     name: 'Rust',
     description: 'Optimized for Rust development',
+    comingSoon: true,
     files: [
-      { source: 'rust/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'rust/.claude', destination: '.claude' }
+      { source: 'rust/.mcp.json', destination: '.mcp.json' }
     ]
   },
   'go': {
     name: 'Go',
-    description: 'Optimized for Go development',
+    description: 'Optimized for Go development', 
+    comingSoon: true,
     files: [
-      { source: 'go/CLAUDE.md', destination: 'CLAUDE.md' },
-      { source: 'go/.claude', destination: '.claude' }
+      { source: 'go/.mcp.json', destination: '.mcp.json' }
     ]
   }
 };

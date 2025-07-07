@@ -1,10 +1,10 @@
 const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
-const { getHooksForLanguage, filterHooksBySelection } = require('./hook-scanner');
+const { getHooksForLanguage, filterHooksBySelection, getMCPsForLanguage, filterMCPsBySelection } = require('./hook-scanner');
 
 async function copyTemplateFiles(templateConfig, targetDir) {
-  const templateDir = path.join(__dirname, '../templates');
+  const templateDir = path.join(__dirname, '../../');
   
   // Check if CLAUDE.md already exists
   const claudeFile = path.join(targetDir, 'CLAUDE.md');
@@ -79,6 +79,10 @@ async function copyTemplateFiles(templateConfig, targetDir) {
         // Handle settings.json with hook filtering
         await processSettingsFile(sourcePath, destPath, templateConfig);
         console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected hooks)`));
+      } else if (file.source.includes('.mcp.json') && templateConfig.selectedMCPs) {
+        // Handle .mcp.json with MCP filtering
+        await processMCPFile(sourcePath, destPath, templateConfig);
+        console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected MCPs)`));
       } else {
         // Copy regular files (CLAUDE.md, settings.json, etc.)
         await fs.copy(sourcePath, destPath, { 
@@ -121,6 +125,11 @@ async function copyTemplateFiles(templateConfig, targetDir) {
   if (templateConfig.selectedHooks && templateConfig.selectedHooks.length > 0) {
     console.log(chalk.magenta(`🔧 Installed ${templateConfig.selectedHooks.length} automation hooks`));
   }
+  
+  // Report MCP selection
+  if (templateConfig.selectedMCPs && templateConfig.selectedMCPs.length > 0) {
+    console.log(chalk.blue(`🔧 Installed ${templateConfig.selectedMCPs.length} MCP`));
+  }
 }
 
 async function processSettingsFile(sourcePath, destPath, templateConfig) {
@@ -155,6 +164,37 @@ async function processSettingsFile(sourcePath, destPath, templateConfig) {
   }
 }
 
+async function processMCPFile(sourcePath, destPath, templateConfig) {
+  try {
+    // Read the original MCP file
+    const originalMCPData = JSON.parse(await fs.readFile(sourcePath, 'utf8'));
+    
+    // If MCPs are selected, filter them
+    if (templateConfig.selectedMCPs && templateConfig.selectedMCPs.length > 0) {
+      const availableMCPs = getMCPsForLanguage(templateConfig.language);
+      const filteredMCPData = filterMCPsBySelection(
+        originalMCPData,
+        templateConfig.selectedMCPs,
+        availableMCPs
+      );
+      
+      // Write the filtered MCP data
+      await fs.ensureDir(path.dirname(destPath));
+      await fs.writeFile(destPath, JSON.stringify(filteredMCPData, null, 2));
+    } else {
+      // No MCPs selected, create empty MCP file
+      const emptyMCPData = { mcpServers: {} };
+      
+      await fs.ensureDir(path.dirname(destPath));
+      await fs.writeFile(destPath, JSON.stringify(emptyMCPData, null, 2));
+    }
+  } catch (error) {
+    console.error(chalk.red(`Failed to process MCP file: ${error.message}`));
+    // Fallback to copying original file
+    await fs.copy(sourcePath, destPath);
+  }
+}
+
 async function ensureDirectoryExists(dirPath) {
   try {
     await fs.ensureDir(dirPath);
@@ -180,5 +220,6 @@ module.exports = {
   copyTemplateFiles,
   ensureDirectoryExists,
   checkWritePermissions,
-  processSettingsFile
+  processSettingsFile,
+  processMCPFile
 };

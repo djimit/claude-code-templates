@@ -267,7 +267,7 @@ function getHookDescription(hook, matcher, type) {
  * @returns {Array} Array of available hooks for the language
  */
 function getHooksForLanguage(language) {
-  const templateDir = path.join(__dirname, '..', 'templates', language);
+  const templateDir = path.join(__dirname, '../../', language);
   const settingsPath = path.join(templateDir, '.claude', 'settings.json');
   
   return getHooksFromSettings(settingsPath);
@@ -336,9 +336,113 @@ function filterHooksBySelection(originalSettings, selectedHookIds, availableHook
   return filteredSettings;
 }
 
+/**
+ * Extracts and describes MCPs from a .mcp.json file
+ * @param {string} mcpPath - Path to the .mcp.json file
+ * @returns {Array} Array of MCP descriptions
+ */
+function getMCPsFromFile(mcpPath) {
+  if (!fs.existsSync(mcpPath)) {
+    return [];
+  }
+
+  try {
+    const mcpData = JSON.parse(fs.readFileSync(mcpPath, 'utf8'));
+    const mcps = [];
+
+    if (mcpData.mcpServers) {
+      Object.keys(mcpData.mcpServers).forEach((serverId) => {
+        const server = mcpData.mcpServers[serverId];
+        mcps.push({
+          id: serverId,
+          name: server.name || serverId,
+          description: server.description || 'No description available',
+          command: server.command,
+          args: server.args || [],
+          env: server.env || {},
+          originalServer: server,
+          checked: getDefaultMCPSelection(serverId) // Default selection logic
+        });
+      });
+    }
+
+    return mcps;
+  } catch (error) {
+    console.error(`Error parsing MCP file ${mcpPath}:`, error.message);
+    return [];
+  }
+}
+
+/**
+ * Determines default selection for MCP servers
+ * @param {string} serverId - The MCP server ID
+ * @returns {boolean} Whether the MCP should be selected by default
+ */
+function getDefaultMCPSelection(serverId) {
+  // Default to checked for commonly useful MCPs
+  const defaultSelected = [
+    'filesystem',
+    'memory-bank',
+    'sequential-thinking',
+    'typescript-sdk',
+    'python-sdk',
+    'rust-sdk',
+    'go-sdk'
+  ];
+  
+  return defaultSelected.includes(serverId);
+}
+
+/**
+ * Gets MCPs for a specific language
+ * @param {string} language - The programming language
+ * @returns {Array} Array of available MCPs for the language
+ */
+function getMCPsForLanguage(language) {
+  const templateDir = path.join(__dirname, '../../', language);
+  const mcpPath = path.join(templateDir, '.mcp.json');
+  
+  return getMCPsFromFile(mcpPath);
+}
+
+/**
+ * Filters MCPs based on user selection
+ * @param {Object} originalMCPData - Original MCP data object
+ * @param {Array} selectedMCPIds - Array of selected MCP IDs
+ * @param {Array} availableMCPs - Array of available MCPs
+ * @returns {Object} Filtered MCP data object
+ */
+function filterMCPsBySelection(originalMCPData, selectedMCPIds, availableMCPs) {
+  if (!originalMCPData.mcpServers) {
+    return originalMCPData;
+  }
+
+  const filteredMCPData = {
+    mcpServers: {}
+  };
+
+  // Create a map of selected MCPs for quick lookup
+  const selectedMCPs = new Map();
+  availableMCPs.forEach(mcp => {
+    if (selectedMCPIds.includes(mcp.id)) {
+      selectedMCPs.set(mcp.id, mcp);
+    }
+  });
+
+  // Add selected MCPs to filtered data
+  selectedMCPs.forEach((mcp, mcpId) => {
+    filteredMCPData.mcpServers[mcpId] = mcp.originalServer;
+  });
+
+  return filteredMCPData;
+}
+
 module.exports = {
   getHooksFromSettings,
   getHooksForLanguage,
   filterHooksBySelection,
-  getHookDescription
+  getHookDescription,
+  getMCPsFromFile,
+  getMCPsForLanguage,
+  filterMCPsBySelection
 };

@@ -1,42 +1,40 @@
 {
   "mcpServers": {
-    "typescript-sdk": {
-      "name": "TypeScript SDK",
-      "description": "Official Anthropic SDK for building MCP servers and clients in JS/TS",
-      "command": "node",
-      "args": ["path/to/ts-sdk-server.js"],
+    "go-sdk": {
+      "name": "Go SDK",
+      "description": "Official SDK maintained with Google for Go MCP development",
+      "command": "go-sdk-server",
+      "args": [],
       "env": {}
     },
-    "github": {
-      "name": "GitHub MCP",
-      "description": "Integration with GitHub API for managing repos, issues, and PRs",
-      "command": "node",
-      "args": ["path/to/server-github"],
-      "env": {
-        "GITHUB_TOKEN": "..."
-      }
-    },
-    "puppeteer": {
-      "name": "Puppeteer MCP",
-      "description": "Browser automation using Google Puppeteer",
-      "command": "node",
-      "args": ["path/to/server-puppeteer"],
+    "language-server": {
+      "name": "MCP Language Server",
+      "description": "Semantic tools for Go: definitions, references, diagnostics",
+      "command": "mcp-language-server",
+      "args": [],
       "env": {}
     },
-    "slack": {
-      "name": "Slack MCP",
-      "description": "Access to real-time Slack conversations and workflows",
-      "command": "node",
-      "args": ["path/to/server-slack"],
+    "gin": {
+      "name": "Gin MCP",
+      "description": "Expose Gin APIs automatically as MCP tools",
+      "command": "gin-mcp",
+      "args": [],
+      "env": {}
+    },
+    "mysql": {
+      "name": "Go MySQL MCP",
+      "description": "Easy-to-use MySQL MCP server built in Go",
+      "command": "go-mcp-mysql",
+      "args": [],
       "env": {
-        "SLACK_TOKEN": "..."
+        "MYSQL_DSN": "user:pass@tcp(host)/db"
       }
     },
-    "filesystem": {
-      "name": "File System MCP",
-      "description": "Local file management; compatible with any language",
-      "command": "node",
-      "args": ["path/to/server-filesystem"],
+    "archer": {
+      "name": "Go Archer",
+      "description": "Visual dependency analysis for Go packages",
+      "command": "go-archer",
+      "args": [],
       "env": {}
     },
     "memory-bank": {

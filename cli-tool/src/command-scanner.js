@@ -7,7 +7,7 @@ const path = require('path');
  * @returns {Array} Array of available commands with metadata
  */
 function getAvailableCommands(language) {
-  const templatesDir = path.join(__dirname, '..', 'templates');
+  const templatesDir = path.join(__dirname, '../../');
   const languageDir = path.join(templatesDir, language);
   
   // Check if language directory exists

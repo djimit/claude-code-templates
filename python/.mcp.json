@@ -1,42 +1,40 @@
 {
   "mcpServers": {
-    "typescript-sdk": {
-      "name": "TypeScript SDK",
-      "description": "Official Anthropic SDK for building MCP servers and clients in JS/TS",
-      "command": "node",
-      "args": ["path/to/ts-sdk-server.js"],
+    "python-sdk": {
+      "name": "Python SDK",
+      "description": "Official Python SDK with FastMCP for rapid MCP development",
+      "command": "python",
+      "args": ["-m", "python_sdk.server"],
       "env": {}
     },
-    "github": {
-      "name": "GitHub MCP",
-      "description": "Integration with GitHub API for managing repos, issues, and PRs",
-      "command": "node",
-      "args": ["path/to/server-github"],
-      "env": {
-        "GITHUB_TOKEN": "..."
-      }
-    },
-    "puppeteer": {
-      "name": "Puppeteer MCP",
-      "description": "Browser automation using Google Puppeteer",
-      "command": "node",
-      "args": ["path/to/server-puppeteer"],
+    "docker": {
+      "name": "Docker MCP",
+      "description": "Isolated code execution via Docker containers",
+      "command": "python",
+      "args": ["-m", "mcp_server_docker"],
       "env": {}
     },
-    "slack": {
-      "name": "Slack MCP",
-      "description": "Access to real-time Slack conversations and workflows",
-      "command": "node",
-      "args": ["path/to/server-slack"],
+    "jupyter": {
+      "name": "Jupyter MCP",
+      "description": "MCP integration for interactive Jupyter notebooks",
+      "command": "python",
+      "args": ["-m", "server_jupyter"],
+      "env": {}
+    },
+    "postgresql": {
+      "name": "PostgreSQL MCP",
+      "description": "Natural language queries to PostgreSQL databases",
+      "command": "python",
+      "args": ["-m", "server_postgres"],
       "env": {
-        "SLACK_TOKEN": "..."
+        "DATABASE_URL": "postgresql://user:pass@host/db"
       }
     },
-    "filesystem": {
-      "name": "File System MCP",
-      "description": "Local file management; compatible with any language",
-      "command": "node",
-      "args": ["path/to/server-filesystem"],
+    "opik": {
+      "name": "Opik MCP",
+      "description": "Observability for LLM apps with tracing and metrics",
+      "command": "python",
+      "args": ["-m", "opik_mcp"],
       "env": {}
     },
     "memory-bank": {

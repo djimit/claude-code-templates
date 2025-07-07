@@ -135,6 +135,22 @@ npx claude-code-templates --language javascript-typescript --framework node --ye
 npx claude-code-templates --language javascript-typescript --framework none --yes
 ```
 
+### Python Projects
+
+```bash
+# Django web application
+npx claude-code-templates --language python --framework django --yes
+
+# Flask web application
+npx claude-code-templates --language python --framework flask --yes
+
+# FastAPI application
+npx claude-code-templates --language python --framework fastapi --yes
+
+# Generic Python project
+npx claude-code-templates --language python --framework none --yes
+```
+
 ### Generic/Multi-language Projects
 
 ```bash
@@ -144,14 +160,8 @@ npx claude-code-templates --language common --yes
 
 ### Coming Soon
 ```bash
-# Python projects (uses basic configuration for now)
-npx claude-code-templates --language python --yes
-
-# Rust projects (uses basic configuration for now)  
-npx claude-code-templates --language rust --yes
-
-# Go projects (uses basic configuration for now)
-npx claude-code-templates --language go --yes
+# Rust projects - Coming Soon!
+# Go projects - Coming Soon!
 ```
 
 ## ✨ Features
@@ -168,10 +178,10 @@ npx claude-code-templates --language go --yes
 
 ### Programming Languages
 - **JavaScript/TypeScript** ✅ - Modern ES6+, TypeScript, comprehensive framework support
-- **Python** ⏳ - Coming Soon (basic configuration available)
-- **Rust** ⏳ - Coming Soon (basic configuration available)
-- **Go** ⏳ - Coming Soon (basic configuration available)
+- **Python** ✅ - Django, Flask, FastAPI with complete automation hooks and commands
 - **Common** ✅ - Universal configuration for any language
+- **Rust** ⏳ - Coming Soon
+- **Go** ⏳ - Coming Soon
 
 ### JavaScript/TypeScript Frameworks
 
@@ -194,6 +204,23 @@ npx claude-code-templates --language go --yes
 - **Commands**: API routes, middleware creation, database operations
 - **Features**: Express.js patterns, TypeScript support, API development
 - **Best Practices**: RESTful design, error handling, security middleware
+
+### Python Frameworks
+
+#### 🐍 Django
+- **Commands**: Model creation, admin setup, view generation, testing, linting
+- **Features**: ORM integration, admin interface, authentication, REST APIs
+- **Best Practices**: MVT architecture, security settings, database optimization
+
+#### 🌶️ Flask
+- **Commands**: Blueprint creation, route management, database setup, testing, deployment
+- **Features**: Micro-framework flexibility, SQLAlchemy integration, template inheritance
+- **Best Practices**: Application factory pattern, modular design, security headers
+
+#### ⚡ FastAPI
+- **Commands**: API endpoint generation, authentication, database integration, testing
+- **Features**: Automatic documentation, Pydantic validation, async support
+- **Best Practices**: Type hints, dependency injection, async patterns
 
 ## 📦 What Gets Installed
 
@@ -395,6 +422,184 @@ During the interactive setup, you can choose which hooks to enable:
 - **📊 Performance Monitoring** - Bundle size analysis and optimization warnings
 - **🧪 Test Coverage** - Automatic test execution ensures code quality
 
+## 🔧 MCP Server Integration
+
+MCP (Model Context Protocol) servers extend Claude Code with additional capabilities. During setup, you can select which MCP servers to include in your project:
+
+### What are MCP Servers?
+
+MCP servers are external tools that Claude Code can communicate with to access specialized functionality like databases, APIs, file systems, and more. Each server provides specific tools and resources that enhance Claude's capabilities.
+
+### Available MCP Servers by Language
+
+#### JavaScript/TypeScript MCPs
+
+**🛠️ TypeScript SDK**
+- **Purpose**: Official Anthropic SDK for building MCP servers and clients
+- **Use Case**: Develop custom MCP servers or integrate with existing ones
+
+**🐙 GitHub MCP**
+- **Purpose**: Integration with GitHub API for managing repos, issues, and PRs
+- **Use Case**: Automate GitHub workflows, manage issues, create PRs
+
+**🤖 Puppeteer MCP**
+- **Purpose**: Browser automation using Google Puppeteer
+- **Use Case**: Web scraping, automated testing, screenshot generation
+
+**💬 Slack MCP**
+- **Purpose**: Access to real-time Slack conversations and workflows
+- **Use Case**: Automate Slack messaging, monitor channels, workflow integration
+
+**📁 File System MCP**
+- **Purpose**: Local file management compatible with any language
+- **Use Case**: Advanced file operations, directory management, file monitoring
+
+#### Python MCPs
+
+**🐍 Python SDK**
+- **Purpose**: Official Python SDK with FastMCP for rapid development
+- **Use Case**: Build Python-based MCP servers quickly
+
+**🐳 Docker MCP**
+- **Purpose**: Isolated code execution via Docker containers
+- **Use Case**: Safe code execution, environment isolation, container management
+
+**📓 Jupyter MCP**
+- **Purpose**: Integration with interactive Jupyter notebooks
+- **Use Case**: Data analysis, machine learning workflows, interactive computing
+
+**🗄️ PostgreSQL MCP**
+- **Purpose**: Natural language queries to PostgreSQL databases
+- **Use Case**: Database operations, data analysis, SQL query generation
+
+**📊 Opik MCP**
+- **Purpose**: Observability for LLM apps with tracing and metrics
+- **Use Case**: Monitor AI applications, performance tracking, debugging
+
+#### Rust MCPs
+
+**⚡ Rust MCP SDK**
+- **Purpose**: High-performance asynchronous SDK for Rust
+- **Use Case**: Build fast, concurrent MCP servers
+
+**🖥️ HT MCP**
+- **Purpose**: Pure Rust implementation for headless terminal interaction
+- **Use Case**: Terminal automation, CLI tool integration
+
+**📚 Rust Docs MCP**
+- **Purpose**: Prevents outdated code suggestions with updated Rust documentation
+- **Use Case**: Always current Rust API documentation and examples
+
+**⛓️ Substrate MCP**
+- **Purpose**: Interact with Substrate-based blockchains
+- **Use Case**: Blockchain development, smart contract interaction
+
+**🔄 MCP Proxy**
+- **Purpose**: Fast proxy between stdio and SSE protocols
+- **Use Case**: Protocol bridging, performance optimization
+
+#### Go MCPs
+
+**🟢 Go SDK**
+- **Purpose**: Official SDK maintained with Google for Go development
+- **Use Case**: Build Go-based MCP servers with official support
+
+**🔍 MCP Language Server**
+- **Purpose**: Semantic tools for Go: definitions, references, diagnostics
+- **Use Case**: Code analysis, refactoring assistance, symbol navigation
+
+**🌐 Gin MCP**
+- **Purpose**: Expose Gin APIs automatically as MCP tools
+- **Use Case**: Web API development, REST service integration
+
+**🗃️ Go MySQL MCP**
+- **Purpose**: Easy-to-use MySQL server built in Go
+- **Use Case**: Database operations, MySQL integration
+
+**🏹 Go Archer**
+- **Purpose**: Visual dependency analysis for Go packages
+- **Use Case**: Code architecture visualization, dependency management
+
+#### Multi-Language MCPs
+
+**🧠 Memory Bank MCP**
+- **Purpose**: Centralized memory system for AI agents
+- **Use Case**: Persistent context, session management, knowledge retention
+
+**🤔 Sequential Thinking MCP**
+- **Purpose**: Helps LLMs decompose complex tasks into logical steps
+- **Use Case**: Problem-solving assistance, task planning, workflow optimization
+
+**🔍 Brave Search MCP**
+- **Purpose**: Privacy-focused web search tool
+- **Use Case**: Web research, information gathering, search automation
+
+**🗺️ Google Maps MCP**
+- **Purpose**: Integrates Google Maps for geolocation and directions
+- **Use Case**: Location services, mapping, geographic data
+
+**🕸️ Deep Graph MCP (Code Graph)**
+- **Purpose**: Transforms source code into semantic graphs via DeepGraph
+- **Use Case**: Code analysis, dependency visualization, architecture understanding
+
+### How MCP Selection Works
+
+During the interactive setup, you can choose which MCP servers to enable:
+
+```bash
+🔧 Select MCP servers to include (use space to select):
+  ❯ ◉ TypeScript SDK - Official Anthropic SDK for building MCP servers and clients in JS/TS
+    ◉ File System MCP - Local file management; compatible with any language
+    ◉ Memory Bank MCP - Centralized memory system for AI agents
+    ◯ GitHub MCP - Integration with GitHub API for managing repos, issues, and PRs
+    ◯ Puppeteer MCP - Browser automation using Google Puppeteer
+    ◯ Slack MCP - Access to real-time Slack conversations and workflows
+    ◯ Sequential Thinking MCP - Helps LLMs decompose complex tasks into logical steps
+    ◯ Brave Search MCP - Privacy-focused web search tool
+    ◯ Google Maps MCP - Integrates Google Maps for geolocation and directions
+    ◯ Deep Graph MCP (Code Graph) - Transforms source code into semantic graphs via DeepGraph
+```
+
+**Controls:**
+- **Space** - Toggle specific MCP server on/off
+- **Enter** - Confirm selection
+- **← Back** - Return to previous step
+
+### MCP Configuration
+
+Selected MCP servers are configured in the `.mcp.json` file:
+
+```json
+{
+  "mcpServers": {
+    "typescript-sdk": {
+      "name": "TypeScript SDK",
+      "description": "Official Anthropic SDK for building MCP servers and clients in JS/TS",
+      "command": "node",
+      "args": ["path/to/ts-sdk-server.js"],
+      "env": {}
+    },
+    "github": {
+      "name": "GitHub MCP",
+      "description": "Integration with GitHub API for managing repos, issues, and PRs",
+      "command": "node",
+      "args": ["path/to/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "..."
+      }
+    }
+  }
+}
+```
+
+### MCP Benefits
+
+- **🔌 Extended Capabilities** - Access specialized tools and services beyond Claude's base functionality
+- **🏗️ Custom Integrations** - Connect Claude to your existing tools and workflows
+- **📊 Data Access** - Query databases, APIs, and external services directly
+- **🤖 Automation** - Automate complex workflows that require multiple systems
+- **🛡️ Controlled Environment** - Each MCP server runs in its own controlled context
+
 ## 💡 Usage Examples
 
 ### Interactive Setup (Recommended)
@@ -476,22 +681,29 @@ Each language folder includes:
 ```bash
 # Create CLAUDE.md manually
 # Research best practices for your language and framework
-# Set up custom commands for React/Vue/Angular/Node.js
+# Set up custom commands for React/Vue/Angular/Node.js/Django/Flask/FastAPI
 # Configure linting and formatting for each framework
 # Add testing workflows for different frameworks
+# Set up automation hooks for code quality
 # ... hours of configuration research
 ```
 
 ### After (With Our Templates)
 ```bash
+# JavaScript/TypeScript + React
 npx claude-code-templates --language javascript-typescript --framework react --yes
-# ✅ Done in 30 seconds with React-specific commands!
+
+# Python + Django
+npx claude-code-templates --language python --framework django --yes
+
+# ✅ Done in 30 seconds with framework-specific commands and automation!
 ```
 
 ### Benefits
 - **Save Time** - Skip hours of configuration research and setup
-- **Framework-Aware** - Get commands tailored to your specific framework (React hooks, Vue composables, etc.)
+- **Framework-Aware** - Get commands tailored to your specific framework (React hooks, Django models, FastAPI endpoints, etc.)
 - **Best Practices** - Use proven configurations optimized for each framework
+- **Automation Ready** - Pre-configured hooks for code formatting, linting, testing, and type checking
 - **Stay Updated** - Always get the latest templates with `npx`
 - **Consistency** - Use the same configuration patterns across all your projects
 - **Enhanced UX** - Navigate back and forth during setup to perfect your configuration
@@ -549,8 +761,8 @@ We welcome contributions! Help us make Claude Code even better for everyone.
 5. **Submit** a pull request
 
 ### What We're Looking For
-- **New Language Support** - Python, Rust, Go, Java, C#, PHP, etc.
-- **Framework Templates** - Svelte, Next.js, Nuxt.js, NestJS, FastAPI, etc.
+- **New Language Support** - Rust, Go, Java, C#, PHP, etc.
+- **Framework Templates** - Svelte, Next.js, Nuxt.js, NestJS, Laravel, Spring Boot, etc.
 - **Improved Commands** - Better testing, deployment, debugging workflows
 - **Documentation** - Clearer guides and examples
 - **Bug Fixes** - Improvements to existing templates

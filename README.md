@@ -8,16 +8,7 @@
 
 A comprehensive CLI tool that sets up optimized Claude Code configurations for different programming languages and frameworks. Features interactive setup, automation hooks, MCP server integration, and framework-specific commands.
 
-## 📋 How to Use
-
-### Step 1: Navigate to Your Project
 ```bash
-cd your-project-directory
-```
-
-### Step 2: Run the Installer
-```bash
-npx claude-code-templates@latest
 
  ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗
 ██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝
@@ -41,6 +32,18 @@ npx claude-code-templates@latest
    ╚═╝   ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝
 
                     🚀 Setup Claude Code for any project language 🚀
+```
+
+## 📋 How to Use
+
+### Step 1: Navigate to Your Project
+```bash
+cd your-project-directory
+```
+
+### Step 2: Run the Installer
+```bash
+npx claude-code-templates@latest
 ```
 
 ### Step 3: Follow the Interactive Setup

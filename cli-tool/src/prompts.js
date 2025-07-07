@@ -1,16 +1,8 @@
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
-// Override the checkbox prompt to remove help text
-class CustomCheckboxPrompt extends inquirer.prompt.prompts.checkbox {
-  constructor(questions, rl, answers) {
-    super(questions, rl, answers);
-    // Set dontShowHints to true to suppress the help text
-    this.dontShowHints = true;
-  }
-}
-
-inquirer.registerPrompt('checkbox', CustomCheckboxPrompt);
+// Note: Custom checkbox prompt was causing choices not to display
+// Removed custom prompt to fix command selection issue
 const { getAvailableLanguages, getFrameworksForLanguage } = require('./templates');
 const { getCommandsForLanguageAndFramework } = require('./command-scanner');
 const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');

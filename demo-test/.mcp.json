@@ -1,12 +1,20 @@
 {
   "mcpServers": {
-    "python-sdk": {
-      "name": "Python SDK",
-      "description": "Official Python SDK with FastMCP for rapid MCP development",
-      "command": "python",
+    "typescript-sdk": {
+      "name": "TypeScript SDK",
+      "description": "Official Anthropic SDK for building MCP servers and clients in JS/TS",
+      "command": "node",
       "args": [
-        "-m",
-        "python_sdk.server"
+        "path/to/ts-sdk-server.js"
+      ],
+      "env": {}
+    },
+    "filesystem": {
+      "name": "File System MCP",
+      "description": "Local file management; compatible with any language",
+      "command": "node",
+      "args": [
+        "path/to/server-filesystem"
       ],
       "env": {}
     },

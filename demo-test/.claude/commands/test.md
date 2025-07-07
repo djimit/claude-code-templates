@@ -1,73 +1,61 @@
-# Test Runner
+# Test Assistant
 
-Run Python tests with pytest, unittest, or other testing frameworks.
+Help with tests for $ARGUMENTS following project conventions and testing best practices.
 
-## Purpose
+## Task
 
-This command helps you run Python tests effectively with proper configuration and reporting.
+I'll help you with testing by:
 
-## Usage
+1. Creating comprehensive test suites for your code
+2. Implementing different types of tests (unit, integration, e2e)
+3. Mocking dependencies and external services
+4. Improving test coverage for existing code
+5. Troubleshooting failing tests
+6. Setting up testing infrastructure
 
-```
-/test
-```
+## Process
 
-## What this command does
+I'll follow these steps:
 
-1. **Detects test framework** (pytest, unittest, nose2)
-2. **Runs appropriate tests** with proper configuration
-3. **Provides coverage reporting** if available
-4. **Shows clear test results** with failure details
+1. Examine your project to understand testing frameworks and patterns
+2. Analyze the code to be tested to understand its functionality
+3. Identify appropriate testing strategies and edge cases
+4. Implement tests with proper structure and assertions
+5. Ensure tests are maintainable and follow best practices
+6. Run tests to verify they pass and provide adequate coverage
 
-## Example Commands
+## Testing Frameworks I Can Work With
 
-### pytest (recommended)
-```bash
-# Run all tests
-pytest
+- Jest, Vitest, Mocha, Jasmine for JavaScript/TypeScript
+- React Testing Library, Enzyme for React components
+- Cypress, Playwright, Puppeteer for E2E testing
+- Supertest, Pactum for API testing
+- Storybook for component testing
+- Testing-library family for various frameworks
 
-# Run with coverage
-pytest --cov=src --cov-report=html
+## Testing Techniques
 
-# Run specific test file
-pytest tests/test_models.py
+I can implement various testing approaches:
 
-# Run with verbose output
-pytest -v
+- TDD (Test-Driven Development)
+- BDD (Behavior-Driven Development)
+- Snapshot testing
+- Property-based testing
+- Parameterized tests
+- Contract testing
+- Visual regression testing
+- Performance testing
 
-# Run tests matching pattern
-pytest -k "test_user"
-```
+## Mocking Strategies
 
-### unittest
-```bash
-# Run all tests
-python -m unittest discover
+I can help with different mocking approaches:
 
-# Run specific test file
-python -m unittest tests.test_models
+- Function mocks and spies
+- Module mocks
+- HTTP request mocking
+- Browser API mocking
+- Timer mocking
+- Database mocking
+- Service worker mocking
 
-# Run with verbose output
-python -m unittest -v
-```
-
-### Django tests
-```bash
-# Run all Django tests
-python manage.py test
-
-# Run specific app tests
-python manage.py test myapp
-
-# Run with coverage
-coverage run --source='.' manage.py test
-coverage report
-```
-
-## Best Practices
-
-- Write tests for all critical functionality
-- Use descriptive test names
-- Keep tests isolated and independent
-- Mock external dependencies
-- Aim for high test coverage (80%+)
+I'll adapt to your project's specific testing frameworks, patterns, and conventions to ensure consistency with your existing codebase.

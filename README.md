@@ -101,6 +101,14 @@ Each language directory contains:
 
 ## 🔧 Core Features
 
+### 📋 Smart Commands
+Framework-specific commands for:
+- Testing 
+- Linting 
+- Building 
+- Debugging
+- Deployment
+
 ### 🤖 Automation Hooks
 - **PreToolUse**: Code quality checks before actions
 - **PostToolUse**: Auto-formatting and validation after edits  
@@ -113,10 +121,7 @@ Each language directory contains:
 - **Filesystem Tools**: Advanced file operations
 - **Database Tools**: Connection and query capabilities
 
-### 📋 Smart Commands
-Framework-specific commands for testing, linting, building, debugging, and deployment.
-
-## 🚀 Development
+## 🚀 Development: if you want to contribute to this project, follow these steps:
 
 ### Prerequisites
 - Node.js 14+

@@ -1,7 +1,10 @@
 # Claude Code Templates
 
-[![npm version](https://badge.fury.io/js/claude-code-templates.svg)](https://badge.fury.io/js/claude-code-templates)
+[![npm version](https://img.shields.io/npm/v/claude-code-templates.svg)](https://www.npmjs.com/package/claude-code-templates)
+[![npm total downloads](https://img.shields.io/npm/dt/claude-code-templates.svg)](https://www.npmjs.com/package/claude-code-templates)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/node/v/claude-code-templates.svg)](https://nodejs.org/)
+[![GitHub stars](https://img.shields.io/github/stars/davila7/claude-code-templates.svg?style=social&label=Star)](https://github.com/davila7/claude-code-templates)
 
 Ready-to-use Claude Code configurations and templates for your projects. Get up and running with Claude Code in seconds with framework-specific commands, optimized setups, and best practices.
 
@@ -14,7 +17,7 @@ The fastest way to set up Claude Code for your project:
 cd your-project
 
 # Run the installer (no installation required!)
-npx claude-code-templates
+npx claude-code-templates@latest
 ```
 
 ## 🎨 Interactive Experience

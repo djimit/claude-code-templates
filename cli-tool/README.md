@@ -176,6 +176,7 @@ The CLI allows you to selectively enable automation hooks that enhance your deve
 - `CLAUDE.md` - Main configuration file for Claude Code
 - `.claude/settings.json` - Language-specific settings with selected automation hooks
 - `.claude/commands/` - Custom commands for common tasks
+- `.mcp.json` - Model Context Protocol server configurations
 
 ### Automation Hooks
 Each language template includes selectable automation hooks for:
@@ -183,6 +184,19 @@ Each language template includes selectable automation hooks for:
 - **PostToolUse**: Automatic formatting and validation after edits (e.g., Prettier, ESLint, type checking)
 - **Stop**: Final checks before session ends (e.g., linting changed files, bundle analysis)
 - **Notification**: Logging and monitoring of Claude Code activities
+
+### MCP Servers (Model Context Protocol)
+Configure external tools and services to extend Claude's capabilities:
+- **IDE Integration** - VS Code language diagnostics and Jupyter kernel execution
+- **Web Search** - Real-time web search for up-to-date information and documentation
+- **Filesystem Tools** - Advanced file operations, monitoring, and directory management
+- **Database Tools** - Database connections, schema inspection, and query execution
+
+MCP servers are configured in `.mcp.json` and enable Claude to:
+- Execute code in VS Code or Jupyter environments
+- Search the web for current information
+- Perform advanced file system operations
+- Connect to databases and run queries
 
 ### Language-Specific Commands
 Each language template includes optimized commands for:
@@ -274,22 +288,45 @@ Target directory: /path/to/your/project
    ◉ Stop: Run ESLint on changed files before stopping
    ```
 
-6. **Final Confirmation** 🚀
+6. **MCP Server Selection** 🔧
    ```
-   🚀 Setup Claude Code for javascript-typescript with react (5 commands) (9 hooks)? (Y/n)
+   🔧 Select MCP servers to include (use space to select):
+   ◉ IDE Integration - VS Code language diagnostics and code execution
+   ◉ Web Search - Search the web for up-to-date information
+   ◯ Filesystem Tools - Advanced file operations and monitoring
+   ◯ Database Tools - Database connection and query capabilities
    ```
-   - Review your choices including selected commands and hooks
+   - Choose Model Context Protocol servers to extend Claude's capabilities
+   - IDE Integration provides VS Code diagnostics and Jupyter kernel execution
+   - Web Search enables real-time web searches within Claude conversations
+   - Additional tools for filesystem operations and database management
+
+7. **Final Confirmation** 🚀
+   ```
+   🚀 Setup Claude Code for javascript-typescript with react (5 commands) (9 hooks) (4 MCP)? (Y/n)
+   ```
+   - Review your choices including selected commands, hooks, and MCP servers
+   - Shows total count of each component being installed
    - Type 'n' to cancel, 'y' or Enter to proceed
 
-7. **Installation** 📁
+8. **Installation** 📁
    ```
    📋 Existing CLAUDE.md backed up to CLAUDE.md.backup
    ✓ Copied javascript-typescript/CLAUDE.md → CLAUDE.md
-   ✓ Copied javascript-typescript/.claude → .claude (with selected hooks)
-   ✓ Copied react-specific commands → .claude/commands
-   📋 Installed 5 commands
+   ✓ Copied base configuration and commands javascript-typescript/.claude → .claude
+   ✓ Copied javascript-typescript/.mcp.json → .mcp.json (with selected MCPs)
+   ✓ Copied framework commands javascript-typescript/examples/react-app/.claude/commands → .claude/commands
    🔧 Installed 9 automation hooks
+   🔧 Installed 4 MCP servers
    ✅ Claude Code configuration setup complete!
+   📚 Next steps:
+     1. Review the generated CLAUDE.md file
+     2. Customize the configuration for your project
+     3. Start using Claude Code with: claude
+   💡 Language-specific features for javascript-typescript have been configured
+   🎯 Framework-specific commands for react are available
+   🔧 9 automation hooks have been configured
+   🔧 4 MCP servers have been configured
    ```
 
 ## 🛡️ Safe Installation
@@ -312,34 +349,109 @@ Target directory: /path/to/your/project
 
 ## Development
 
-### Setup
+### Setup for Contributing
 ```bash
-git clone https://github.com/your-username/claude-code-templates.git
+git clone https://github.com/davila7/claude-code-templates.git
 cd claude-code-templates/cli-tool
 npm install
 ```
 
-### Testing
+### Local Development
 ```bash
-# Test locally
-npm start
+# Link the package for local testing
+npm link
+
+# Test locally (will use your local changes)
+claude-code-templates
 
 # Test with specific options
-npm start -- --language python --framework django
+claude-code-templates --language python --framework django
+
+# Run test suite
+npm test
+
+# Unlink when done
+npm unlink -g claude-code-templates
 ```
 
-### Publishing
+### Testing Changes
 ```bash
-npm publish
+# Run the comprehensive test suite
+npm test
+
+# Test specific scenarios manually
+npm start -- --dry-run --language javascript-typescript --framework react
+npm start -- --dry-run --language python --framework django
+```
+
+### Project Structure
+```
+cli-tool/
+├── src/                    # Source code
+│   ├── command-scanner.js  # Scans and loads commands
+│   ├── file-operations.js  # Handles file copying
+│   ├── hook-scanner.js     # Manages automation hooks
+│   ├── index.js           # Main entry point
+│   ├── prompts.js         # Interactive CLI prompts
+│   ├── templates.js       # Template configuration
+│   └── utils.js           # Utility functions
+├── templates/             # Language and framework templates
+│   ├── common/
+│   ├── javascript-typescript/
+│   ├── python/
+│   ├── go/
+│   └── rust/
+└── bin/                   # Executable scripts
 ```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+We welcome contributions! Here's how to get started:
+
+### 1. Fork & Clone
+```bash
+# Fork the repository on GitHub, then:
+git clone https://github.com/your-username/claude-code-templates.git
+cd claude-code-templates
+```
+
+### 2. Create a Feature Branch
+```bash
+git checkout -b feature/your-feature-name
+# or
+git checkout -b fix/issue-description
+```
+
+### 3. Make Your Changes
+- Add new language templates in `templates/`
+- Add new framework examples in `templates/language/examples/`
+- Update commands, hooks, or core functionality
+- Follow existing code patterns
+
+### 4. Test Thoroughly
+```bash
+cd cli-tool
+npm test                    # Run test suite
+npm start -- --dry-run     # Manual testing
+```
+
+### 5. Submit a Pull Request
+- Commit with clear, descriptive messages
+- Push to your fork
+- Open a PR with description of changes
+- Link any related issues
+
+### Adding New Languages
+1. Create `templates/your-language/` directory
+2. Add `CLAUDE.md`, `.claude/settings.json`, and `.mcp.json`
+3. Create commands in `.claude/commands/`
+4. Add framework examples in `examples/`
+5. Update `src/templates.js` configuration
+
+### Adding New Frameworks
+1. Create `templates/language/examples/framework-name/`
+2. Add framework-specific commands and CLAUDE.md
+3. Update the framework detection logic if needed
 
 ## License
 

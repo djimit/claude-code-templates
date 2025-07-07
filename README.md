@@ -6,11 +6,25 @@
 [![Node.js](https://img.shields.io/node/v/claude-code-templates.svg)](https://nodejs.org/)
 [![GitHub stars](https://img.shields.io/github/stars/davila7/claude-code-templates.svg?style=social&label=Star)](https://github.com/davila7/claude-code-templates)
 
-Ready-to-use Claude Code configurations and templates for your projects. Get up and running with Claude Code in seconds with framework-specific commands, optimized setups, and best practices.
+A comprehensive CLI tool that sets up optimized Claude Code configurations for different programming languages and frameworks. Features interactive setup, automation hooks, MCP server integration, and framework-specific commands.
+
+## 📖 Documentation
+
+### For Users
+**👉 [Complete Usage Guide & CLI Documentation](./cli-tool/README.md)**
+- Interactive setup walkthrough
+- Command-line options and examples  
+- Step-by-step installation guide
+- Troubleshooting and FAQ
+
+### For Developers
+Continue reading this README for:
+- Project architecture and structure
+- Contributing guidelines
+- Development setup
+- Technical implementation details
 
 ## 🚀 Quick Start
-
-The fastest way to set up Claude Code for your project:
 
 ```bash
 # Navigate to your project
@@ -20,248 +34,130 @@ cd your-project
 npx claude-code-templates@latest
 ```
 
-## 🎨 Interactive Experience
+**📋 [See detailed usage examples and options →](./cli-tool/README.md)**
 
-The installer provides a beautiful, step-by-step setup process with navigation:
+## 🏗️ Project Architecture
 
-```bash
-$ npx claude-code-templates
+This repository contains a comprehensive CLI tool and template system for Claude Code configurations:
 
- ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗
-██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝
-██║     ██║     ███████║██║   ██║██║  ██║█████╗  
-██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝  
-╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝███████╗
- ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
-
- ██████╗ ██████╗ ██████╗ ███████╗
-██╔════╝██╔═══██╗██╔══██╗██╔════╝
-██║     ██║   ██║██║  ██║█████╗  
-██║     ██║   ██║██║  ██║██╔══╝  
-╚██████╗╚██████╔╝██████╔╝███████╗
- ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝
-
-████████╗███████╗███╗   ███╗██████╗ ██╗      █████╗ ████████╗███████╗███████╗
-╚══██╔══╝██╔════╝████╗ ████║██╔══██╗██║     ██╔══██╗╚══██╔══╝██╔════╝██╔════╝
-   ██║   █████╗  ██╔████╔██║██████╔╝██║     ███████║   ██║   █████╗  ███████╗
-   ██║   ██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██╔══██║   ██║   ██╔══╝  ╚════██║
-   ██║   ███████╗██║ ╚═╝ ██║██║     ███████╗██║  ██║   ██║   ███████╗███████║
-   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝
-
-                    🚀 Setup Claude Code for any project language 🚀
-
-✔ Project detection complete
-
-🔤 Select your programming language: 
-  ❯ Common (Language-agnostic)
-    JavaScript/TypeScript
-    Python
-    Rust
-    Go
-
-🎯 Select your framework (optional):
-  ← Back
-  ❯ None / Generic
-    React
-    Vue.js
-    Angular
-    Node.js
-
-📋 Select commands to include (use space to select): 
-  ← Back
-  ❯ ◯ API Endpoint - Generate API endpoint
-    ◉ Debug - Debug issues
-    ◉ Lint - Fix linting issues
-    ◯ NPM Scripts - Manage NPM scripts
-    ◉ Refactor - Refactor code
-    ◉ Test - Run tests
-    ◯ TS Migration - Migrate to TypeScript
-    ◯ Component - Create component
-    ◯ Hooks - React hooks helper
-    ◯ State Mgmt - Manage state
-
-🔧 Select automation hooks to include (use space to select):
-  ← Back
-  ❯ ◉ PreToolUse: Block console.log statements in JS/TS files
-    ◉ PostToolUse: Auto-format JS/TS files with Prettier
-    ◉ PostToolUse: Run TypeScript type checking
-    ◯ PostToolUse: Warn about wildcard imports
-    ◯ PostToolUse: Run tests automatically for modified files
-    ◯ Stop: Run ESLint on changed files
-    ◯ Stop: Analyze bundle size impact
-    ◯ Notification: Log Claude Code notifications
-  
-🚀 Setup Claude Code for javascript-typescript with react (5 commands) (9 hooks) (1 MCP)?
-  ← Back to modify settings
-  ❯ ✅ Yes, proceed with setup
-    ❌ No, cancel setup
-
-✅ Yes, proceed with setup
-  ⠋ Copying template files...✓ Copied javascript-typescript/CLAUDE.md → CLAUDE.md
-  ✓ Copied base configuration and commands javascript-typescript/.claude → .claude
-  ✓ Copied javascript-typescript/.mcp.json → .mcp.json
-  ✓ Copied framework commands javascript-typescript/examples/react-app/.claude/commands → .claude/commands
-  ✓ Added command: API Endpoint
-  ✓ Added command: Debug
-  ✓ Added command: Lint
-  ✓ Added command: Refactor
-  ✓ Added command: Test
-  📋 Installed 5 commands
-  🔧 Installed 9 automation hooks
-  🔧 Installed 1 MCP
-  ✔ Template files copied successfully
-  ✅ Claude Code configuration setup complete!
+```
+claude-code-templates/
+├── cli-tool/                    # 📦 NPM Package
+│   ├── src/                     # Core CLI implementation
+│   ├── templates/               # Language and framework templates
+│   ├── bin/                     # Executable scripts
+│   └── README.md               # 👉 User documentation
+├── common/                      # 🌐 Universal templates
+├── javascript-typescript/       # ⚡ JS/TS templates
+├── python/                      # 🐍 Python templates
+├── go/                          # 🔧 Go templates (coming soon)
+├── rust/                        # 🦀 Rust templates (coming soon)
+└── README.md                   # 👈 This file (development docs)
 ```
 
-That's it! The installer will auto-detect your project type and set up everything for you.
+### 🔄 Template System
 
-## ⚡ Direct Installation Commands
+Each language directory contains:
+- **CLAUDE.md** - Language-specific configuration
+- **.claude/settings.json** - Automation hooks
+- **.claude/commands/** - Language-specific commands
+- **.mcp.json** - Model Context Protocol servers
+- **examples/** - Framework-specific variations
 
-Skip the interactive setup with these direct commands:
+## 🎯 Supported Languages & Frameworks
 
-### JavaScript/TypeScript Projects
+| Language | Frameworks | Status | Commands | Hooks | MCP |
+|----------|------------|---------|----------|--------|-----|
+| **JavaScript/TypeScript** | React, Vue, Angular, Node.js | ✅ Ready | 7+ | 9+ | 4+ |
+| **Python** | Django, Flask, FastAPI | ✅ Ready | 5+ | 8+ | 4+ |
+| **Common** | Universal | ✅ Ready | 2+ | 1+ | 4+ |
+| **Go** | Gin, Echo, Fiber | 🚧 Coming Soon | - | - | - |
+| **Rust** | Axum, Warp, Actix | 🚧 Coming Soon | - | - | - |
 
+**📖 [See detailed examples and usage →](./cli-tool/README.md)**
+
+## 🔧 Core Features
+
+### 🤖 Automation Hooks
+- **PreToolUse**: Code quality checks before actions
+- **PostToolUse**: Auto-formatting and validation after edits  
+- **Stop**: Final checks before session ends
+- **Notification**: Activity logging and monitoring
+
+### 🔌 MCP Integration
+- **IDE Integration**: VS Code diagnostics & Jupyter execution
+- **Web Search**: Real-time information retrieval
+- **Filesystem Tools**: Advanced file operations
+- **Database Tools**: Connection and query capabilities
+
+### 📋 Smart Commands
+Framework-specific commands for testing, linting, building, debugging, and deployment.
+
+## 🚀 Development
+
+### Prerequisites
+- Node.js 14+
+- npm or yarn
+
+### Project Setup
 ```bash
-# React application
-npx claude-code-templates --language javascript-typescript --framework react --yes
-
-# Vue.js application  
-npx claude-code-templates --language javascript-typescript --framework vue --yes
-
-# Angular application
-npx claude-code-templates --language javascript-typescript --framework angular --yes
-
-# Node.js API/Backend
-npx claude-code-templates --language javascript-typescript --framework node --yes
-
-# Generic JavaScript/TypeScript project
-npx claude-code-templates --language javascript-typescript --framework none --yes
+git clone https://github.com/davila7/claude-code-templates.git
+cd claude-code-templates
 ```
 
-### Python Projects
-
+### CLI Development
 ```bash
-# Django web application
-npx claude-code-templates --language python --framework django --yes
-
-# Flask web application
-npx claude-code-templates --language python --framework flask --yes
-
-# FastAPI application
-npx claude-code-templates --language python --framework fastapi --yes
-
-# Generic Python project
-npx claude-code-templates --language python --framework none --yes
+cd cli-tool
+npm install
+npm link                    # Link for local testing
+npm test                    # Run test suite
+npm start -- --dry-run     # Test locally
 ```
 
-### Generic/Multi-language Projects
+### 🏗️ CLI Architecture
 
-```bash
-# Universal configuration for any language
-npx claude-code-templates --language common --yes
+The CLI tool is built with a modular architecture:
+
+```
+cli-tool/src/
+├── index.js              # Main entry point & CLI setup
+├── prompts.js            # Interactive prompts & navigation
+├── command-scanner.js    # Scans and loads command templates
+├── hook-scanner.js       # Manages automation hooks
+├── file-operations.js    # File copying and template processing
+├── templates.js          # Template configuration & metadata
+└── utils.js              # Project detection utilities
 ```
 
-### Coming Soon
+### 🔄 Template Development
+
+#### Adding New Languages
+1. Create `templates/language-name/` directory
+2. Add base files: `CLAUDE.md`, `.claude/settings.json`, `.mcp.json`
+3. Create commands in `.claude/commands/`
+4. Add framework examples in `examples/`
+5. Update `src/templates.js` configuration
+6. Add tests and documentation
+
+#### Adding New Frameworks
+1. Create `templates/language/examples/framework-name/`
+2. Add framework-specific `CLAUDE.md` and commands
+3. Test with various project configurations
+4. Update detection logic in `src/utils.js` if needed
+
+### 🧪 Testing
+
 ```bash
-# Rust projects - Coming Soon!
-# Go projects - Coming Soon!
+# Run comprehensive test suite
+npm test
+
+# Test specific scenarios
+npm start -- --language python --framework django --dry-run
+npm start -- --language javascript-typescript --framework react --dry-run
+
+# Test interactive mode
+npm start
 ```
-
-## ✨ Features
-
-- 🔍 **Smart Auto-Detection** - Automatically detects your programming language and framework
-- 🎯 **Framework-Specific Commands** - React hooks, Vue composables, Angular services, Node.js middleware
-- 💾 **Safe Installation** - Backs up existing files before making changes
-- ⚙️ **Interactive Setup** - Choose exactly what you need through guided prompts with back navigation
-- 🚀 **Zero Configuration** - Works out of the box with sensible defaults
-- 📦 **No Installation Required** - Uses `npx` for instant access to latest version
-- ↩️ **Enhanced Navigation** - Go back to modify previous selections during setup
-
-## 🛠️ Supported Technologies
-
-### Programming Languages
-- **JavaScript/TypeScript** ✅ - Modern ES6+, TypeScript, comprehensive framework support
-- **Python** ✅ - Django, Flask, FastAPI with complete automation hooks and commands
-- **Common** ✅ - Universal configuration for any language
-- **Rust** ⏳ - Coming Soon
-- **Go** ⏳ - Coming Soon
-
-### JavaScript/TypeScript Frameworks
-
-#### ⚛️ React
-- **Commands**: Component creation, hooks management, state management
-- **Features**: TypeScript support, testing with Jest/Vitest, modern React patterns
-- **Best Practices**: Functional components, custom hooks, performance optimization
-
-#### 🟢 Vue.js  
-- **Commands**: Component creation, composables, Vue 3 patterns
-- **Features**: Composition API, single-file components, TypeScript integration
-- **Best Practices**: Composable patterns, reactive programming, Vue 3 conventions
-
-#### 🅰️ Angular
-- **Commands**: Component generation, service creation, dependency injection
-- **Features**: TypeScript-first, RxJS patterns, Angular CLI integration
-- **Best Practices**: OnPush change detection, reactive forms, testing with TestBed
-
-#### 🟢 Node.js
-- **Commands**: API routes, middleware creation, database operations
-- **Features**: Express.js patterns, TypeScript support, API development
-- **Best Practices**: RESTful design, error handling, security middleware
-
-### Python Frameworks
-
-#### 🐍 Django
-- **Commands**: Model creation, admin setup, view generation, testing, linting
-- **Features**: ORM integration, admin interface, authentication, REST APIs
-- **Best Practices**: MVT architecture, security settings, database optimization
-
-#### 🌶️ Flask
-- **Commands**: Blueprint creation, route management, database setup, testing, deployment
-- **Features**: Micro-framework flexibility, SQLAlchemy integration, template inheritance
-- **Best Practices**: Application factory pattern, modular design, security headers
-
-#### ⚡ FastAPI
-- **Commands**: API endpoint generation, authentication, database integration, testing
-- **Features**: Automatic documentation, Pydantic validation, async support
-- **Best Practices**: Type hints, dependency injection, async patterns
-
-## 📦 What Gets Installed
-
-When you run the installer, it adds these files to your project:
-
-### Core Configuration
-- **`CLAUDE.md`** - Main configuration file with language and framework-specific guidance
-- **`.claude/settings.json`** - Optimized settings for your language and framework
-
-### Framework-Specific Commands
-Each framework template includes ready-to-use commands:
-
-#### Base Commands (All Projects)
-- **`/debug`** - Debugging configurations and helpers
-- **`/lint`** - Code linting and formatting
-- **`/test`** - Testing setup and execution
-- **`/npm-scripts`** - Package management and scripts
-- **`/typescript-migrate`** - TypeScript migration helpers
-- **`/refactor`** - Code refactoring assistance
-
-#### React-Specific Commands
-- **`/component`** - Create React components with TypeScript
-- **`/hooks`** - Create and manage custom React hooks
-- **`/state-management`** - Implement state management (Redux, Zustand, Context)
-
-#### Vue.js-Specific Commands
-- **`/components`** - Create Vue components with TypeScript
-- **`/composables`** - Create Vue 3 composables
-
-#### Angular-Specific Commands
-- **`/components`** - Create Angular components with TypeScript
-- **`/services`** - Create services with dependency injection
-
-#### Node.js-Specific Commands
-- **`/route`** - Create API routes and endpoints
-- **`/middleware`** - Create Express middleware
-- **`/api-endpoint`** - Generate complete API endpoints
-- **`/database`** - Set up database operations and models
 
 ## 🔧 Automation Hooks
 

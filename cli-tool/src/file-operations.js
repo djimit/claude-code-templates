@@ -132,6 +132,90 @@ async function copyTemplateFiles(templateConfig, targetDir) {
   }
 }
 
+async function runPostInstallationValidation(targetDir, templateConfig) {
+  const inquirer = require('inquirer');
+  const { spawn } = require('child_process');
+  
+  console.log(chalk.cyan('\n🔍 Post-Installation Validation'));
+  console.log(chalk.gray('Claude Code can now review the installed configuration to ensure everything is properly set up.'));
+  
+  try {
+    const { runValidation } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'runValidation',
+      message: 'Would you like Claude Code to review and validate the installation?',
+      default: true,
+      prefix: chalk.blue('🤖')
+    }]);
+    
+    if (!runValidation) {
+      console.log(chalk.yellow('⏭️  Skipping validation. You can run "claude" anytime to review your configuration.'));
+      return;
+    }
+    
+    console.log(chalk.blue('\n🚀 Starting Claude Code validation...'));
+    console.log(chalk.gray('This will review all installed files and configurations.\n'));
+    
+    // Prepare validation prompt for Claude
+    const validationPrompt = createValidationPrompt(templateConfig);
+    
+    // Run claude command with validation prompt
+    const claudeProcess = spawn('claude', [validationPrompt], {
+      cwd: targetDir,
+      stdio: 'inherit',
+      shell: true
+    });
+    
+    claudeProcess.on('error', (error) => {
+      if (error.code === 'ENOENT') {
+        console.log(chalk.yellow('\n⚠️  Claude Code CLI not found in PATH.'));
+        console.log(chalk.blue('💡 To run validation manually later, use: claude "Review the Claude Code configuration and validate all installed files"'));
+      } else {
+        console.error(chalk.red('Error running Claude Code validation:'), error.message);
+      }
+    });
+    
+    claudeProcess.on('close', (code) => {
+      if (code === 0) {
+        console.log(chalk.green('\n✅ Claude Code validation completed successfully!'));
+      } else if (code !== null) {
+        console.log(chalk.yellow(`\n⚠️  Claude Code validation exited with code ${code}`));
+      }
+    });
+    
+  } catch (error) {
+    console.error(chalk.red('Error during validation setup:'), error.message);
+    console.log(chalk.blue('💡 You can run validation manually later with: claude "Review the Claude Code configuration"'));
+  }
+}
+
+function createValidationPrompt(templateConfig) {
+  const language = templateConfig.language || 'unknown';
+  const framework = templateConfig.framework || 'none';
+  const commandCount = templateConfig.selectedCommands ? templateConfig.selectedCommands.length : 0;
+  const hookCount = templateConfig.selectedHooks ? templateConfig.selectedHooks.length : 0;
+  const mcpCount = templateConfig.selectedMCPs ? templateConfig.selectedMCPs.length : 0;
+  
+  return `Please review and validate the Claude Code configuration that was just installed:
+
+Configuration Summary:
+- Language: ${language}
+- Framework: ${framework}
+- Commands installed: ${commandCount}
+- Automation hooks: ${hookCount}
+- MCP servers: ${mcpCount}
+
+Please check:
+1. Review the CLAUDE.md file and verify it matches the project requirements
+2. Check .claude/settings.json for proper automation hook configuration
+3. Verify .claude/commands/ contains the expected command files
+4. Check .mcp.json for proper MCP server configuration
+5. Ensure all configurations are appropriate for this ${language} project${framework !== 'none' ? ` using ${framework}` : ''}
+6. Suggest any optimizations or improvements for this specific project setup
+
+If everything looks good, provide a brief summary of the installation. If you find any issues or have suggestions for improvements, please let me know.`;
+}
+
 async function processSettingsFile(sourcePath, destPath, templateConfig) {
   try {
     // Read the original settings file
@@ -221,5 +305,6 @@ module.exports = {
   ensureDirectoryExists,
   checkWritePermissions,
   processSettingsFile,
-  processMCPFile
+  processMCPFile,
+  runPostInstallationValidation
 };

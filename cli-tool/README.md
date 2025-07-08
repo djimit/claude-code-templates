@@ -123,6 +123,7 @@ create-claude-config
 - 💾 **Backup existing files** - Safely backs up existing CLAUDE.md and .claude directories
 - ⚙️ **Customizable** - Interactive prompts for command and hook selection
 - 🚀 **Quick setup** - Get started with Claude Code in seconds
+- 🤖 **Post-installation validation** - Claude Code automatically reviews your setup
 
 ## 🔧 Automation Hooks
 
@@ -293,6 +294,18 @@ Target directory: /path/to/your/project
    🔧 9 automation hooks have been configured
    🔧 4 MCP servers have been configured
    ```
+
+9. **Configuration Validation** 🤖
+   ```
+   🔍 Post-Installation Validation
+   Claude Code can now review the installed configuration to ensure everything is properly set up.
+   🤖 Would you like Claude Code to review and validate the installation? (Y/n)
+   ```
+   - **Automatic validation**: Claude Code offers to review your installation
+   - **Smart analysis**: Checks CLAUDE.md, settings.json, commands, and MCP configuration
+   - **Project-specific**: Validates settings match your language and framework
+   - **Optional**: You can skip and run `claude` manually later
+   - **Helpful suggestions**: Provides optimization recommendations for your setup
 
 ## 🛡️ Safe Installation
 

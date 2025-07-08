@@ -6,7 +6,7 @@ const ora = require('ora');
 const { detectProject } = require('./utils');
 const { getTemplateConfig, TEMPLATES_CONFIG } = require('./templates');
 const { createPrompts, interactivePrompts } = require('./prompts');
-const { copyTemplateFiles } = require('./file-operations');
+const { copyTemplateFiles, runPostInstallationValidation } = require('./file-operations');
 const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
 
 async function createClaudeConfig(options = {}) {
@@ -108,6 +108,11 @@ async function createClaudeConfig(options = {}) {
   
   if (config.mcps && config.mcps.length > 0) {
     console.log(chalk.blue(`🔧 ${config.mcps.length} MCP servers have been configured`));
+  }
+  
+  // Run post-installation validation
+  if (!options.dryRun) {
+    await runPostInstallationValidation(targetDir, templateConfig);
   }
 }
 

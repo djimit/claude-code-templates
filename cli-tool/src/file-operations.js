@@ -196,7 +196,7 @@ function createValidationPrompt(templateConfig) {
   const language = templateConfig.language || 'unknown';
   const framework = templateConfig.framework || 'none';
   
-  return `Please review the Claude Code Templates configuration that was just installed. Read and validate these specific files: CLAUDE.md, .claude/settings.json, .claude/commands/ directory contents, and .mcp.json. This is a ${language}${framework !== 'none' ? ` ${framework}` : ''} project. Confirm the configuration is correct and suggest any improvements for this specific setup.`;
+  return `Validate Claude Code Templates installation for this ${language}${framework !== 'none' ? ` ${framework}` : ''} project. 1) Check project structure (package.json, src/, etc.) 2) Review CLAUDE.md, .claude/settings.json, .claude/commands/ 3) Compare with actual project dependencies 4) Suggest specific improvements. Make configuration match this project's actual setup.`;
 }
 
 async function processSettingsFile(sourcePath, destPath, templateConfig) {

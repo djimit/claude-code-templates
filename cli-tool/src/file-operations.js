@@ -160,10 +160,13 @@ async function runPostInstallationValidation(targetDir, templateConfig) {
     const validationPrompt = createValidationPrompt(templateConfig);
     
     // Run claude command with validation prompt as a task
-    const claudeProcess = spawn('claude', [validationPrompt], {
+    // Escape quotes in the prompt and create proper shell command
+    const escapedPrompt = validationPrompt.replace(/"/g, '\\"');
+    const claudeCommand = `claude "${escapedPrompt}"`;
+    
+    const claudeProcess = spawn('sh', ['-c', claudeCommand], {
       cwd: targetDir,
-      stdio: 'inherit',
-      shell: true
+      stdio: 'inherit'
     });
     
     claudeProcess.on('error', (error) => {

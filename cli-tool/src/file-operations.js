@@ -159,7 +159,7 @@ async function runPostInstallationValidation(targetDir, templateConfig) {
     // Prepare validation prompt for Claude
     const validationPrompt = createValidationPrompt(templateConfig);
     
-    // Run claude command with validation prompt
+    // Run claude command with validation prompt as a task
     const claudeProcess = spawn('claude', [validationPrompt], {
       cwd: targetDir,
       stdio: 'inherit',
@@ -192,28 +192,8 @@ async function runPostInstallationValidation(targetDir, templateConfig) {
 function createValidationPrompt(templateConfig) {
   const language = templateConfig.language || 'unknown';
   const framework = templateConfig.framework || 'none';
-  const commandCount = templateConfig.selectedCommands ? templateConfig.selectedCommands.length : 0;
-  const hookCount = templateConfig.selectedHooks ? templateConfig.selectedHooks.length : 0;
-  const mcpCount = templateConfig.selectedMCPs ? templateConfig.selectedMCPs.length : 0;
   
-  return `Please review and validate the Claude Code configuration that was just installed:
-
-Configuration Summary:
-- Language: ${language}
-- Framework: ${framework}
-- Commands installed: ${commandCount}
-- Automation hooks: ${hookCount}
-- MCP servers: ${mcpCount}
-
-Please check:
-1. Review the CLAUDE.md file and verify it matches the project requirements
-2. Check .claude/settings.json for proper automation hook configuration
-3. Verify .claude/commands/ contains the expected command files
-4. Check .mcp.json for proper MCP server configuration
-5. Ensure all configurations are appropriate for this ${language} project${framework !== 'none' ? ` using ${framework}` : ''}
-6. Suggest any optimizations or improvements for this specific project setup
-
-If everything looks good, provide a brief summary of the installation. If you find any issues or have suggestions for improvements, please let me know.`;
+  return `Please review the Claude Code Templates configuration that was just installed. Read and validate these specific files: CLAUDE.md, .claude/settings.json, .claude/commands/ directory contents, and .mcp.json. This is a ${language}${framework !== 'none' ? ` ${framework}` : ''} project. Confirm the configuration is correct and suggest any improvements for this specific setup.`;
 }
 
 async function processSettingsFile(sourcePath, destPath, templateConfig) {

@@ -35,7 +35,7 @@ console.log(banner);
 program
   .name('create-claude-config')
   .description('Setup Claude Code configurations for different programming languages')
-  .version('1.0.0')
+  .version(require('../package.json').version)
   .option('-l, --language <language>', 'specify programming language')
   .option('-f, --framework <framework>', 'specify framework')
   .option('-d, --directory <directory>', 'target directory (default: current directory)')

@@ -4,6 +4,31 @@ const chalk = require('chalk');
 const { spawn } = require('child_process');
 
 /**
+ * Estimates token count for text content
+ * Based on approximate tokenization rules: ~4 characters per token for English text
+ * @param {string} text - Text to analyze
+ * @returns {number} Estimated token count
+ */
+function estimateTokens(text) {
+  // Remove excessive whitespace and normalize
+  const cleanText = text.replace(/\s+/g, ' ').trim();
+  
+  // Basic estimation: ~4 characters per token for English text
+  // Adjust for code content which typically has more tokens per character
+  const baseTokens = Math.ceil(cleanText.length / 4);
+  
+  // Adjust for markdown and code content
+  const codeBlocks = (text.match(/```[\s\S]*?```/g) || []).length;
+  const inlineCode = (text.match(/`[^`]*`/g) || []).length;
+  const markdownElements = (text.match(/[#*_\[\]()]/g) || []).length;
+  
+  // Add extra tokens for code and markdown formatting
+  const adjustedTokens = baseTokens + (codeBlocks * 5) + (inlineCode * 2) + Math.ceil(markdownElements / 2);
+  
+  return adjustedTokens;
+}
+
+/**
  * Analyzes existing Claude Code commands in the current project
  * @param {string} targetDir - Directory to analyze (default: current directory)
  * @returns {Array} Array of command analysis results
@@ -42,6 +67,9 @@ async function analyzeCommands(targetDir = process.cwd()) {
       const lines = content.split('\n').filter(line => line.trim());
       const title = lines.find(line => line.startsWith('#')) || file;
       
+      // Calculate token estimate
+      const tokenCount = estimateTokens(content);
+      
       commands.push({
         name: file.replace('.md', ''),
         filename: file,
@@ -49,7 +77,8 @@ async function analyzeCommands(targetDir = process.cwd()) {
         lastModified: stats.mtime,
         title: title.replace(/^#+\s*/, ''),
         lines: lines.length,
-        wordCount: content.split(/\s+/).length
+        wordCount: content.split(/\s+/).length,
+        tokens: tokenCount
       });
     }
 
@@ -60,7 +89,8 @@ async function analyzeCommands(targetDir = process.cwd()) {
       exists: true,
       commands,
       total: commands.length,
-      totalSize: commands.reduce((sum, cmd) => sum + cmd.size, 0)
+      totalSize: commands.reduce((sum, cmd) => sum + cmd.size, 0),
+      totalTokens: commands.reduce((sum, cmd) => sum + cmd.tokens, 0)
     };
   } catch (error) {
     return {
@@ -76,7 +106,7 @@ async function analyzeCommands(targetDir = process.cwd()) {
  */
 function displayCommandStats(analysis) {
   console.log(chalk.cyan('\n📊 Claude Code Command Analysis'));
-  console.log(chalk.gray('═'.repeat(80)));
+  console.log(chalk.gray('═'.repeat(90)));
 
   if (!analysis.exists) {
     console.log(chalk.yellow('⚠️  ' + analysis.message));
@@ -97,38 +127,42 @@ function displayCommandStats(analysis) {
 
   // Summary
   const totalSizeKB = (analysis.totalSize / 1024).toFixed(1);
-  console.log(chalk.green(`✅ Found ${analysis.total} command file(s) (${totalSizeKB} KB total)`));
+  const totalTokens = analysis.totalTokens.toLocaleString();
+  console.log(chalk.green(`✅ Found ${analysis.total} command file(s) (${totalSizeKB} KB, ~${totalTokens} tokens total)`));
   console.log('');
 
   // Table header
   const header = chalk.bold.blue(
-    'Command'.padEnd(20) + 
-    'Size'.padEnd(8) + 
-    'Lines'.padEnd(8) + 
-    'Words'.padEnd(8) + 
+    'Command'.padEnd(18) + 
+    'Size'.padEnd(7) + 
+    'Lines'.padEnd(6) + 
+    'Words'.padEnd(6) + 
+    'Tokens'.padEnd(7) + 
     'Last Modified'
   );
   console.log(header);
-  console.log(chalk.gray('─'.repeat(80)));
+  console.log(chalk.gray('─'.repeat(90)));
 
   // Table rows
   analysis.commands.forEach(cmd => {
-    const sizeFormatted = `${(cmd.size / 1024).toFixed(1)}KB`.padEnd(8);
-    const linesFormatted = cmd.lines.toString().padEnd(8);
-    const wordsFormatted = cmd.wordCount.toString().padEnd(8);
+    const sizeFormatted = `${(cmd.size / 1024).toFixed(1)}KB`.padEnd(7);
+    const linesFormatted = cmd.lines.toString().padEnd(6);
+    const wordsFormatted = cmd.wordCount.toString().padEnd(6);
+    const tokensFormatted = cmd.tokens.toString().padEnd(7);
     const dateFormatted = cmd.lastModified.toLocaleDateString();
     
-    const row = chalk.white(cmd.name.padEnd(20)) +
+    const row = chalk.white(cmd.name.padEnd(18)) +
                 chalk.cyan(sizeFormatted) +
                 chalk.yellow(linesFormatted) +
                 chalk.green(wordsFormatted) +
+                chalk.magenta(tokensFormatted) +
                 chalk.gray(dateFormatted);
     
     console.log(row);
   });
 
-  console.log(chalk.gray('─'.repeat(80)));
-  console.log(chalk.bold(`Total: ${analysis.total} commands, ${totalSizeKB} KB`));
+  console.log(chalk.gray('─'.repeat(90)));
+  console.log(chalk.bold(`Total: ${analysis.total} commands, ${totalSizeKB} KB, ~${totalTokens} tokens`));
 }
 
 /**

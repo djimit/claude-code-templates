@@ -106,23 +106,23 @@ async function analyzeCommands(targetDir = process.cwd()) {
  */
 function displayCommandStats(analysis) {
   console.log(chalk.cyan('\n📊 Claude Code Command Analysis'));
-  console.log(chalk.gray('═'.repeat(90)));
+  console.log(chalk.gray('═'.repeat(97)));
 
   if (!analysis.exists) {
     console.log(chalk.yellow('⚠️  ' + analysis.message));
     console.log(chalk.blue('\n💡 Run the setup first: npx claude-code-templates'));
-    return;
+    return false; // Indicate no .claude directory
   }
 
   if (analysis.error) {
     console.log(chalk.red('❌ ' + analysis.error));
-    return;
+    return false;
   }
 
   if (analysis.commands.length === 0) {
     console.log(chalk.yellow('⚠️  ' + analysis.message));
     console.log(chalk.blue('\n💡 No commands found to analyze'));
-    return;
+    return false; // Indicate no commands found
   }
 
   // Summary
@@ -137,18 +137,18 @@ function displayCommandStats(analysis) {
     'Size'.padEnd(7) + 
     'Lines'.padEnd(6) + 
     'Words'.padEnd(6) + 
-    'Tokens'.padEnd(7) + 
+    'Tokens (aprox)'.padEnd(14) + 
     'Last Modified'
   );
   console.log(header);
-  console.log(chalk.gray('─'.repeat(90)));
+  console.log(chalk.gray('─'.repeat(97)));
 
   // Table rows
   analysis.commands.forEach(cmd => {
     const sizeFormatted = `${(cmd.size / 1024).toFixed(1)}KB`.padEnd(7);
     const linesFormatted = cmd.lines.toString().padEnd(6);
     const wordsFormatted = cmd.wordCount.toString().padEnd(6);
-    const tokensFormatted = cmd.tokens.toString().padEnd(7);
+    const tokensFormatted = cmd.tokens.toString().padEnd(14);
     const dateFormatted = cmd.lastModified.toLocaleDateString();
     
     const row = chalk.white(cmd.name.padEnd(18)) +
@@ -161,8 +161,49 @@ function displayCommandStats(analysis) {
     console.log(row);
   });
 
-  console.log(chalk.gray('─'.repeat(90)));
+  console.log(chalk.gray('─'.repeat(97)));
   console.log(chalk.bold(`Total: ${analysis.total} commands, ${totalSizeKB} KB, ~${totalTokens} tokens`));
+  return true; // Indicate commands were found and displayed
+}
+
+/**
+ * Prompts user to setup Claude Code Templates when no commands are found
+ * @param {string} targetDir - Project directory
+ */
+async function promptSetupWhenNoCommands(targetDir) {
+  const inquirer = require('inquirer');
+  
+  console.log(chalk.cyan('\n🚀 Claude Code Templates Setup'));
+  console.log(chalk.gray('No Claude Code commands found in this project. You can set up Claude Code Templates to get started.'));
+  
+  try {
+    const { setupNow } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'setupNow',
+      message: 'Would you like to start the Claude Code Templates setup now?',
+      default: true,
+      prefix: chalk.blue('🤖')
+    }]);
+
+    if (!setupNow) {
+      console.log(chalk.yellow('⏭️  Setup skipped. Run "npx claude-code-templates" anytime to set up your project.'));
+      return false;
+    }
+
+    console.log(chalk.blue('\n🚀 Starting Claude Code Templates setup...'));
+    console.log(chalk.gray('This will guide you through language and framework selection.\n'));
+
+    // Import and run the main setup function
+    const createClaudeConfig = require('./index');
+    await createClaudeConfig({ directory: targetDir });
+    
+    return true;
+
+  } catch (error) {
+    console.error(chalk.red('Error during setup:'), error.message);
+    console.log(chalk.blue('💡 You can run setup manually with: npx claude-code-templates'));
+    return false;
+  }
 }
 
 /**
@@ -269,7 +310,13 @@ async function runCommandStats(options = {}) {
   const analysis = await analyzeCommands(targetDir);
   
   // Display results
-  displayCommandStats(analysis);
+  const hasCommands = displayCommandStats(analysis);
+  
+  // If no commands found, offer to start setup
+  if (!hasCommands) {
+    await promptSetupWhenNoCommands(targetDir);
+    return;
+  }
   
   // Prompt for optimization
   await promptCommandOptimization(analysis, targetDir);
@@ -279,5 +326,6 @@ module.exports = {
   analyzeCommands,
   displayCommandStats,
   promptCommandOptimization,
+  promptSetupWhenNoCommands,
   runCommandStats
 };

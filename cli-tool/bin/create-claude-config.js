@@ -41,6 +41,7 @@ program
   .option('-d, --directory <directory>', 'target directory (default: current directory)')
   .option('-y, --yes', 'skip prompts and use defaults')
   .option('--dry-run', 'show what would be copied without actually copying')
+  .option('--command-stats', 'analyze existing Claude Code commands and offer optimization')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

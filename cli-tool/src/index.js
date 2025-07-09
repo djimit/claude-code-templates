@@ -8,9 +8,16 @@ const { getTemplateConfig, TEMPLATES_CONFIG } = require('./templates');
 const { createPrompts, interactivePrompts } = require('./prompts');
 const { copyTemplateFiles, runPostInstallationValidation } = require('./file-operations');
 const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
+const { runCommandStats } = require('./command-stats');
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
+  
+  // Handle command stats analysis
+  if (options.commandStats) {
+    await runCommandStats(options);
+    return;
+  }
   
   console.log(chalk.blue('🚀 Setting up Claude Code configuration...'));
   console.log(chalk.gray(`Target directory: ${targetDir}`));

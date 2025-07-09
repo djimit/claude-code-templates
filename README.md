@@ -67,7 +67,7 @@ This repository contains a comprehensive CLI tool and template system for Claude
 claude-code-templates/
 ├── cli-tool/                    # 📦 NPM Package
 │   ├── src/                     # Core CLI implementation
-│   ├── templates/               # Language and framework templates
+│   ├── templates/               # Language and framework templates (in cli-tool/)
 │   ├── bin/                     # Executable scripts
 │   └── README.md               # 👉 User documentation
 ├── common/                      # 🌐 Universal templates
@@ -160,7 +160,7 @@ cli-tool/src/
 ### 🔄 Template Development
 
 #### Adding New Languages
-1. Create `templates/language-name/` directory
+1. Create `cli-tool/templates/language-name/` directory
 2. Add base files: `CLAUDE.md`, `.claude/settings.json`, `.mcp.json`
 3. Create commands in `.claude/commands/`
 4. Add framework examples in `examples/`
@@ -168,7 +168,7 @@ cli-tool/src/
 6. Add tests and documentation
 
 #### Adding New Frameworks
-1. Create `templates/language/examples/framework-name/`
+1. Create `cli-tool/templates/language/examples/framework-name/`
 2. Add framework-specific `CLAUDE.md` and commands
 3. Test with various project configurations
 4. Update detection logic in `src/utils.js` if needed
@@ -574,18 +574,21 @@ This repository contains optimized templates for different languages and use cas
 ```
 claude-code-templates/
 ├── 📦 cli-tool/              # NPM package for automated installation
-├── 📁 common/                # Universal templates for any language
-├── 📁 javascript-typescript/ # JS/TS templates with framework support
-│   ├── examples/
-│   │   ├── react-app/        # React-specific commands
-│   │   ├── vue-app/          # Vue.js-specific commands  
-│   │   ├── angular-app/      # Angular-specific commands
-│   │   └── node-api/         # Node.js-specific commands
-│   ├── CLAUDE.md
-│   └── .claude/
-├── 📁 python/                # Python templates (coming soon)
-├── 📁 rust/                  # Rust templates (coming soon)
-└── 📁 go/                    # Go templates (coming soon)
+│   ├── templates/            # All language and framework templates
+│   │   ├── common/           # Universal templates for any language
+│   │   ├── javascript-typescript/ # JS/TS templates with framework support
+│   │   │   ├── examples/
+│   │   │   │   ├── react-app/        # React-specific commands
+│   │   │   │   ├── vue-app/          # Vue.js-specific commands  
+│   │   │   │   ├── angular-app/      # Angular-specific commands
+│   │   │   │   └── node-api/         # Node.js-specific commands
+│   │   │   ├── CLAUDE.md
+│   │   │   └── .claude/
+│   │   ├── python/           # Python templates with Django/Flask/FastAPI
+│   │   ├── rust/             # Rust templates (coming soon)
+│   │   └── go/               # Go templates (coming soon)
+│   ├── src/                  # CLI source code
+│   └── bin/                  # Executable scripts
 ```
 
 Each language folder includes:
@@ -666,14 +669,14 @@ If you prefer manual setup, you can copy templates directly:
 git clone https://github.com/davila7/claude-code-templates.git
 
 # Copy templates for JavaScript/TypeScript + React
-cp -r claude-code-templates/javascript-typescript/CLAUDE.md your-project/
-cp -r claude-code-templates/javascript-typescript/.claude/ your-project/
-cp -r claude-code-templates/javascript-typescript/examples/react-app/.claude/commands/* your-project/.claude/commands/
+cp -r claude-code-templates/cli-tool/templates/javascript-typescript/CLAUDE.md your-project/
+cp -r claude-code-templates/cli-tool/templates/javascript-typescript/.claude/ your-project/
+cp -r claude-code-templates/cli-tool/templates/javascript-typescript/examples/react-app/.claude/commands/* your-project/.claude/commands/
 
 # Or copy Node.js API templates
-cp -r claude-code-templates/javascript-typescript/CLAUDE.md your-project/
-cp -r claude-code-templates/javascript-typescript/.claude/ your-project/
-cp -r claude-code-templates/javascript-typescript/examples/node-api/.claude/commands/* your-project/.claude/commands/
+cp -r claude-code-templates/cli-tool/templates/javascript-typescript/CLAUDE.md your-project/
+cp -r claude-code-templates/cli-tool/templates/javascript-typescript/.claude/ your-project/
+cp -r claude-code-templates/cli-tool/templates/javascript-typescript/examples/node-api/.claude/commands/* your-project/.claude/commands/
 ```
 
 ## 🤝 Contributing

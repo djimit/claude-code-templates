@@ -106,7 +106,12 @@ async function analyzeCommands(targetDir = process.cwd()) {
  */
 function displayCommandStats(analysis) {
   console.log(chalk.cyan('\n📊 Claude Code Command Analysis'));
-  console.log(chalk.gray('═'.repeat(97)));
+  
+  // Calculate header width dynamically
+  const headerWidth = analysis.commands.length > 0 ? 
+    Math.min(Math.max(...analysis.commands.map(cmd => cmd.name.length)), 25) + 60 : 80;
+  
+  console.log(chalk.gray('═'.repeat(headerWidth)));
 
   if (!analysis.exists) {
     console.log(chalk.yellow('⚠️  ' + analysis.message));
@@ -131,37 +136,53 @@ function displayCommandStats(analysis) {
   console.log(chalk.green(`✅ Found ${analysis.total} command file(s) (${totalSizeKB} KB, ~${totalTokens} tokens total)`));
   console.log('');
 
+  // Calculate dynamic column widths based on content
+  const maxNameLength = Math.max(
+    7, // Minimum width for "Command"
+    Math.max(...analysis.commands.map(cmd => cmd.name.length))
+  );
+  const nameWidth = Math.min(maxNameLength, 25); // Cap at 25 characters
+  
   // Table header
   const header = chalk.bold.blue(
-    'Command'.padEnd(18) + 
-    'Size'.padEnd(7) + 
-    'Lines'.padEnd(6) + 
-    'Words'.padEnd(6) + 
-    'Tokens (aprox)'.padEnd(14) + 
+    'Command'.padEnd(nameWidth) + ' │ ' +
+    'Size'.padEnd(6) + ' │ ' +
+    'Lines'.padEnd(5) + ' │ ' +
+    'Words'.padEnd(5) + ' │ ' +
+    'Tokens (aprox)'.padEnd(13) + ' │ ' +
     'Last Modified'
   );
   console.log(header);
-  console.log(chalk.gray('─'.repeat(97)));
+  
+  // Create separator line with proper spacing
+  const separatorLength = nameWidth + 6 + 5 + 5 + 13 + 13 + 15; // Calculate total width
+  console.log(chalk.gray('─'.repeat(separatorLength)));
 
   // Table rows
   analysis.commands.forEach(cmd => {
-    const sizeFormatted = `${(cmd.size / 1024).toFixed(1)}KB`.padEnd(7);
-    const linesFormatted = cmd.lines.toString().padEnd(6);
-    const wordsFormatted = cmd.wordCount.toString().padEnd(6);
-    const tokensFormatted = cmd.tokens.toString().padEnd(14);
+    // Truncate command name if too long and add ellipsis
+    let displayName = cmd.name;
+    if (displayName.length > nameWidth) {
+      displayName = displayName.substring(0, nameWidth - 3) + '...';
+    }
+    
+    const sizeFormatted = `${(cmd.size / 1024).toFixed(1)}KB`.padEnd(6);
+    const linesFormatted = cmd.lines.toString().padEnd(5);
+    const wordsFormatted = cmd.wordCount.toString().padEnd(5);
+    const tokensFormatted = cmd.tokens.toString().padEnd(13);
     const dateFormatted = cmd.lastModified.toLocaleDateString();
     
-    const row = chalk.white(cmd.name.padEnd(18)) +
-                chalk.cyan(sizeFormatted) +
-                chalk.yellow(linesFormatted) +
-                chalk.green(wordsFormatted) +
-                chalk.magenta(tokensFormatted) +
+    const row = chalk.white(displayName.padEnd(nameWidth)) + chalk.gray(' │ ') +
+                chalk.cyan(sizeFormatted) + chalk.gray(' │ ') +
+                chalk.yellow(linesFormatted) + chalk.gray(' │ ') +
+                chalk.green(wordsFormatted) + chalk.gray(' │ ') +
+                chalk.magenta(tokensFormatted) + chalk.gray(' │ ') +
                 chalk.gray(dateFormatted);
     
     console.log(row);
   });
 
-  console.log(chalk.gray('─'.repeat(97)));
+  console.log(chalk.gray('─'.repeat(separatorLength)));
   console.log(chalk.bold(`Total: ${analysis.total} commands, ${totalSizeKB} KB, ~${totalTokens} tokens`));
   return true; // Indicate commands were found and displayed
 }

@@ -41,9 +41,9 @@ program
   .option('-d, --directory <directory>', 'target directory (default: current directory)')
   .option('-y, --yes', 'skip prompts and use defaults')
   .option('--dry-run', 'show what would be copied without actually copying')
-  .option('--command-stats', 'analyze existing Claude Code commands and offer optimization')
-  .option('--hook-stats', 'analyze existing automation hooks and offer optimization')
-  .option('--mcp-stats', 'analyze existing MCP server configurations and offer optimization')
+  .option('--command-stats, --commands-stats', 'analyze existing Claude Code commands and offer optimization')
+  .option('--hook-stats, --hooks-stats', 'analyze existing automation hooks and offer optimization')
+  .option('--mcp-stats, --mcps-stats', 'analyze existing MCP server configurations and offer optimization')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

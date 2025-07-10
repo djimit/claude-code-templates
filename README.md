@@ -83,8 +83,9 @@ Analyze and optimize your existing Claude Code configuration:
 
 #### Command Analysis
 ```bash
-# View detailed command statistics
+# View detailed command statistics (singular or plural)
 npx claude-code-templates --command-stats
+npx claude-code-templates --commands-stats
 ```
 
 **What you get:**
@@ -95,8 +96,9 @@ npx claude-code-templates --command-stats
 
 #### Hook Analysis
 ```bash
-# Analyze automation hooks configuration
+# Analyze automation hooks configuration (singular or plural)
 npx claude-code-templates --hook-stats
+npx claude-code-templates --hooks-stats
 ```
 
 **What you get:**
@@ -108,8 +110,9 @@ npx claude-code-templates --hook-stats
 
 #### MCP Server Analysis
 ```bash
-# Analyze MCP server configurations
+# Analyze MCP server configurations (singular or plural)
 npx claude-code-templates --mcp-stats
+npx claude-code-templates --mcps-stats
 ```
 
 **What you get:**
@@ -154,14 +157,17 @@ npx claude-code-templates --yes
 # Install to custom directory
 npx claude-code-templates --directory /path/to/project
 
-# Analyze existing commands
+# Analyze existing commands (singular or plural)
 npx claude-code-templates --command-stats
+npx claude-code-templates --commands-stats
 
-# Analyze automation hooks
+# Analyze automation hooks (singular or plural)
 npx claude-code-templates --hook-stats
+npx claude-code-templates --hooks-stats
 
-# Analyze MCP server configurations
+# Analyze MCP server configurations (singular or plural)
 npx claude-code-templates --mcp-stats
+npx claude-code-templates --mcps-stats
 ```
 
 ### Alternative Commands
@@ -314,9 +320,9 @@ claude
 | `-d, --directory` | Target directory | `--directory /path/to/project` |
 | `-y, --yes` | Skip prompts and use defaults | `--yes` |
 | `--dry-run` | Show what would be installed | `--dry-run` |
-| `--command-stats` | Analyze existing commands | `--command-stats` |
-| `--hook-stats` | Analyze automation hooks | `--hook-stats` |
-| `--mcp-stats` | Analyze MCP server configurations | `--mcp-stats` |
+| `--command-stats, --commands-stats` | Analyze existing commands | `--command-stats` |
+| `--hook-stats, --hooks-stats` | Analyze automation hooks | `--hook-stats` |
+| `--mcp-stats, --mcps-stats` | Analyze MCP server configurations | `--mcp-stats` |
 | `--help` | Show help information | `--help` |
 
 ## 🛠️ What Gets Installed

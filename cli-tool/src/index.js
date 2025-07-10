@@ -15,20 +15,20 @@ const { runMCPStats } = require('./mcp-stats');
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
   
-  // Handle command stats analysis
-  if (options.commandStats) {
+  // Handle command stats analysis (both singular and plural)
+  if (options.commandStats || options.commandsStats) {
     await runCommandStats(options);
     return;
   }
   
-  // Handle hook stats analysis
-  if (options.hookStats) {
+  // Handle hook stats analysis (both singular and plural)
+  if (options.hookStats || options.hooksStats) {
     await runHookStats(options);
     return;
   }
   
-  // Handle MCP stats analysis
-  if (options.mcpStats) {
+  // Handle MCP stats analysis (both singular and plural)
+  if (options.mcpStats || options.mcpsStats) {
     await runMCPStats(options);
     return;
   }

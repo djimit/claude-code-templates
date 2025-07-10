@@ -354,6 +354,7 @@ This project is built by the community, for the community. We believe in:
 
 - **🐛 Issues**: [Report bugs or request features](https://github.com/davila7/claude-code-templates/issues)
 - **💬 Discussions**: [Join community discussions](https://github.com/davila7/claude-code-templates/discussions)
+- **🔒 Security**: [Report security vulnerabilities](SECURITY.md)
 - **📖 Documentation**: [Claude Code Official Docs](https://docs.anthropic.com/en/docs/claude-code)
 - **🤝 Contributing**: [Read our contribution guidelines](CONTRIBUTING.md)
 

@@ -81,6 +81,13 @@ async function createClaudeConfig(options = {}) {
     console.log(chalk.yellow('⏹️  Setup cancelled by user.'));
     return;
   }
+
+  // Handle analytics option from onboarding
+  if (config.analytics) {
+    console.log(chalk.blue('📊 Launching Claude Code Analytics Dashboard...'));
+    await runAnalytics(options);
+    return;
+  }
   
   // Get template configuration
   const templateConfig = getTemplateConfig(config);

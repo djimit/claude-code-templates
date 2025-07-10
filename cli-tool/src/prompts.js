@@ -17,7 +17,7 @@ async function interactivePrompts(projectInfo, options = {}) {
   // Build steps array based on options
   if (!options.language) state.steps.push('language');
   if (!options.framework) state.steps.push('framework');
-  state.steps.push('commands', 'hooks', 'mcps', 'confirm');
+  state.steps.push('commands', 'hooks', 'mcps', 'analytics', 'confirm');
 
   while (state.currentStep < state.steps.length) {
     const stepName = state.steps[state.currentStep];
@@ -186,6 +186,15 @@ function getStepConfig(stepName, currentAnswers, projectInfo, options) {
         })),
         prefix: chalk.blue('🔧'),
         pageSize: 15
+      };
+
+    case 'analytics':
+      return {
+        type: 'confirm',
+        name: 'analytics',
+        message: 'Launch Claude Code Analytics Dashboard? (Real-time monitoring of your Claude Code usage)',
+        default: false,
+        prefix: chalk.blue('📊')
       };
 
     case 'confirm':

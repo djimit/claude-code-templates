@@ -52,6 +52,18 @@ claude
 
 The installer will auto-detect your project type and guide you through selecting commands, hooks, and MCP servers.
 
+### 🚀 New: Real-time Analytics Dashboard
+
+```bash
+# Launch the analytics dashboard to monitor your Claude Code usage
+npx cct --analytics
+
+# Or during setup - it will ask if you want to launch analytics
+npx cct
+```
+
+Monitor your Claude Code sessions, track usage patterns, and get insights into your development workflow with our **real-time web dashboard**.
+
 > 💡 **Pro Tip**: Use `npx cct` for the shortest command (just 3 letters!)
 
 ## 🎯 Supported Languages & Frameworks
@@ -65,6 +77,15 @@ The installer will auto-detect your project type and guide you through selecting
 | **Rust** | Axum, Warp, Actix | 🚧 Coming Soon | - | - | - |
 
 ## 🔧 Core Features
+
+### 📊 Real-time Analytics Dashboard
+**NEW!** Monitor your Claude Code usage with our comprehensive analytics dashboard:
+- **Live Session Tracking**: See active conversations and their status in real-time
+- **Usage Statistics**: Total sessions, tokens, and project activity
+- **Conversation History**: Complete session logs with export capabilities (CSV/JSON)
+- **Status Indicators**: PM2-style visual indicators for conversation health
+- **File Watching**: Automatic updates as you work with Claude Code
+- **Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
 
 ### 📋 Smart Commands
 Framework-specific commands for testing, linting, building, debugging, and deployment.
@@ -132,6 +153,9 @@ npx claude-code-templates --mcps-stats
 # Launch real-time Claude Code analytics dashboard
 npx claude-code-templates --analytics
 npx cct --analytics
+
+# Or during setup - it will ask if you want to launch analytics
+npx cct
 ```
 
 **What you get:**
@@ -143,6 +167,9 @@ npx cct --analytics
 - **Live data updates**: File watching for real-time changes
 - **Usage patterns**: Historical data analysis and trends
 - **PM2-like interface** for monitoring Claude Code processes
+- **Export capabilities**: Download session data as CSV or JSON
+- **Session details**: Complete conversation history with timestamps
+- **Interactive onboarding**: Option to launch analytics during setup
 
 ## 💡 Usage Examples
 

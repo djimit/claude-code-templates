@@ -902,6 +902,8 @@ async function createWebDashboard() {
             gap: 2px;
             align-items: center;
             flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
         }
         
         .status-square {
@@ -934,6 +936,22 @@ async function createWebDashboard() {
             background: #6b7280;
         }
         
+        /* Additional specificity to override any table styling */
+        .sessions-table .status-squares .status-square {
+            width: 10px !important;
+            height: 10px !important;
+            min-width: 10px !important;
+            min-height: 10px !important;
+            max-width: 10px !important;
+            max-height: 10px !important;
+            display: inline-block !important;
+            font-size: 0 !important;
+            line-height: 0 !important;
+            border: none !important;
+            outline: none !important;
+            vertical-align: top !important;
+        }
+        
         .status-square:hover::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -962,13 +980,13 @@ async function createWebDashboard() {
             z-index: 1000;
         }
         
-        .loading, .error {
+        .loading, #error {
             text-align: center;
             padding: 40px;
             color: #7d8590;
         }
         
-        .error {
+        #error {
             color: #f85149;
         }
         
@@ -1091,6 +1109,7 @@ async function createWebDashboard() {
         .message {
             padding: 16px;
             border-bottom: 1px solid #21262d;
+            position: relative;
         }
         
         .message:last-child {
@@ -1129,6 +1148,48 @@ async function createWebDashboard() {
             line-height: 1.5;
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+        
+        .message-type-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            cursor: help;
+        }
+        
+        .message-type-indicator.success {
+            background: #d57455;
+        }
+        
+        .message-type-indicator.tool {
+            background: #f97316;
+        }
+        
+        .message-type-indicator.error {
+            background: #dc2626;
+        }
+        
+        .message-type-indicator.pending {
+            background: #6b7280;
+        }
+        
+        .message-type-indicator:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1c1c1c;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-top: 4px;
+            border: 1px solid #30363d;
         }
         
         .back-btn {
@@ -1390,6 +1451,41 @@ async function createWebDashboard() {
             ).join('');
         }
         
+        function getMessageType(message) {
+            if (message.role === 'user') {
+                return {
+                    type: 'pending',
+                    tooltip: 'User input'
+                };
+            } else if (message.role === 'assistant') {
+                const content = message.content || '';
+                
+                if (typeof content === 'string') {
+                    if (content.includes('[Tool:') || content.includes('tool_use')) {
+                        return {
+                            type: 'tool',
+                            tooltip: 'Tool execution'
+                        };
+                    } else if (content.includes('error') || content.includes('Error') || content.includes('failed')) {
+                        return {
+                            type: 'error',
+                            tooltip: 'Error in response'
+                        };
+                    } else {
+                        return {
+                            type: 'success',
+                            tooltip: 'Successful response'
+                        };
+                    }
+                }
+            }
+            
+            return {
+                type: 'success',
+                tooltip: 'Message'
+            };
+        }
+        
         // Filter button handlers
         document.addEventListener('DOMContentLoaded', function() {
             const filterButtons = document.querySelectorAll('.filter-btn');
@@ -1495,17 +1591,21 @@ async function createWebDashboard() {
                     return;
                 }
                 
-                container.innerHTML = sessionData.messages.map((message, index) => \`
-                    <div class="message">
-                        <div class="message-header">
-                            <div class="message-role \${message.role}">\${message.role}</div>
-                            <div class="message-time">
-                                #\${index + 1} • \${message.timestamp ? formatMessageTime(message.timestamp) : 'unknown time'}
+                container.innerHTML = sessionData.messages.map((message, index) => {
+                    const messageType = getMessageType(message);
+                    return \`
+                        <div class="message">
+                            <div class="message-type-indicator \${messageType.type}" data-tooltip="\${messageType.tooltip}"></div>
+                            <div class="message-header">
+                                <div class="message-role \${message.role}">\${message.role}</div>
+                                <div class="message-time">
+                                    #\${index + 1} • \${message.timestamp ? formatMessageTime(message.timestamp) : 'unknown time'}
+                                </div>
                             </div>
+                            <div class="message-content">\${truncateContent(message.content || 'no content')}</div>
                         </div>
-                        <div class="message-content">\${truncateContent(message.content || 'no content')}</div>
-                    </div>
-                \`).join('');
+                    \`;
+                }).join('');
                 
             } catch (error) {
                 document.getElementById('conversationHistory').innerHTML = 

@@ -58,6 +58,9 @@ The installer will auto-detect your project type and guide you through selecting
 # Launch the analytics dashboard to monitor your Claude Code usage
 npx cct --analytics
 
+# Or use the full package name to ensure latest version
+npx claude-code-templates@latest --analytics
+
 # Or during setup - it will ask if you want to launch analytics
 npx cct
 ```
@@ -151,7 +154,7 @@ npx claude-code-templates --mcps-stats
 #### Real-time Analytics Dashboard
 ```bash
 # Launch real-time Claude Code analytics dashboard
-npx claude-code-templates --analytics
+npx claude-code-templates@latest --analytics
 npx cct --analytics
 
 # Or during setup - it will ask if you want to launch analytics

@@ -2,6 +2,8 @@
 
 We welcome contributions! Help us make Claude Code even better for everyone.
 
+**📋 Before contributing, please read our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a respectful and inclusive environment for all community members.**
+
 ## 🚀 Development Setup
 
 ### Prerequisites

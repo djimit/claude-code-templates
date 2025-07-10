@@ -239,6 +239,8 @@ claude-code-templates/
 
 We welcome contributions from the open source community! This project thrives on community input and collaboration.
 
+**📋 Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to ensure a welcoming environment for everyone.**
+
 ### Ways to Contribute
 - **🆕 Add new languages** - Rust, Go, Java, C#, PHP, etc.
 - **🎯 Add frameworks** - Svelte, Next.js, Nuxt.js, NestJS, Laravel, Spring Boot

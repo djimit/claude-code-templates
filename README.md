@@ -127,6 +127,23 @@ npx claude-code-templates --mcps-stats
 - AI-powered MCP configuration optimization
 - Missing server recommendations for your workflow
 
+#### Real-time Analytics Dashboard
+```bash
+# Launch real-time Claude Code analytics dashboard
+npx claude-code-templates --analytics
+npx cct --analytics
+```
+
+**What you get:**
+- **Real-time monitoring** of Claude Code usage and active sessions
+- **Web dashboard** at `http://localhost:3333` with live updates
+- **Comprehensive statistics**: Total sessions, tokens, active projects
+- **Conversation tracking**: Recent conversations with status indicators
+- **Project monitoring**: Active projects with todo file counts
+- **Live data updates**: File watching for real-time changes
+- **Usage patterns**: Historical data analysis and trends
+- **PM2-like interface** for monitoring Claude Code processes
+
 ## 💡 Usage Examples
 
 ### Interactive Setup (Recommended)
@@ -180,6 +197,10 @@ npx claude-code-templates --hooks-stats
 # Analyze MCP server configurations (singular or plural)
 npx claude-code-templates --mcp-stats
 npx claude-code-templates --mcps-stats
+
+# Launch real-time analytics dashboard
+npx claude-code-templates --analytics
+npx cct --analytics
 ```
 
 ### Alternative Commands
@@ -346,6 +367,7 @@ claude
 | `--command-stats, --commands-stats` | Analyze existing commands | `--command-stats` |
 | `--hook-stats, --hooks-stats` | Analyze automation hooks | `--hook-stats` |
 | `--mcp-stats, --mcps-stats` | Analyze MCP server configurations | `--mcp-stats` |
+| `--analytics` | Launch real-time analytics dashboard | `--analytics` |
 | `--help` | Show help information | `--help` |
 
 ## 🛠️ What Gets Installed

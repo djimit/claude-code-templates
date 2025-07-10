@@ -11,6 +11,7 @@ const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
 const { runCommandStats } = require('./command-stats');
 const { runHookStats } = require('./hook-stats');
 const { runMCPStats } = require('./mcp-stats');
+const { runAnalytics } = require('./analytics');
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
@@ -30,6 +31,12 @@ async function createClaudeConfig(options = {}) {
   // Handle MCP stats analysis (both singular and plural)
   if (options.mcpStats || options.mcpsStats) {
     await runMCPStats(options);
+    return;
+  }
+  
+  // Handle analytics dashboard
+  if (options.analytics) {
+    await runAnalytics(options);
     return;
   }
   

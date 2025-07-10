@@ -9,6 +9,7 @@ const { createPrompts, interactivePrompts } = require('./prompts');
 const { copyTemplateFiles, runPostInstallationValidation } = require('./file-operations');
 const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
 const { runCommandStats } = require('./command-stats');
+const { runHookStats } = require('./hook-stats');
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
@@ -16,6 +17,12 @@ async function createClaudeConfig(options = {}) {
   // Handle command stats analysis
   if (options.commandStats) {
     await runCommandStats(options);
+    return;
+  }
+  
+  // Handle hook stats analysis
+  if (options.hookStats) {
+    await runHookStats(options);
     return;
   }
   

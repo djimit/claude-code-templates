@@ -78,12 +78,10 @@ Extend Claude Code with specialized capabilities:
 - **Database Tools**: PostgreSQL, MySQL connections
 - **Development Tools**: Docker, GitHub, filesystem operations
 
-### 📊 Command Analysis
-- Review existing command performance
-- Get optimization recommendations
-- Analyze token usage and efficiency
-- Project-specific improvement suggestions
+### 📊 Analysis Tools
+Analyze and optimize your existing Claude Code configuration:
 
+#### Command Analysis
 ```bash
 # View detailed command statistics
 npx claude-code-templates --command-stats
@@ -94,6 +92,19 @@ npx claude-code-templates --command-stats
 - Lines, words, and last modified date
 - AI-powered optimization recommendations
 - Project-specific improvement suggestions
+
+#### Hook Analysis
+```bash
+# Analyze automation hooks configuration
+npx claude-code-templates --hook-stats
+```
+
+**What you get:**
+- Hook name, type, and status (enabled/disabled)
+- Hook descriptions and purpose
+- Hook summary by type (PreToolUse, PostToolUse, etc.)
+- AI-powered hook optimization suggestions
+- Missing hook recommendations for your workflow
 
 ## 💡 Usage Examples
 
@@ -132,6 +143,9 @@ npx claude-code-templates --directory /path/to/project
 
 # Analyze existing commands
 npx claude-code-templates --command-stats
+
+# Analyze automation hooks
+npx claude-code-templates --hook-stats
 ```
 
 ### Alternative Commands
@@ -283,6 +297,7 @@ claude
 | `-y, --yes` | Skip prompts and use defaults | `--yes` |
 | `--dry-run` | Show what would be installed | `--dry-run` |
 | `--command-stats` | Analyze existing commands | `--command-stats` |
+| `--hook-stats` | Analyze automation hooks | `--hook-stats` |
 | `--help` | Show help information | `--help` |
 
 ## 🛠️ What Gets Installed

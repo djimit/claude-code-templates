@@ -43,11 +43,16 @@ cd your-project-directory
 # Run the installer (no installation required!)
 npx claude-code-templates@latest
 
+# Or use a shorter command
+npx cct@latest
+
 # Start coding with Claude
 claude
 ```
 
 The installer will auto-detect your project type and guide you through selecting commands, hooks, and MCP servers.
+
+> 💡 **Pro Tip**: Use `npx cct` for the shortest command (just 3 letters!)
 
 ## 🎯 Supported Languages & Frameworks
 
@@ -129,21 +134,28 @@ npx claude-code-templates --mcps-stats
 cd my-react-app
 npx claude-code-templates
 # Auto-detects React and suggests optimal configuration
+
+# Or use the short command
+npx cct
 ```
 
 ### Framework-Specific Quick Setup
 ```bash
 # React + TypeScript project
 npx claude-code-templates --language javascript-typescript --framework react --yes
+npx cct --language javascript-typescript --framework react --yes
 
 # Python + Django project
 npx claude-code-templates --language python --framework django --yes
+npx cct --language python --framework django --yes
 
 # Go + Gin API project
 npx claude-code-templates --language go --framework gin --yes
+npx cct --language go --framework gin --yes
 
 # Rust + Axum project
 npx claude-code-templates --language rust --framework axum --yes
+npx cct --language rust --framework axum --yes
 ```
 
 ### Advanced Options
@@ -172,11 +184,21 @@ npx claude-code-templates --mcps-stats
 
 ### Alternative Commands
 All these commands work exactly the same way:
+
+#### Long Form Commands
 ```bash
 npx claude-code-templates    # ✅ Recommended (package name)
 npx claude-code-template     # Singular alias
 npx create-claude-config     # Create-style command
-npx claude-init              # Short alias
+npx claude-setup             # Setup-style command
+npx claude-config            # Config-style command
+npx claude-init              # Init-style command
+```
+
+#### Short Form Commands
+```bash
+npx cctemplates              # Claude Code Templates
+npx cct                      # ⚡ Super short (3 letters)
 ```
 
 ## 🛡️ Safety Features
@@ -306,6 +328,7 @@ npm install -g @anthropic-ai/claude-code
 # Set up your project (no installation required!)
 cd your-project
 npx claude-code-templates
+# Or use the short command: npx cct
 
 # Start coding with Claude
 claude
@@ -384,5 +407,7 @@ This project is built by the community, for the community. We believe in:
 ---
 
 **⭐ Found this useful? Give us a star on GitHub to support the project!**
+
+**🚀 Ready to supercharge your development with Claude Code? Run `npx cct` now!**
 
 **🤝 Want to contribute? Check out our [contribution guidelines](CONTRIBUTING.md) - all skill levels welcome!**

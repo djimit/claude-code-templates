@@ -43,6 +43,7 @@ program
   .option('--dry-run', 'show what would be copied without actually copying')
   .option('--command-stats', 'analyze existing Claude Code commands and offer optimization')
   .option('--hook-stats', 'analyze existing automation hooks and offer optimization')
+  .option('--mcp-stats', 'analyze existing MCP server configurations and offer optimization')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

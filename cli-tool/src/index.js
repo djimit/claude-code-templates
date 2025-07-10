@@ -10,6 +10,7 @@ const { copyTemplateFiles, runPostInstallationValidation } = require('./file-ope
 const { getHooksForLanguage, getMCPsForLanguage } = require('./hook-scanner');
 const { runCommandStats } = require('./command-stats');
 const { runHookStats } = require('./hook-stats');
+const { runMCPStats } = require('./mcp-stats');
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
@@ -23,6 +24,12 @@ async function createClaudeConfig(options = {}) {
   // Handle hook stats analysis
   if (options.hookStats) {
     await runHookStats(options);
+    return;
+  }
+  
+  // Handle MCP stats analysis
+  if (options.mcpStats) {
+    await runMCPStats(options);
     return;
   }
   

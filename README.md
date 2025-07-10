@@ -106,6 +106,19 @@ npx claude-code-templates --hook-stats
 - AI-powered hook optimization suggestions
 - Missing hook recommendations for your workflow
 
+#### MCP Server Analysis
+```bash
+# Analyze MCP server configurations
+npx claude-code-templates --mcp-stats
+```
+
+**What you get:**
+- Server name, category, and status (enabled/disabled)
+- Command, complexity rating, and descriptions
+- Server summary by category (IDE, Database, Web, etc.)
+- AI-powered MCP configuration optimization
+- Missing server recommendations for your workflow
+
 ## 💡 Usage Examples
 
 ### Interactive Setup (Recommended)
@@ -146,6 +159,9 @@ npx claude-code-templates --command-stats
 
 # Analyze automation hooks
 npx claude-code-templates --hook-stats
+
+# Analyze MCP server configurations
+npx claude-code-templates --mcp-stats
 ```
 
 ### Alternative Commands
@@ -300,6 +316,7 @@ claude
 | `--dry-run` | Show what would be installed | `--dry-run` |
 | `--command-stats` | Analyze existing commands | `--command-stats` |
 | `--hook-stats` | Analyze automation hooks | `--hook-stats` |
+| `--mcp-stats` | Analyze MCP server configurations | `--mcp-stats` |
 | `--help` | Show help information | `--help` |
 
 ## 🛠️ What Gets Installed

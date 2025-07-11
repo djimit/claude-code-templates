@@ -8,18 +8,24 @@
 
 <img width="1105" height="685" alt="Screenshot 2025-07-10 at 21 57 42" src="https://github.com/user-attachments/assets/a4499cc4-691e-45ad-afe2-fce8f14a69db" />
 
+---
+
 ## 📋 Quick Start
 
 ```bash
 # Navigate to your project
 cd your-project-directory
 
-# Run the installer (no installation required!)
+# Run the installer for setup Claude Code Templates
 npx claude-code-templates@latest
+
+# Launch the analytics dashboard to monitor your Claude Code usage
+npx claude-code-templates@latest --analytics
 
 # Start coding with Claude
 claude
 ```
+---
 
 ```bash
 
@@ -47,30 +53,35 @@ claude
                     🚀 Setup Claude Code for any project language 🚀
 ```
 
-✨ **Configuration Made Easy**: Auto-detect your project and set up Claude Code with optimal commands, hooks, and MCP servers  
-📊 **Real-time Monitoring**: Track active sessions, usage patterns, and performance with a beautiful web dashboard  
-🔧 **Framework-Specific**: Tailored configurations for JavaScript/TypeScript, Python, Go, Rust, and more  
-🤖 **Smart Analytics**: Monitor your Claude Code agents and optimize your development workflow
+## 🔧 Core Features
 
-### Real-time Analytics Dashboard
+### 📊 Real-time Analytics Dashboard
+**NEW!** Monitor and optimize your Claude Code agents with our comprehensive analytics dashboard:
+- **Live Session Tracking**: See active conversations and their status in real-time
+- **Usage Statistics**: Total sessions, tokens, and project activity with trends
+- **Conversation History**: Complete session logs with export capabilities (CSV/JSON)
+- **Status Indicators**: PM2-style visual indicators for conversation health
+- **File Watching**: Automatic updates as you work with Claude Code
+- **Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
+- **Performance Monitoring**: Track Claude Code agent performance and optimization opportunities
+- **Usage Patterns**: Identify your most productive coding sessions and workflows
 
-```bash
-# Launch the analytics dashboard to monitor your Claude Code usage
-npx claude-code-templates@latest --analytics
+### 📋 Smart Commands & Configuration
+Intelligent project setup with framework-specific commands:
+- **Auto-Detection**: Automatically detect your project type and suggest optimal configurations
+- **Quick Setup**: Framework-specific commands for testing, linting, building, debugging, and deployment
+- **Optimized Workflows**: Pre-configured commands tailored to your development stack
+- **Best Practices**: Industry-standard configurations and development patterns
 
-```
+## What Gets Installed
 
-**🎯 Why Use Analytics?**
-- **📈 Performance Insights**: Track token usage, session duration, and productivity metrics
-- **🔍 Active Session Monitoring**: See which conversations are active, idle, or need attention
-- **💡 Usage Optimization**: Identify patterns to improve your development workflow
-- **📊 Historical Data**: Export session data for analysis and reporting
-- **🚀 Real-time Updates**: Live dashboard updates as you work with Claude Code
-- **🎨 Beautiful Interface**: Clean, terminal-style web dashboard at `http://localhost:3333`
+### Core Files
+- **`CLAUDE.md`** - Main configuration file with language-specific best practices
+- **`.claude/settings.json`** - Automation hooks and Claude Code settings
+- **`.claude/commands/`** - Custom commands for common development tasks
+- **`.mcp.json`** - Model Context Protocol server configurations
 
-**Perfect for**: Developers, teams, and organizations wanting to optimize their Claude Code usage and track development productivity.
-
-## 🎯 Supported Languages & Frameworks
+## Supported Languages & Frameworks
 
 | Language | Frameworks | Status | Commands | Hooks | MCP |
 |----------|------------|---------|----------|--------|-----|
@@ -80,41 +91,21 @@ npx claude-code-templates@latest --analytics
 | **Go** | Gin, Echo, Fiber | 🚧 Coming Soon | - | - | - |
 | **Rust** | Axum, Warp, Actix | 🚧 Coming Soon | - | - | - |
 
-## 🔧 Core Features
-
-### 📊 Real-time Analytics Dashboard
-**NEW!** Monitor and optimize your Claude Code agents with our comprehensive analytics dashboard:
-- **🔴 Live Session Tracking**: See active conversations and their status in real-time
-- **📈 Usage Statistics**: Total sessions, tokens, and project activity with trends
-- **📝 Conversation History**: Complete session logs with export capabilities (CSV/JSON)
-- **💡 Status Indicators**: PM2-style visual indicators for conversation health
-- **👀 File Watching**: Automatic updates as you work with Claude Code
-- **🌐 Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
-- **⚡ Performance Monitoring**: Track Claude Code agent performance and optimization opportunities
-- **🎯 Usage Patterns**: Identify your most productive coding sessions and workflows
-
-### 📋 Smart Commands & Configuration
-Intelligent project setup with framework-specific commands:
-- **🔧 Auto-Detection**: Automatically detect your project type and suggest optimal configurations
-- **⚡ Quick Setup**: Framework-specific commands for testing, linting, building, debugging, and deployment
-- **🎯 Optimized Workflows**: Pre-configured commands tailored to your development stack
-- **📚 Best Practices**: Industry-standard configurations and development patterns
-
-### 🤖 Automation Hooks
+### Automation Hooks
 Execute at key moments during Claude Code workflow:
 - **PreToolUse**: Security checks, logging, statement detection
 - **PostToolUse**: Auto-formatting, type checking, testing
 - **Stop**: Final linting, bundle analysis
 - **Notification**: Activity logging and monitoring
 
-### 🔌 MCP Integration
+### MCP Integration
 Extend Claude Code with specialized capabilities:
 - **IDE Integration**: VS Code diagnostics & Jupyter execution
 - **Web Search**: Real-time information retrieval
 - **Database Tools**: PostgreSQL, MySQL connections
 - **Development Tools**: Docker, GitHub, filesystem operations
 
-### 📊 Analysis Tools
+### Analysis Tools
 Analyze and optimize your existing Claude Code configuration:
 
 #### Command Analysis
@@ -155,22 +146,7 @@ npx claude-code-templates --mcps-stats
 - AI-powered MCP configuration optimization
 - Missing server recommendations for your workflow
 
-#### Real-time Analytics Dashboard
-
-**What you get:**
-- **Real-time monitoring** of Claude Code usage and active sessions
-- **Web dashboard** at `http://localhost:3333` with live updates
-- **Comprehensive statistics**: Total sessions, tokens, active projects
-- **Conversation tracking**: Recent conversations with status indicators
-- **Project monitoring**: Active projects with todo file counts
-- **Live data updates**: File watching for real-time changes
-- **Usage patterns**: Historical data analysis and trends
-- **PM2-like interface** for monitoring Claude Code processes
-- **Export capabilities**: Download session data as CSV or JSON
-- **Session details**: Complete conversation history with timestamps
-- **Interactive onboarding**: Option to launch analytics during setup
-
-## 💡 Usage Examples
+## Usage Examples
 
 ### Interactive Setup (Recommended)
 ```bash
@@ -245,7 +221,7 @@ npx cctemplates              # Claude Code Templates
 npx cct                      # ⚡ Super short (3 letters)
 ```
 
-## 🛡️ Safety Features
+## Safety Features
 
 - **Automatic Backups**: Existing files are backed up before changes
 - **Confirmation Required**: Always asks before making changes (unless `--yes` flag)
@@ -253,7 +229,7 @@ npx cct                      # ⚡ Super short (3 letters)
 - **Cancel Anytime**: Press Ctrl+C or answer 'No' to cancel
 - **Back Navigation**: Modify previous selections during setup
 
-## 🌟 What Makes This Special?
+## What Makes This Special?
 
 ### Before (Manual Setup)
 - Hours of configuration research
@@ -267,80 +243,6 @@ npx cct                      # ⚡ Super short (3 letters)
 npx claude-code-templates --language javascript-typescript --framework react --yes
 # ✅ Done in 30 seconds!
 ```
-
-### Open Source Benefits
-- **Community-Driven**: Built by developers, for developers
-- **Always Updated**: Latest best practices and framework support
-- **Extensible**: Easy to add new languages and frameworks
-- **Transparent**: All code is open and auditable
-- **Free Forever**: MIT license, no vendor lock-in
-
-## 🔧 Language-Specific Features
-
-### JavaScript/TypeScript
-- **Frameworks**: React, Vue, Angular, Node.js
-- **Hooks**: Console.log detection, Prettier formatting, TypeScript checking, ESLint
-- **MCP**: TypeScript SDK, GitHub, Puppeteer, Slack, File System
-- **Commands**: Testing (Jest), building (Webpack/Vite), debugging, deployment
-
-### Python
-- **Frameworks**: Django, Flask, FastAPI
-- **Hooks**: Print statement detection, Black formatting, MyPy type checking, pytest
-- **MCP**: Python SDK, Docker, Jupyter, PostgreSQL, Opik
-- **Commands**: Testing (pytest), linting (flake8), virtual env management
-
-### Go (comming soon)
-- **Frameworks**: Gin, Echo, Fiber
-- **Hooks**: Print statement detection, gofmt formatting, go vet analysis
-- **MCP**: Go SDK, Language Server, MySQL
-- **Commands**: Testing (go test), building, dependency management
-
-### Rust (comming soon)
-- **Frameworks**: Axum, Warp, Actix
-- **Hooks**: Print macro detection, rustfmt formatting, clippy linting
-- **MCP**: Rust SDK, Documentation, Substrate
-- **Commands**: Testing (cargo test), building (cargo build), clippy analysis
-
-## 🤝 Contributing
-
-We welcome contributions from the open source community! This project thrives on community input and collaboration.
-
-**📋 Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to ensure a welcoming environment for everyone.**
-
-### Ways to Contribute
-- **🆕 Add new languages** - Rust, Go, Java, C#, PHP, etc.
-- **🎯 Add frameworks** - Svelte, Next.js, Nuxt.js, NestJS, Laravel, Spring Boot
-- **🔧 Improve commands** - Better testing, deployment, debugging workflows
-- **📖 Write documentation** - Clearer guides and examples
-- **🐛 Fix bugs** - Improvements to existing templates
-- **💡 Suggest features** - New CLI features and options
-
-### Quick Start for Contributors
-```bash
-# Fork and clone the repository
-git clone https://github.com/your-username/claude-code-templates.git
-cd claude-code-templates
-
-# Set up development environment
-cd cli-tool
-npm install && npm link
-
-# Test your changes
-npm test
-npm start -- --dry-run
-
-# Submit a pull request
-git checkout -b feature/your-feature
-# Make changes, test, commit, push
-```
-
-**📖 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines**
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 14+ (for the installer)
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 
 ### CLI Options
 
@@ -357,34 +259,19 @@ git checkout -b feature/your-feature
 | `--analytics` | Launch real-time analytics dashboard | `--analytics` |
 | `--help` | Show help information | `--help` |
 
-## 🛠️ What Gets Installed
+### Open Source Benefits
+- **Community-Driven**: Built by developers, for developers
+- **Always Updated**: Latest best practices and framework support
+- **Extensible**: Easy to add new languages and frameworks
+- **Transparent**: All code is open and auditable
+- **Free Forever**: MIT license, no vendor lock-in
 
-### Core Files
-- **`CLAUDE.md`** - Main configuration file with language-specific best practices
-- **`.claude/settings.json`** - Automation hooks and Claude Code settings
-- **`.claude/commands/`** - Custom commands for common development tasks
-- **`.mcp.json`** - Model Context Protocol server configurations
+## 🤝 Contributing
 
-### Language-Specific Commands
-Each language template includes optimized commands for:
-- **Testing**: Jest, pytest, go test, cargo test
-- **Linting**: ESLint, flake8, go vet, clippy
-- **Formatting**: Prettier, Black, gofmt, rustfmt
-- **Building**: Webpack, setuptools, go build, cargo build
-- **Debugging**: Chrome DevTools, pdb, delve, gdb
-- **Framework Operations**: Component generation, migrations, scaffolding
+We welcome contributions from the open source community! This project thrives on community input and collaboration.
 
-### Automation Hooks
-- **PreToolUse**: Code quality checks, security scans, statement detection
-- **PostToolUse**: Auto-formatting, type checking, test execution
-- **Stop**: Final linting, bundle analysis, cleanup
-- **Notification**: Activity logging, performance monitoring
-
-### MCP Servers
-- **IDE Integration**: VS Code diagnostics, Jupyter kernel execution
-- **Web Search**: Real-time web search for documentation and solutions
-- **Database Tools**: PostgreSQL, MySQL, SQLite connections
-- **Development Tools**: Docker containers, GitHub API, filesystem operations
+**Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to ensure a welcoming environment for everyone.**
+**See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines**
 
 ## 📄 License
 

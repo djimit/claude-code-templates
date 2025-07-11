@@ -40,7 +40,42 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
-  console.log(chalk.blue('🚀 Setting up Claude Code configuration...'));
+  // Add initial choice prompt (only if no specific options are provided)
+  if (!options.yes && !options.language && !options.framework && !options.dryRun) {
+    console.log(chalk.blue('🚀 Welcome to Claude Code Templates!'));
+    console.log('');
+    
+    const initialChoice = await inquirer.prompt([{
+      type: 'list',
+      name: 'action',
+      message: 'What would you like to do?',
+      choices: [
+        {
+          name: '📊 Analytics Dashboard - Monitor your Claude Code usage and sessions',
+          value: 'analytics',
+          short: 'Analytics Dashboard'
+        },
+        {
+          name: '⚙️  Project Setup - Configure Claude Code for your project',
+          value: 'setup',
+          short: 'Project Setup'
+        }
+      ],
+      default: 'setup'
+    }]);
+    
+    if (initialChoice.action === 'analytics') {
+      console.log(chalk.blue('📊 Launching Claude Code Analytics Dashboard...'));
+      await runAnalytics(options);
+      return;
+    }
+    
+    // Continue with setup if user chose 'setup'
+    console.log(chalk.blue('⚙️  Setting up Claude Code configuration...'));
+  } else {
+    console.log(chalk.blue('🚀 Setting up Claude Code configuration...'));
+  }
+  
   console.log(chalk.gray(`Target directory: ${targetDir}`));
   
   // Detect existing project

@@ -918,6 +918,7 @@ async function createWebDashboard() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude Code Analytics - Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1032,6 +1033,111 @@ async function createWebDashboard() {
             font-size: 0.75rem;
             display: block;
             margin-top: 2px;
+        }
+        
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 20px 0;
+            padding: 12px 0;
+            border-top: 1px solid #21262d;
+            border-bottom: 1px solid #21262d;
+        }
+        
+        .chart-controls-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .chart-controls-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .date-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .date-label {
+            color: #7d8590;
+            font-size: 0.875rem;
+        }
+        
+        .date-input {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        
+        .date-input:focus {
+            outline: none;
+            border-color: #d57455;
+        }
+        
+        .refresh-btn {
+            background: none;
+            border: 1px solid #30363d;
+            color: #7d8590;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .refresh-btn:hover {
+            border-color: #d57455;
+            color: #d57455;
+        }
+        
+        .refresh-btn.loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin: 20px 0 30px 0;
+        }
+        
+        .chart-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .chart-title {
+            color: #d57455;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chart-canvas {
+            width: 100% !important;
+            height: 200px !important;
         }
         
         .filter-bar {
@@ -1518,6 +1624,35 @@ async function createWebDashboard() {
                 gap: 20px;
             }
             
+            .chart-controls {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .chart-controls-left {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .chart-controls-right {
+                justify-content: center;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin: 20px 0;
+            }
+            
+            .chart-card {
+                padding: 16px;
+            }
+            
+            .chart-canvas {
+                height: 180px !important;
+            }
+            
             .filter-bar {
                 flex-direction: column;
                 align-items: flex-start;
@@ -1595,6 +1730,40 @@ async function createWebDashboard() {
                 </div>
             </div>
             
+            <div class="chart-controls">
+                <div class="chart-controls-left">
+                    <div class="date-control">
+                        <span class="date-label">from:</span>
+                        <input type="date" id="dateFrom" class="date-input">
+                    </div>
+                    <div class="date-control">
+                        <span class="date-label">to:</span>
+                        <input type="date" id="dateTo" class="date-input">
+                    </div>
+                </div>
+                <div class="chart-controls-right">
+                    <button class="refresh-btn" onclick="refreshCharts()" id="refreshBtn">
+                        refresh charts
+                    </button>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-title">
+                        📊 token usage over time
+                    </div>
+                    <canvas id="tokenChart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">
+                        🎯 project activity distribution
+                    </div>
+                    <canvas id="projectChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
             <div class="filter-bar">
                 <span class="filter-label">filter conversations:</span>
                 <div class="filter-buttons">
@@ -1661,6 +1830,9 @@ async function createWebDashboard() {
         let allConversations = [];
         let currentFilter = 'active';
         let currentSession = null;
+        let tokenChart = null;
+        let projectChart = null;
+        let allData = null;
         
         async function loadData() {
             try {
@@ -1677,7 +1849,15 @@ async function createWebDashboard() {
                 
                 updateStats(data.summary);
                 allConversations = data.conversations;
-                window.allData = data; // NEW: Store data globally for access
+                allData = data; // Store data globally for access
+                window.allData = data; // Keep for backward compatibility
+                
+                // Initialize date inputs on first load
+                if (!document.getElementById('dateFrom').value) {
+                    initializeDateInputs();
+                }
+                
+                updateCharts(data);
                 updateSessionsTable();
                 
             } catch (error) {
@@ -1699,6 +1879,296 @@ async function createWebDashboard() {
                 document.getElementById('claudeSessionsDetail').textContent = 
                     \`this month: \${summary.claudeSessions.currentMonth} • this week: \${summary.claudeSessions.thisWeek}\`;
             }
+        }
+        
+        function initializeDateInputs() {
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            document.getElementById('dateFrom').value = sevenDaysAgo.toISOString().split('T')[0];
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+        }
+        
+        function getDateRange() {
+            const fromDate = new Date(document.getElementById('dateFrom').value);
+            const toDate = new Date(document.getElementById('dateTo').value);
+            toDate.setHours(23, 59, 59, 999); // Include the entire end date
+            
+            return { fromDate, toDate };
+        }
+        
+        function filterConversationsByDate(conversations) {
+            const { fromDate, toDate } = getDateRange();
+            
+            return conversations.filter(conv => {
+                const convDate = new Date(conv.lastModified);
+                return convDate >= fromDate && convDate <= toDate;
+            });
+        }
+        
+        function updateCharts(data) {
+            // Wait for Chart.js to load before creating charts
+            if (typeof Chart === 'undefined') {
+                console.log('Chart.js not loaded yet, retrying in 100ms...');
+                setTimeout(() => updateCharts(data), 100);
+                return;
+            }
+            
+            // Use ALL conversations but filter chart display by date range
+            // This maintains the original behavior
+            
+            // Update Token Usage Over Time Chart
+            updateTokenChart(data.conversations);
+            
+            // Update Project Activity Distribution Chart  
+            updateProjectChart(data.conversations);
+        }
+        
+        async function refreshCharts() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.classList.add('loading');
+            refreshBtn.textContent = '🔄 refreshing...';
+            
+            try {
+                // Use existing data but re-filter and update charts
+                if (allData) {
+                    updateCharts(allData);
+                }
+            } catch (error) {
+                console.error('Error refreshing charts:', error);
+            } finally {
+                refreshBtn.classList.remove('loading');
+                refreshBtn.textContent = '🔄 refresh charts';
+            }
+        }
+        
+        function updateTokenChart(conversations) {
+            // Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not available for updateTokenChart');
+                return;
+            }
+            
+            // Prepare data for selected date range
+            const { fromDate, toDate } = getDateRange();
+            const dateRange = [];
+            
+            const currentDate = new Date(fromDate);
+            while (currentDate <= toDate) {
+                dateRange.push({
+                    date: currentDate.toISOString().split('T')[0],
+                    label: currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                    tokens: 0
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Aggregate tokens by day
+            conversations.forEach(conv => {
+                const convDate = new Date(conv.lastModified).toISOString().split('T')[0];
+                const dayData = dateRange.find(day => day.date === convDate);
+                if (dayData) {
+                    dayData.tokens += conv.tokens;
+                }
+            });
+            
+            const ctx = document.getElementById('tokenChart').getContext('2d');
+            
+            if (tokenChart) {
+                tokenChart.destroy();
+            }
+            
+            tokenChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dateRange.map(day => day.label),
+                    datasets: [{
+                        label: 'Tokens',
+                        data: dateRange.map(day => day.tokens),
+                        borderColor: '#d57455',
+                        backgroundColor: 'rgba(213, 116, 85, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#d57455',
+                        pointBorderColor: '#d57455',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#161b22',
+                            titleColor: '#d57455',
+                            bodyColor: '#c9d1d9',
+                            borderColor: '#30363d',
+                            borderWidth: 1,
+                            titleFont: {
+                                family: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                size: 12
+                            },
+                            bodyFont: {
+                                family: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                size: 11
+                            },
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    return \`Tokens: \${context.parsed.y.toLocaleString()}\`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    hover: {
+                        animationDuration: 200
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: '#30363d',
+                                borderColor: '#30363d'
+                            },
+                            ticks: {
+                                color: '#7d8590',
+                                font: {
+                                    family: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#30363d',
+                                borderColor: '#30363d'
+                            },
+                            ticks: {
+                                color: '#7d8590',
+                                font: {
+                                    family: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateProjectChart(conversations) {
+            // Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not available for updateProjectChart');
+                return;
+            }
+            
+            // Aggregate data by project
+            const projectData = {};
+            
+            conversations.forEach(conv => {
+                if (!projectData[conv.project]) {
+                    projectData[conv.project] = 0;
+                }
+                projectData[conv.project] += conv.tokens;
+            });
+            
+            // Get top 5 projects and group others
+            const sortedProjects = Object.entries(projectData)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5);
+            
+            const othersTotal = Object.entries(projectData)
+                .slice(5)
+                .reduce((sum, [,tokens]) => sum + tokens, 0);
+            
+            if (othersTotal > 0) {
+                sortedProjects.push(['others', othersTotal]);
+            }
+            
+            // Terminal-style colors
+            const colors = [
+                '#d57455', // Orange
+                '#3fb950', // Green
+                '#a5d6ff', // Blue
+                '#f97316', // Orange variant
+                '#c9d1d9', // Light gray
+                '#7d8590'  // Gray
+            ];
+            
+            const ctx = document.getElementById('projectChart').getContext('2d');
+            
+            if (projectChart) {
+                projectChart.destroy();
+            }
+            
+            projectChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sortedProjects.map(([project]) => project),
+                    datasets: [{
+                        data: sortedProjects.map(([,tokens]) => tokens),
+                        backgroundColor: colors.slice(0, sortedProjects.length),
+                        borderColor: '#161b22',
+                        borderWidth: 2,
+                        hoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#7d8590',
+                                font: {
+                                    family: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                    size: 10
+                                },
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#161b22',
+                            titleColor: '#d57455',
+                            bodyColor: '#c9d1d9',
+                            borderColor: '#30363d',
+                            borderWidth: 1,
+                            titleFont: {
+                                family: 'Monaco, Menlo, Ubuntu Mono, monospace'
+                            },
+                            bodyFont: {
+                                family: 'Monaco, Menlo, Ubuntu Mono, monospace'
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((sum, value) => sum + value, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return \`\${context.label}: \${context.parsed.toLocaleString()} tokens (\${percentage}%)\`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
         }
         
         function updateSessionsTable() {
@@ -2134,11 +2604,26 @@ async function createWebDashboard() {
             }
         }
         
-        // Load initial data
-        loadData();
-        
-        // Refresh data every 5 seconds
-        setInterval(loadData, 5000);
+        // Wait for DOM and Chart.js to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Chart.js is loaded
+            function initWhenReady() {
+                if (typeof Chart !== 'undefined') {
+                    console.log('Chart.js loaded successfully');
+                    loadData();
+                    // No automatic refresh - manual only
+                } else {
+                    console.log('Waiting for Chart.js to load...');
+                    setTimeout(initWhenReady, 100);
+                }
+            }
+            
+            initWhenReady();
+            
+            // Add event listeners for date inputs
+            document.getElementById('dateFrom').addEventListener('change', refreshCharts);
+            document.getElementById('dateTo').addEventListener('change', refreshCharts);
+        });
         
         // Add keyboard shortcut for refresh (F5 or Ctrl+R)
         document.addEventListener('keydown', function(e) {

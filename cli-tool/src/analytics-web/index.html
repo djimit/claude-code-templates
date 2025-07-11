@@ -190,6 +190,23 @@
         .session-id {
             color: #d57455;
             font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .process-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            cursor: help;
+        }
+        
+        .process-indicator.orphan {
+            background: #f85149;
         }
         
         .session-id-container {
@@ -746,6 +763,7 @@
                 
                 updateStats(data.summary);
                 allConversations = data.conversations;
+                window.allData = data; // NEW: Store data globally for access
                 updateSessionsTable();
                 
             } catch (error) {
@@ -791,7 +809,10 @@
                 <tr onclick="showSessionDetail('${conv.id}')" style="cursor: pointer;">
                     <td>
                         <div class="session-id-container">
-                            <div class="session-id">${conv.id.substring(0, 8)}...</div>
+                            <div class="session-id">
+                                ${conv.id.substring(0, 8)}...
+                                ${conv.runningProcess ? `<span class="process-indicator" title="Active claude process (PID: ${conv.runningProcess.pid})"></span>` : ''}
+                            </div>
                             <div class="status-squares">
                                 ${generateStatusSquaresHTML(conv.statusSquares || [])}
                             </div>
@@ -806,6 +827,33 @@
                     <td class="status-${conv.status}">${conv.status}</td>
                 </tr>
             `).join('');
+            
+            // NEW: Add orphan processes (active claude commands without conversation)
+            if (window.allData && window.allData.orphanProcesses && window.allData.orphanProcesses.length > 0) {
+                const orphanRows = window.allData.orphanProcesses.map(process => `
+                    <tr style="background: rgba(248, 81, 73, 0.1); cursor: default;">
+                        <td>
+                            <div class="session-id-container">
+                                <div class="session-id">
+                                    orphan-${process.pid}
+                                    <span class="process-indicator orphan" title="Orphan claude process (PID: ${process.pid})"></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="session-project">${process.workingDir}</td>
+                        <td class="session-model">Unknown</td>
+                        <td class="session-messages">-</td>
+                        <td class="session-tokens">-</td>
+                        <td class="session-time">Running</td>
+                        <td class="conversation-state">Active process</td>
+                        <td class="status-active">orphan</td>
+                    </tr>
+                `).join('');
+                
+                if (currentFilter === 'active' || currentFilter === 'all') {
+                    tableBody.innerHTML += orphanRows;
+                }
+            }
         }
         
         function formatTime(date) {

@@ -4,8 +4,22 @@
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+**CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard. Open source and runs locally.
+
 <img width="1105" height="685" alt="Screenshot 2025-07-10 at 21 57 42" src="https://github.com/user-attachments/assets/a4499cc4-691e-45ad-afe2-fce8f14a69db" />
 
+## 📋 Quick Start
+
+```bash
+# Navigate to your project
+cd your-project-directory
+
+# Run the installer (no installation required!)
+npx claude-code-templates@latest
+
+# Start coding with Claude
+claude
+```
 
 ```bash
 
@@ -33,46 +47,17 @@
                     🚀 Setup Claude Code for any project language 🚀
 ```
 
-**The ultimate CLI tool for configuring and monitoring Claude Code** - Supercharge your development workflow with intelligent setup, comprehensive monitoring, and real-time analytics. Built by the community, for the community.
-
 ✨ **Configuration Made Easy**: Auto-detect your project and set up Claude Code with optimal commands, hooks, and MCP servers  
 📊 **Real-time Monitoring**: Track active sessions, usage patterns, and performance with a beautiful web dashboard  
 🔧 **Framework-Specific**: Tailored configurations for JavaScript/TypeScript, Python, Go, Rust, and more  
 🤖 **Smart Analytics**: Monitor your Claude Code agents and optimize your development workflow
 
-<!-- [gif] -->
-
-## 📋 Quick Start
-
-```bash
-# Navigate to your project
-cd your-project-directory
-
-# Run the installer (no installation required!)
-npx claude-code-templates@latest
-
-# Or use a shorter command
-npx cct@latest
-
-# Start coding with Claude
-claude
-```
-
-The installer will auto-detect your project type and guide you through selecting commands, hooks, and MCP servers.
-
-### 🚀 New: Real-time Analytics Dashboard
-
-Transform your Claude Code development experience with our **comprehensive monitoring solution**:
+### Real-time Analytics Dashboard
 
 ```bash
 # Launch the analytics dashboard to monitor your Claude Code usage
-npx cct --analytics
-
-# Or use the full package name to ensure latest version
 npx claude-code-templates@latest --analytics
 
-# Or during setup - it will ask if you want to launch analytics
-npx cct
 ```
 
 **🎯 Why Use Analytics?**
@@ -84,8 +69,6 @@ npx cct
 - **🎨 Beautiful Interface**: Clean, terminal-style web dashboard at `http://localhost:3333`
 
 **Perfect for**: Developers, teams, and organizations wanting to optimize their Claude Code usage and track development productivity.
-
-> 💡 **Pro Tip**: Use `npx cct` for the shortest command (just 3 letters!)
 
 ## 🎯 Supported Languages & Frameworks
 
@@ -136,8 +119,7 @@ Analyze and optimize your existing Claude Code configuration:
 
 #### Command Analysis
 ```bash
-# View detailed command statistics (singular or plural)
-npx claude-code-templates --command-stats
+# View detailed command statistics
 npx claude-code-templates --commands-stats
 ```
 
@@ -149,8 +131,7 @@ npx claude-code-templates --commands-stats
 
 #### Hook Analysis
 ```bash
-# Analyze automation hooks configuration (singular or plural)
-npx claude-code-templates --hook-stats
+# Analyze automation hooks configuration
 npx claude-code-templates --hooks-stats
 ```
 
@@ -163,8 +144,7 @@ npx claude-code-templates --hooks-stats
 
 #### MCP Server Analysis
 ```bash
-# Analyze MCP server configurations (singular or plural)
-npx claude-code-templates --mcp-stats
+# Analyze MCP server configurations
 npx claude-code-templates --mcps-stats
 ```
 
@@ -176,14 +156,6 @@ npx claude-code-templates --mcps-stats
 - Missing server recommendations for your workflow
 
 #### Real-time Analytics Dashboard
-```bash
-# Launch real-time Claude Code analytics dashboard
-npx claude-code-templates@latest --analytics
-npx cct --analytics
-
-# Or during setup - it will ask if you want to launch analytics
-npx cct
-```
 
 **What you get:**
 - **Real-time monitoring** of Claude Code usage and active sessions
@@ -205,9 +177,6 @@ npx cct
 cd my-react-app
 npx claude-code-templates
 # Auto-detects React and suggests optimal configuration
-
-# Or use the short command
-npx cct
 ```
 
 ### Framework-Specific Quick Setup
@@ -306,28 +275,6 @@ npx claude-code-templates --language javascript-typescript --framework react --y
 - **Transparent**: All code is open and auditable
 - **Free Forever**: MIT license, no vendor lock-in
 
-## 🏗️ Project Architecture
-
-```
-claude-code-templates/
-├── cli-tool/                    # 📦 NPM Package
-│   ├── src/                     # Core CLI implementation
-│   │   ├── index.js            # Main entry point
-│   │   ├── prompts.js          # Interactive prompts
-│   │   ├── command-stats.js    # Command analysis
-│   │   └── templates.js        # Template configuration
-│   ├── templates/              # Language and framework templates
-│   │   ├── common/             # Universal templates
-│   │   ├── javascript-typescript/ # JS/TS with React, Vue, Angular, Node.js
-│   │   ├── python/             # Python with Django, Flask, FastAPI
-│   │   ├── go/                 # Go with Gin, Echo, Fiber
-│   │   └── rust/               # Rust with Axum, Warp, Actix
-│   └── bin/                    # Executable scripts
-├── CONTRIBUTING.md             # Contribution guidelines
-├── LICENSE                     # MIT License
-└── README.md                   # This file
-```
-
 ## 🔧 Language-Specific Features
 
 ### JavaScript/TypeScript
@@ -394,20 +341,6 @@ git checkout -b feature/your-feature
 ### Prerequisites
 - Node.js 14+ (for the installer)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
-
-### Installation
-```bash
-# Install Claude Code
-npm install -g @anthropic-ai/claude-code
-
-# Set up your project (no installation required!)
-cd your-project
-npx claude-code-templates
-# Or use the short command: npx cct
-
-# Start coding with Claude
-claude
-```
 
 ### CLI Options
 
@@ -483,7 +416,3 @@ This project is built by the community, for the community. We believe in:
 ---
 
 **⭐ Found this useful? Give us a star on GitHub to support the project!**
-
-**🚀 Ready to supercharge your development with Claude Code? Run `npx cct` now!**
-
-**🤝 Want to contribute? Check out our [contribution guidelines](CONTRIBUTING.md) - all skill levels welcome!**

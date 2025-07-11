@@ -53,10 +53,10 @@ claude
                     🚀 Setup Claude Code for any project language 🚀
 ```
 
-## 🔧 Core Features
+## Core Features
 
 ### 📊 Real-time Analytics Dashboard
-**NEW!** Monitor and optimize your Claude Code agents with our comprehensive analytics dashboard:
+Monitor and optimize your Claude Code agents with our comprehensive analytics dashboard:
 - **Live Session Tracking**: See active conversations and their status in real-time
 - **Usage Statistics**: Total sessions, tokens, and project activity with trends
 - **Conversation History**: Complete session logs with export capabilities (CSV/JSON)
@@ -159,19 +159,10 @@ npx claude-code-templates
 ```bash
 # React + TypeScript project
 npx claude-code-templates --language javascript-typescript --framework react --yes
-npx cct --language javascript-typescript --framework react --yes
 
 # Python + Django project
 npx claude-code-templates --language python --framework django --yes
-npx cct --language python --framework django --yes
 
-# Go + Gin API project
-npx claude-code-templates --language go --framework gin --yes
-npx cct --language go --framework gin --yes
-
-# Rust + Axum project
-npx claude-code-templates --language rust --framework axum --yes
-npx cct --language rust --framework axum --yes
 ```
 
 ### Advanced Options
@@ -185,16 +176,13 @@ npx claude-code-templates --yes
 # Install to custom directory
 npx claude-code-templates --directory /path/to/project
 
-# Analyze existing commands (singular or plural)
-npx claude-code-templates --command-stats
+# Analyze existing commands 
 npx claude-code-templates --commands-stats
 
-# Analyze automation hooks (singular or plural)
-npx claude-code-templates --hook-stats
+# Analyze automation hooks
 npx claude-code-templates --hooks-stats
 
-# Analyze MCP server configurations (singular or plural)
-npx claude-code-templates --mcp-stats
+# Analyze MCP server configurations 
 npx claude-code-templates --mcps-stats
 
 # Launch real-time analytics dashboard

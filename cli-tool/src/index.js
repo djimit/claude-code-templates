@@ -61,7 +61,7 @@ async function createClaudeConfig(options = {}) {
           short: 'Project Setup'
         }
       ],
-      default: 'setup'
+      default: 'analytics'
     }]);
     
     if (initialChoice.action === 'analytics') {

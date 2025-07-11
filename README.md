@@ -33,7 +33,12 @@
                     🚀 Setup Claude Code for any project language 🚀
 ```
 
-An open-source CLI tool that provides framework-specific commands, automation hooks, and MCP server integration for JavaScript/TypeScript, Python, Go, Rust, and more. Built by the community, for the community.
+**The ultimate CLI tool for configuring and monitoring Claude Code** - Supercharge your development workflow with intelligent setup, comprehensive monitoring, and real-time analytics. Built by the community, for the community.
+
+✨ **Configuration Made Easy**: Auto-detect your project and set up Claude Code with optimal commands, hooks, and MCP servers  
+📊 **Real-time Monitoring**: Track active sessions, usage patterns, and performance with a beautiful web dashboard  
+🔧 **Framework-Specific**: Tailored configurations for JavaScript/TypeScript, Python, Go, Rust, and more  
+🤖 **Smart Analytics**: Monitor your Claude Code agents and optimize your development workflow
 
 <!-- [gif] -->
 
@@ -57,6 +62,8 @@ The installer will auto-detect your project type and guide you through selecting
 
 ### 🚀 New: Real-time Analytics Dashboard
 
+Transform your Claude Code development experience with our **comprehensive monitoring solution**:
+
 ```bash
 # Launch the analytics dashboard to monitor your Claude Code usage
 npx cct --analytics
@@ -68,7 +75,15 @@ npx claude-code-templates@latest --analytics
 npx cct
 ```
 
-Monitor your Claude Code sessions, track usage patterns, and get insights into your development workflow with our **real-time web dashboard**.
+**🎯 Why Use Analytics?**
+- **📈 Performance Insights**: Track token usage, session duration, and productivity metrics
+- **🔍 Active Session Monitoring**: See which conversations are active, idle, or need attention
+- **💡 Usage Optimization**: Identify patterns to improve your development workflow
+- **📊 Historical Data**: Export session data for analysis and reporting
+- **🚀 Real-time Updates**: Live dashboard updates as you work with Claude Code
+- **🎨 Beautiful Interface**: Clean, terminal-style web dashboard at `http://localhost:3333`
+
+**Perfect for**: Developers, teams, and organizations wanting to optimize their Claude Code usage and track development productivity.
 
 > 💡 **Pro Tip**: Use `npx cct` for the shortest command (just 3 letters!)
 
@@ -85,16 +100,22 @@ Monitor your Claude Code sessions, track usage patterns, and get insights into y
 ## 🔧 Core Features
 
 ### 📊 Real-time Analytics Dashboard
-**NEW!** Monitor your Claude Code usage with our comprehensive analytics dashboard:
-- **Live Session Tracking**: See active conversations and their status in real-time
-- **Usage Statistics**: Total sessions, tokens, and project activity
-- **Conversation History**: Complete session logs with export capabilities (CSV/JSON)
-- **Status Indicators**: PM2-style visual indicators for conversation health
-- **File Watching**: Automatic updates as you work with Claude Code
-- **Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
+**NEW!** Monitor and optimize your Claude Code agents with our comprehensive analytics dashboard:
+- **🔴 Live Session Tracking**: See active conversations and their status in real-time
+- **📈 Usage Statistics**: Total sessions, tokens, and project activity with trends
+- **📝 Conversation History**: Complete session logs with export capabilities (CSV/JSON)
+- **💡 Status Indicators**: PM2-style visual indicators for conversation health
+- **👀 File Watching**: Automatic updates as you work with Claude Code
+- **🌐 Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
+- **⚡ Performance Monitoring**: Track Claude Code agent performance and optimization opportunities
+- **🎯 Usage Patterns**: Identify your most productive coding sessions and workflows
 
-### 📋 Smart Commands
-Framework-specific commands for testing, linting, building, debugging, and deployment.
+### 📋 Smart Commands & Configuration
+Intelligent project setup with framework-specific commands:
+- **🔧 Auto-Detection**: Automatically detect your project type and suggest optimal configurations
+- **⚡ Quick Setup**: Framework-specific commands for testing, linting, building, debugging, and deployment
+- **🎯 Optimized Workflows**: Pre-configured commands tailored to your development stack
+- **📚 Best Practices**: Industry-standard configurations and development patterns
 
 ### 🤖 Automation Hooks
 Execute at key moments during Claude Code workflow:

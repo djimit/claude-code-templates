@@ -51,6 +51,9 @@ class ClaudeAnalytics {
       const projects = await this.loadActiveProjects();
       this.data.activeProjects = projects;
 
+      // NEW: Detect active Claude processes and enrich data
+      await this.enrichWithRunningProcesses();
+
       // Calculate summary statistics
       this.data.summary = this.calculateSummary(conversations, projects);
 
@@ -285,6 +288,94 @@ class ClaudeAnalytics {
     return null;
   }
 
+  // NEW: Function to detect active Claude processes
+  async detectRunningClaudeProcesses() {
+    const { exec } = require('child_process');
+    
+    return new Promise((resolve) => {
+      // Search for processes containing 'claude' but exclude our own analytics process and system processes
+      exec('ps aux | grep -i claude | grep -v grep | grep -v analytics | grep -v "/Applications/Claude.app" | grep -v "npm start"', (error, stdout) => {
+        if (error) {
+          resolve([]);
+          return;
+        }
+        
+        const processes = stdout.split('\n')
+          .filter(line => line.trim())
+          .filter(line => {
+            // Only include actual Claude CLI processes, not system processes
+            const fullCommand = line.split(/\s+/).slice(10).join(' ');
+            return fullCommand.includes('claude') && 
+                   !fullCommand.includes('chrome_crashpad_handler') &&
+                   !fullCommand.includes('create-claude-config') &&
+                   !fullCommand.includes('node bin/') &&
+                   fullCommand.trim() === 'claude'; // Only the basic claude command
+          })
+          .map(line => {
+            const parts = line.split(/\s+/);
+            const fullCommand = parts.slice(10).join(' ');
+            
+            // Extract useful information from command
+            const cwdMatch = fullCommand.match(/--cwd[=\s]+([^\s]+)/);
+            const workingDir = cwdMatch ? cwdMatch[1] : 'unknown';
+            
+            return {
+              pid: parts[1],
+              command: fullCommand,
+              workingDir: workingDir,
+              startTime: new Date(), // For now we use current time
+              status: 'running',
+              user: parts[0]
+            };
+          });
+        
+        resolve(processes);
+      });
+    });
+  }
+
+  // NEW: Enrich existing conversations with process information
+  async enrichWithRunningProcesses() {
+    try {
+      const runningProcesses = await this.detectRunningClaudeProcesses();
+      
+      // Add active process information to each conversation
+      this.data.conversations.forEach(conversation => {
+        // Look for active process for this project
+        const matchingProcess = runningProcesses.find(process => 
+          process.workingDir.includes(conversation.project) ||
+          process.command.includes(conversation.project)
+        );
+        
+        if (matchingProcess) {
+          // ENRICH without changing existing logic
+          conversation.runningProcess = {
+            pid: matchingProcess.pid,
+            startTime: matchingProcess.startTime,
+            workingDir: matchingProcess.workingDir,
+            hasActiveCommand: true
+          };
+          
+          // Only change status if not already marked as active by existing logic
+          if (conversation.status !== 'active') {
+            conversation.status = 'active';
+            conversation.statusReason = 'running_process';
+          }
+        } else {
+          conversation.runningProcess = null;
+        }
+      });
+      
+      // Disable orphan process detection to reduce noise
+      this.data.orphanProcesses = [];
+      
+      console.log(chalk.blue(`🔍 Found ${runningProcesses.length} running Claude processes`));
+      
+    } catch (error) {
+      console.warn(chalk.yellow('Warning: Could not detect running processes'), error.message);
+    }
+  }
+
   extractProjectFromConversation(messages) {
     // Try to extract project information from conversation
     for (const message of messages.slice(0, 5)) {
@@ -313,16 +404,16 @@ class ClaudeAnalytics {
     const lastMessageTime = new Date(lastMessage.timestamp);
     const lastMessageMinutesAgo = (now - lastMessageTime) / (1000 * 60);
 
-    // Simplified status logic - typing is now part of active
+    // More balanced logic - active conversations and recent activity
     if (lastMessage.role === 'user' && lastMessageMinutesAgo < 3) {
       return 'active';
     } else if (lastMessage.role === 'assistant' && lastMessageMinutesAgo < 5) {
       return 'active';
     }
 
-    // Fallback to file modification time for edge cases
+    // Use file modification time for recent activity
     if (minutesAgo < 5) return 'active';
-    if (minutesAgo < 60) return 'recent';
+    if (minutesAgo < 30) return 'recent';
     return 'inactive';
   }
 
@@ -636,6 +727,11 @@ class ClaudeAnalytics {
       console.log(chalk.blue('⏱️  Periodic data refresh...'));
       await this.loadInitialData();
     }, 30000); // Every 30 seconds
+    
+    // NEW: More frequent updates for active processes (every 10 seconds)
+    setInterval(async () => {
+      await this.enrichWithRunningProcesses();
+    }, 10000);
   }
 
   setupWebServer() {
@@ -1008,6 +1104,23 @@ async function createWebDashboard() {
         .session-id {
             color: #d57455;
             font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .process-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            cursor: help;
+        }
+        
+        .process-indicator.orphan {
+            background: #f85149;
         }
         
         .session-id-container {
@@ -1564,6 +1677,7 @@ async function createWebDashboard() {
                 
                 updateStats(data.summary);
                 allConversations = data.conversations;
+                window.allData = data; // NEW: Store data globally for access
                 updateSessionsTable();
                 
             } catch (error) {
@@ -1609,7 +1723,10 @@ async function createWebDashboard() {
                 <tr onclick="showSessionDetail('\${conv.id}')" style="cursor: pointer;">
                     <td>
                         <div class="session-id-container">
-                            <div class="session-id">\${conv.id.substring(0, 8)}...</div>
+                            <div class="session-id">
+                                \${conv.id.substring(0, 8)}...
+                                \${conv.runningProcess ? \`<span class="process-indicator" title="Active claude process (PID: \${conv.runningProcess.pid})"></span>\` : ''}
+                            </div>
                             <div class="status-squares">
                                 \${generateStatusSquaresHTML(conv.statusSquares || [])}
                             </div>
@@ -1624,6 +1741,33 @@ async function createWebDashboard() {
                     <td class="status-\${conv.status}">\${conv.status}</td>
                 </tr>
             \`).join('');
+            
+            // NEW: Add orphan processes (active claude commands without conversation)
+            if (window.allData && window.allData.orphanProcesses && window.allData.orphanProcesses.length > 0) {
+                const orphanRows = window.allData.orphanProcesses.map(process => \`
+                    <tr style="background: rgba(248, 81, 73, 0.1); cursor: default;">
+                        <td>
+                            <div class="session-id-container">
+                                <div class="session-id">
+                                    orphan-\${process.pid}
+                                    <span class="process-indicator orphan" title="Orphan claude process (PID: \${process.pid})"></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="session-project">\${process.workingDir}</td>
+                        <td class="session-model">Unknown</td>
+                        <td class="session-messages">-</td>
+                        <td class="session-tokens">-</td>
+                        <td class="session-time">Running</td>
+                        <td class="conversation-state">Active process</td>
+                        <td class="status-active">orphan</td>
+                    </tr>
+                \`).join('');
+                
+                if (currentFilter === 'active' || currentFilter === 'all') {
+                    tableBody.innerHTML += orphanRows;
+                }
+            }
         }
         
         function formatTime(date) {

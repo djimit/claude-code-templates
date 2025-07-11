@@ -7,7 +7,7 @@
 
 **CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard. Open source and runs locally.
 
-<img width="1105" height="685" alt="Screenshot 2025-07-10 at 21 57 42" src="https://github.com/user-attachments/assets/a4499cc4-691e-45ad-afe2-fce8f14a69db" />
+<img width="1168" height="850" alt="Screenshot 2025-07-11 at 10 01 19" src="https://github.com/user-attachments/assets/59dd9c74-8e84-4ed4-9bd4-cfbb88d49513" />
 
 ---
 

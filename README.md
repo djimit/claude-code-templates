@@ -7,25 +7,47 @@
 
 **CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard. Open source and runs locally.
 
-## 📋 Quick Start Analytics Dashboard
+## 📊 Analytics Dashboard (Default Option)
 
 ```bash
-# Launch the analytics dashboard to monitor your Claude Code usage
+# Quick access to analytics dashboard
 npx claude-code-templates@latest --analytics
+
+# Or use the interactive welcome screen (Analytics is default)
+npx claude-code-templates@latest
 ```
 <img width="1168" height="850" alt="Screenshot 2025-07-11 at 10 01 19" src="https://github.com/user-attachments/assets/59dd9c74-8e84-4ed4-9bd4-cfbb88d49513" />
 
 ---
 
-## 📋 Quick Start setup Claude Code Templates
+## 📋 Quick Start
 
 ```bash
 # Navigate to your project
 cd your-project-directory
 
-# Run the installer for setup Claude Code Templates
+# Run the tool (no installation required!)
 npx claude-code-templates@latest
 
+# Or use a shorter command
+npx cct@latest
+```
+
+You'll see an interactive welcome screen:
+
+```
+🚀 Welcome to Claude Code Templates!
+
+? What would you like to do?
+❯ 📊 Analytics Dashboard - Monitor your Claude Code usage and sessions
+  ⚙️  Project Setup - Configure Claude Code for your project
+```
+
+**Choose your path:**
+- **📊 Analytics Dashboard** (default): View your Claude Code sessions, usage patterns, and performance metrics
+- **⚙️ Project Setup**: Configure Claude Code for your project with framework-specific commands and hooks
+
+```bash
 # Start coding with Claude
 claude
 ```

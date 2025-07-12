@@ -340,7 +340,7 @@ class ClaudeAnalytics {
       const runningProcesses = await this.detectRunningClaudeProcesses();
       
       // Add active process information to each conversation
-      this.data.conversations.forEach(conversation => {
+      for (const conversation of this.data.conversations) {
         // Look for active process for this project
         const matchingProcess = runningProcesses.find(process => 
           process.workingDir.includes(conversation.project) ||
@@ -361,10 +361,28 @@ class ClaudeAnalytics {
             conversation.status = 'active';
             conversation.statusReason = 'running_process';
           }
+          
+          // Recalculate conversation state with process information
+          const conversationFile = path.join(this.claudeDir, conversation.fileName);
+          try {
+            const content = await fs.readFile(conversationFile, 'utf8');
+            const parsedMessages = content.split('\n')
+              .filter(line => line.trim())
+              .map(line => JSON.parse(line));
+            
+            const stats = await fs.stat(conversationFile);
+            conversation.conversationState = this.determineConversationState(
+              parsedMessages, 
+              stats.mtime, 
+              conversation.runningProcess
+            );
+          } catch (error) {
+            // If we can't read the file, keep the existing state
+          }
         } else {
           conversation.runningProcess = null;
         }
-      });
+      }
       
       // Disable orphan process detection to reduce noise
       this.data.orphanProcesses = [];
@@ -417,10 +435,37 @@ class ClaudeAnalytics {
     return 'inactive';
   }
 
-  determineConversationState(messages, lastModified) {
+  determineConversationState(messages, lastModified, runningProcess = null) {
     const now = new Date();
     const timeDiff = now - lastModified;
     const minutesAgo = timeDiff / (1000 * 60);
+
+    // If there's an active process, use simpler and more responsive logic
+    if (runningProcess && runningProcess.hasActiveCommand) {
+      const fileTimeDiff = (now - lastModified) / 1000; // seconds
+      
+      // Very recent file activity = Claude working
+      if (fileTimeDiff < 10) {
+        return 'Claude Code working...';
+      }
+      
+      // Check conversation flow if we have messages
+      if (messages.length > 0) {
+        const sortedMessages = messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        
+        if (lastMessage.role === 'assistant') {
+          // Claude responded, user should be typing or thinking
+          return 'User typing...';
+        } else if (lastMessage.role === 'user') {
+          // User sent message, Claude should be working
+          return 'Claude Code working...';
+        }
+      }
+      
+      // Fallback for active process
+      return 'Awaiting user input...';
+    }
 
     if (messages.length === 0) {
       return minutesAgo < 5 ? 'Waiting for input...' : 'Idle';
@@ -1875,6 +1920,32 @@ async function createWebDashboard() {
             }
         }
         
+        // Function to only update conversation data without refreshing charts
+        async function loadConversationData() {
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                
+                
+                // Update timestamp
+                document.getElementById('lastUpdate').textContent = \`last update: \${data.lastUpdate}\`;
+                
+                updateStats(data.summary);
+                allConversations = data.conversations;
+                allData = data; // Store data globally for access
+                window.allData = data; // Keep for backward compatibility
+                
+                // Only update sessions table, not charts
+                updateSessionsTable();
+                
+                // Check for conversation state changes and send notifications
+                checkForNotifications(data.conversations);
+                
+            } catch (error) {
+                console.error('Failed to refresh conversation data:', error);
+            }
+        }
+        
         // Notification functions
         async function requestNotificationPermission() {
             if (!('Notification' in window)) {
@@ -2721,7 +2792,11 @@ async function createWebDashboard() {
                 if (typeof Chart !== 'undefined') {
                     console.log('Chart.js loaded successfully');
                     loadData();
-                    // No automatic refresh - manual only
+                    
+                    // Automatic refresh for conversation data every 1 second for real-time updates
+                    setInterval(() => {
+                        loadConversationData();
+                    }, 1000);
                 } else {
                     console.log('Waiting for Chart.js to load...');
                     setTimeout(initWhenReady, 100);

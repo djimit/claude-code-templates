@@ -1743,10 +1743,10 @@ async function createWebDashboard() {
                 </div>
                 <div class="chart-controls-right">
                     <button class="refresh-btn" onclick="toggleNotifications()" id="notificationBtn">
-                        🔔 enable notifications
+                        enable notifications
                     </button>
                     <button class="refresh-btn" onclick="refreshCharts()" id="refreshBtn">
-                        🔄 refresh charts
+                        refresh charts
                     </button>
                 </div>
             </div>
@@ -1953,25 +1953,25 @@ async function createWebDashboard() {
             if (!notificationsEnabled) {
                 const granted = await requestNotificationPermission();
                 if (granted) {
-                    btn.textContent = '🔔 notifications on';
+                    btn.textContent = 'notifications on';
                     btn.style.borderColor = '#3fb950';
                     btn.style.color = '#3fb950';
                     
                     // Send a test notification
                     sendNotification(
-                        '🎉 Notifications enabled!', 
+                        'Notifications enabled!', 
                         'You will now receive alerts when Claude is waiting for your input.',
                         null
                     );
                 } else {
-                    btn.textContent = '🔕 notifications denied';
+                    btn.textContent = 'notifications denied';
                     btn.style.borderColor = '#f85149';
                     btn.style.color = '#f85149';
                 }
             } else {
                 // Disable notifications
                 notificationsEnabled = false;
-                btn.textContent = '🔔 enable notifications';
+                btn.textContent = 'enable notifications';
                 btn.style.borderColor = '#30363d';
                 btn.style.color = '#7d8590';
             }
@@ -2744,11 +2744,11 @@ async function createWebDashboard() {
             
             if (Notification.permission === 'granted') {
                 notificationsEnabled = true;
-                btn.textContent = '🔔 notifications on';
+                btn.textContent = 'notifications on';
                 btn.style.borderColor = '#3fb950';
                 btn.style.color = '#3fb950';
             } else if (Notification.permission === 'denied') {
-                btn.textContent = '🔕 notifications denied';
+                btn.textContent = 'notifications denied';
                 btn.style.borderColor = '#f85149';
                 btn.style.color = '#f85149';
             }

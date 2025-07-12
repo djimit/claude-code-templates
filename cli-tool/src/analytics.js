@@ -1742,8 +1742,11 @@ async function createWebDashboard() {
                     </div>
                 </div>
                 <div class="chart-controls-right">
+                    <button class="refresh-btn" onclick="toggleNotifications()" id="notificationBtn">
+                        🔔 enable notifications
+                    </button>
                     <button class="refresh-btn" onclick="refreshCharts()" id="refreshBtn">
-                        refresh charts
+                        🔄 refresh charts
                     </button>
                 </div>
             </div>
@@ -1833,6 +1836,8 @@ async function createWebDashboard() {
         let tokenChart = null;
         let projectChart = null;
         let allData = null;
+        let notificationsEnabled = false;
+        let previousConversationStates = new Map();
         
         async function loadData() {
             try {
@@ -1860,10 +1865,115 @@ async function createWebDashboard() {
                 updateCharts(data);
                 updateSessionsTable();
                 
+                // Check for conversation state changes and send notifications
+                checkForNotifications(data.conversations);
+                
             } catch (error) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').style.display = 'block';
                 console.error('Failed to load data:', error);
+            }
+        }
+        
+        // Notification functions
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('This browser does not support notifications');
+                return false;
+            }
+            
+            if (Notification.permission === 'granted') {
+                notificationsEnabled = true;
+                return true;
+            }
+            
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                notificationsEnabled = permission === 'granted';
+                return notificationsEnabled;
+            }
+            
+            return false;
+        }
+        
+        function sendNotification(title, body, conversationId) {
+            if (!notificationsEnabled) return;
+            
+            const notification = new Notification(title, {
+                body: body,
+                icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzIxMjYyZCIvPgo8cGF0aCBkPSJNOCA4aDE2djE2SDh6IiBmaWxsPSIjZDU3NDU1Ii8+CjwvZGJnPgo=',
+                badge: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjgiIGZpbGw9IiNkNTc0NTUiLz4KPC9zdmc+',
+                tag: conversationId,
+                requireInteraction: true
+            });
+            
+            notification.onclick = function() {
+                window.focus();
+                this.close();
+                // Focus on the conversation if possible
+                if (conversationId) {
+                    showSessionDetail(conversationId);
+                }
+            };
+            
+            // Auto close after 10 seconds
+            setTimeout(() => {
+                notification.close();
+            }, 10000);
+        }
+        
+        function checkForNotifications(conversations) {
+            if (!notificationsEnabled) return;
+            
+            conversations.forEach(conv => {
+                const currentState = conv.conversationState;
+                const prevState = previousConversationStates.get(conv.id);
+                
+                // Check if conversation state changed to "Awaiting user input..."
+                if (prevState && prevState !== currentState) {
+                    if (currentState === 'Awaiting user input...' || 
+                        currentState === 'User may be typing...' ||
+                        currentState === 'Awaiting response...') {
+                        
+                        const title = '🤖 Claude is waiting for you!';
+                        const body = \`Project: \${conv.project} - Claude needs your input\`;
+                        
+                        sendNotification(title, body, conv.id);
+                    }
+                }
+                
+                // Update previous state
+                previousConversationStates.set(conv.id, currentState);
+            });
+        }
+        
+        async function toggleNotifications() {
+            const btn = document.getElementById('notificationBtn');
+            
+            if (!notificationsEnabled) {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                    btn.textContent = '🔔 notifications on';
+                    btn.style.borderColor = '#3fb950';
+                    btn.style.color = '#3fb950';
+                    
+                    // Send a test notification
+                    sendNotification(
+                        '🎉 Notifications enabled!', 
+                        'You will now receive alerts when Claude is waiting for your input.',
+                        null
+                    );
+                } else {
+                    btn.textContent = '🔕 notifications denied';
+                    btn.style.borderColor = '#f85149';
+                    btn.style.color = '#f85149';
+                }
+            } else {
+                // Disable notifications
+                notificationsEnabled = false;
+                btn.textContent = '🔔 enable notifications';
+                btn.style.borderColor = '#30363d';
+                btn.style.color = '#7d8590';
             }
         }
         
@@ -2623,7 +2733,26 @@ async function createWebDashboard() {
             // Add event listeners for date inputs
             document.getElementById('dateFrom').addEventListener('change', refreshCharts);
             document.getElementById('dateTo').addEventListener('change', refreshCharts);
+            
+            // Initialize notification button state
+            updateNotificationButtonState();
         });
+        
+        function updateNotificationButtonState() {
+            const btn = document.getElementById('notificationBtn');
+            if (!btn) return;
+            
+            if (Notification.permission === 'granted') {
+                notificationsEnabled = true;
+                btn.textContent = '🔔 notifications on';
+                btn.style.borderColor = '#3fb950';
+                btn.style.color = '#3fb950';
+            } else if (Notification.permission === 'denied') {
+                btn.textContent = '🔕 notifications denied';
+                btn.style.borderColor = '#f85149';
+                btn.style.color = '#f85149';
+            }
+        }
         
         // Add keyboard shortcut for refresh (F5 or Ctrl+R)
         document.addEventListener('keydown', function(e) {

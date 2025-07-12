@@ -2006,7 +2006,7 @@ async function createWebDashboard() {
                         currentState === 'User may be typing...' ||
                         currentState === 'Awaiting response...') {
                         
-                        const title = '🤖 Claude is waiting for you!';
+                        const title = 'Claude is waiting for you!';
                         const body = \`Project: \${conv.project} - Claude needs your input\`;
                         
                         sendNotification(title, body, conv.id);
@@ -2120,7 +2120,7 @@ async function createWebDashboard() {
                 console.error('Error refreshing charts:', error);
             } finally {
                 refreshBtn.classList.remove('loading');
-                refreshBtn.textContent = '🔄 refresh charts';
+                refreshBtn.textContent = 'refresh charts';
             }
         }
         

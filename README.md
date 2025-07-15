@@ -17,7 +17,7 @@ npx claude-code-templates@latest
 
 ```
 
-<img width="1168" height="850" alt="Screenshot 2025-07-11 at 10 01 19" src="https://github.com/user-attachments/assets/59dd9c74-8e84-4ed4-9bd4-cfbb88d49513" />
+<img width="1264" height="845" alt="Screenshot 2025-07-15 at 19 09 38" src="https://github.com/user-attachments/assets/b46dbd61-b285-42b0-89bc-088d4e1a2430" />
 
 ---
 

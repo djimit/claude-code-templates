@@ -110,6 +110,9 @@ class ConversationAnalyzer {
           const tokenUsage = await this.getCachedTokenUsage(filePath, parsedMessages);
           const modelInfo = await this.getCachedModelInfo(filePath, parsedMessages);
 
+          // Calculate tool usage data with caching
+          const toolUsage = await this.getCachedToolUsage(filePath, parsedMessages);
+
           const conversation = {
             id: filename.replace('.jsonl', ''),
             filename: filename,
@@ -121,6 +124,7 @@ class ConversationAnalyzer {
             tokens: tokenUsage.total > 0 ? tokenUsage.total : this.estimateTokens(await this.getFileContent(filePath)),
             tokenUsage: tokenUsage,
             modelInfo: modelInfo,
+            toolUsage: toolUsage,
             project: projectFromPath || this.extractProjectFromConversation(parsedMessages),
             status: stateCalculator.determineConversationStatus(parsedMessages, stats.mtime),
             conversationState: stateCalculator.determineConversationState(parsedMessages, stats.mtime),
@@ -280,6 +284,21 @@ class ConversationAnalyzer {
   }
 
   /**
+   * Get cached tool usage analysis
+   * @param {string} filepath - File path
+   * @param {Array} parsedMessages - Parsed messages array
+   * @returns {Promise<Object>} Tool usage data
+   */
+  async getCachedToolUsage(filepath, parsedMessages) {
+    if (this.dataCache) {
+      return await this.dataCache.getCachedToolUsage(filepath, () => {
+        return this.extractToolUsage(parsedMessages);
+      });
+    }
+    return this.extractToolUsage(parsedMessages);
+  }
+
+  /**
    * Calculate real token usage from message usage data
    * @param {Array} parsedMessages - Array of parsed message objects
    * @returns {Object} Token usage statistics
@@ -385,6 +404,65 @@ class ConversationAnalyzer {
       }
     }
     return 'Unknown';
+  }
+
+  /**
+   * Extract tool usage statistics from parsed messages
+   * @param {Array} parsedMessages - Array of parsed message objects
+   * @returns {Object} Tool usage statistics
+   */
+  extractToolUsage(parsedMessages) {
+    const toolStats = {};
+    const toolTimeline = [];
+    let totalToolCalls = 0;
+
+    parsedMessages.forEach(message => {
+      if (message.role === 'assistant' && message.content) {
+        const content = message.content;
+        const timestamp = message.timestamp;
+
+        // Handle string content with tool indicators
+        if (typeof content === 'string') {
+          const toolMatches = content.match(/\[Tool:\s*([^\]]+)\]/g);
+          if (toolMatches) {
+            toolMatches.forEach(match => {
+              const toolName = match.replace(/\[Tool:\s*([^\]]+)\]/, '$1').trim();
+              toolStats[toolName] = (toolStats[toolName] || 0) + 1;
+              totalToolCalls++;
+              toolTimeline.push({
+                tool: toolName,
+                timestamp: timestamp,
+                type: 'usage'
+              });
+            });
+          }
+        }
+
+        // Handle array content with tool_use blocks
+        if (Array.isArray(content)) {
+          content.forEach(block => {
+            if (block.type === 'tool_use') {
+              const toolName = block.name || 'Unknown Tool';
+              toolStats[toolName] = (toolStats[toolName] || 0) + 1;
+              totalToolCalls++;
+              toolTimeline.push({
+                tool: toolName,
+                timestamp: timestamp,
+                type: 'usage',
+                parameters: block.input || {}
+              });
+            }
+          });
+        }
+      }
+    });
+
+    return {
+      toolStats,
+      toolTimeline: toolTimeline.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
+      totalToolCalls,
+      uniqueTools: Object.keys(toolStats).length
+    };
   }
 
   /**

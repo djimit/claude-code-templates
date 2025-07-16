@@ -823,7 +823,7 @@
         
         .charts-container {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
             margin: 20px 0 30px 0;
         }
@@ -849,6 +849,85 @@
         .chart-canvas {
             width: 100% !important;
             height: 200px !important;
+        }
+        
+        .tool-summary {
+            padding: 20px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        
+        .tool-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+        
+        .tool-stat:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-primary);
+        }
+        
+        .tool-stat-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .tool-stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .tool-stat-accent {
+            color: var(--text-accent);
+        }
+        
+        .tool-top-tool {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 4px;
+            margin-top: auto;
+        }
+        
+        .tool-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--text-accent);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .tool-info {
+            flex: 1;
+        }
+        
+        .tool-name {
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .tool-usage {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
         }
         
         .filter-bar {
@@ -1585,6 +1664,22 @@
                     </div>
                     <canvas id="projectChart" class="chart-canvas"></canvas>
                 </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">
+                        🛠️ tool usage trends
+                    </div>
+                    <canvas id="toolChart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">
+                        ⚡ tool activity summary
+                    </div>
+                    <div id="toolSummary" class="tool-summary">
+                        <!-- Tool summary will be loaded here -->
+                    </div>
+                </div>
             </div>
             
             <div class="filter-bar">
@@ -1662,6 +1757,7 @@
         let currentSession = null;
         let tokenChart = null;
         let projectChart = null;
+        let toolChart = null;
         let allData = null;
         let notificationsEnabled = false;
         let previousConversationStates = new Map();
@@ -2031,6 +2127,12 @@
             
             // Update Project Activity Distribution Chart  
             updateProjectChart(data.conversations);
+            
+            // Update Tool Usage Trends Chart
+            updateToolChart(data.conversations);
+            
+            // Update Tool Activity Summary
+            updateToolSummary(data.conversations);
         }
         
         async function refreshCharts() {
@@ -2277,6 +2379,329 @@
                     cutout: '60%'
                 }
             });
+        }
+        
+        function updateToolChart(conversations) {
+            // Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not available for updateToolChart');
+                return;
+            }
+            
+            // Apply date filtering to conversations first
+            const { fromDate, toDate } = getDateRange();
+            const filteredConversations = conversations.filter(conv => {
+                const convDate = new Date(conv.lastModified);
+                return convDate >= fromDate && convDate <= toDate;
+            });
+            
+            // Aggregate tool usage across filtered conversations
+            const toolTimeline = [];
+            const toolStats = {};
+            
+            filteredConversations.forEach(conv => {
+                if (conv.toolUsage && conv.toolUsage.toolTimeline) {
+                    conv.toolUsage.toolTimeline.forEach(entry => {
+                        const entryDate = new Date(entry.timestamp);
+                        // Only include tool usage within date range
+                        if (entryDate >= fromDate && entryDate <= toDate) {
+                            toolTimeline.push({
+                                tool: entry.tool,
+                                timestamp: entryDate,
+                                date: entryDate.toDateString()
+                            });
+                            
+                            toolStats[entry.tool] = (toolStats[entry.tool] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            
+            const ctx = document.getElementById('toolChart').getContext('2d');
+            
+            if (toolChart) {
+                toolChart.destroy();
+            }
+            
+            if (Object.keys(toolStats).length === 0) {
+                // No tool usage data available
+                toolChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{
+                            label: 'Tool Usage',
+                            data: [0],
+                            backgroundColor: 'rgba(109, 40, 217, 0.6)',
+                            borderColor: 'rgba(109, 40, 217, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'nearest'
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true,
+                                position: 'nearest',
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim()
+                                },
+                                grid: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--border-primary').trim()
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim()
+                                },
+                                grid: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--border-primary').trim()
+                                }
+                            }
+                        }
+                    }
+                });
+                return;
+            }
+            
+            // Get top 10 most used tools
+            const sortedTools = Object.entries(toolStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            // Generate colors for different tools
+            const colors = [
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)',
+                'rgba(199, 199, 199, 0.6)',
+                'rgba(83, 102, 255, 0.6)',
+                'rgba(255, 99, 255, 0.6)',
+                'rgba(99, 255, 132, 0.6)'
+            ];
+            
+            const borderColors = [
+                'rgba(75, 192, 192, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(199, 199, 199, 1)',
+                'rgba(83, 102, 255, 1)',
+                'rgba(255, 99, 255, 1)',
+                'rgba(99, 255, 132, 1)'
+            ];
+            
+            // Store sorted tools data for reliable tooltip access
+            window.currentToolData = sortedTools;
+            
+            toolChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedTools.map(([tool]) => {
+                        // Truncate long tool names for display
+                        return tool.length > 15 ? tool.substring(0, 15) + '...' : tool;
+                    }),
+                    datasets: [{
+                        label: 'Usage Count',
+                        data: sortedTools.map(([, count]) => count),
+                        backgroundColor: colors.slice(0, sortedTools.length),
+                        borderColor: borderColors.slice(0, sortedTools.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'nearest'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            position: 'nearest',
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const index = tooltipItems[0].dataIndex;
+                                    // Use the stored tool data for reliable access
+                                    return window.currentToolData && window.currentToolData[index] 
+                                        ? window.currentToolData[index][0] 
+                                        : 'Tool';
+                                },
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    const total = window.currentToolData ? 
+                                        window.currentToolData.reduce((sum, [, count]) => sum + count, 0) : 
+                                        context.dataset.data.reduce((sum, val) => sum + val, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `Used ${value} times (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-primary').trim()
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                                maxRotation: 45,
+                                minRotation: 0
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-primary').trim()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateToolSummary(conversations) {
+            // Apply date filtering to conversations first
+            const { fromDate, toDate } = getDateRange();
+            const filteredConversations = conversations.filter(conv => {
+                const convDate = new Date(conv.lastModified);
+                return convDate >= fromDate && convDate <= toDate;
+            });
+            
+            // Aggregate tool usage across filtered conversations
+            const toolStats = {};
+            let totalToolCalls = 0;
+            let conversationsWithTools = 0;
+            let totalUniqueTools = new Set();
+            
+            filteredConversations.forEach(conv => {
+                if (conv.toolUsage && conv.toolUsage.toolTimeline) {
+                    let convHasTools = false;
+                    conv.toolUsage.toolTimeline.forEach(entry => {
+                        const entryDate = new Date(entry.timestamp);
+                        // Only include tool usage within date range
+                        if (entryDate >= fromDate && entryDate <= toDate) {
+                            toolStats[entry.tool] = (toolStats[entry.tool] || 0) + 1;
+                            totalToolCalls++;
+                            totalUniqueTools.add(entry.tool);
+                            convHasTools = true;
+                        }
+                    });
+                    if (convHasTools) {
+                        conversationsWithTools++;
+                    }
+                }
+            });
+            
+            const summaryElement = document.getElementById('toolSummary');
+            
+            if (totalToolCalls === 0) {
+                summaryElement.innerHTML = `
+                    <div class="tool-stat">
+                        <span class="tool-stat-label">No tool usage data available</span>
+                        <span class="tool-stat-value">📊</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Find most used tool
+            const sortedTools = Object.entries(toolStats).sort((a, b) => b[1] - a[1]);
+            const topTool = sortedTools[0];
+            const avgToolsPerConv = conversationsWithTools > 0 ? (totalToolCalls / conversationsWithTools).toFixed(1) : 0;
+            
+            // Calculate tool diversity using Shannon Diversity Index (more accurate)
+            const toolCount = sortedTools.length;
+            let shannonIndex = 0;
+            let diversityScore = 0;
+            
+            if (toolCount > 1) {
+                // Calculate Shannon diversity index
+                sortedTools.forEach(([, count]) => {
+                    const proportion = count / totalToolCalls;
+                    if (proportion > 0) {
+                        shannonIndex -= proportion * Math.log2(proportion);
+                    }
+                });
+                
+                // Normalize to 0-100% scale
+                const maxDiversity = Math.log2(toolCount); // Maximum possible diversity
+                diversityScore = (shannonIndex / maxDiversity) * 100;
+            }
+            // If only one tool used, diversityScore remains 0
+            
+            summaryElement.innerHTML = `
+                <div class="tool-stat">
+                    <span class="tool-stat-label">Total Tool Calls</span>
+                    <span class="tool-stat-value tool-stat-accent">${totalToolCalls}</span>
+                </div>
+                
+                <div class="tool-stat">
+                    <span class="tool-stat-label">Unique Tools Used</span>
+                    <span class="tool-stat-value">${totalUniqueTools.size}</span>
+                </div>
+                
+                <div class="tool-stat">
+                    <span class="tool-stat-label">Conversations with Tools</span>
+                    <span class="tool-stat-value">${conversationsWithTools}/${filteredConversations.length}</span>
+                </div>
+                
+                <div class="tool-stat">
+                    <span class="tool-stat-label">Avg Tools per Conversation</span>
+                    <span class="tool-stat-value">${avgToolsPerConv}</span>
+                </div>
+                
+                <div class="tool-stat" title="How evenly distributed tool usage is. 100% = perfectly balanced, 0% = concentrated in few tools">
+                    <span class="tool-stat-label">Tool Balance Score</span>
+                    <span class="tool-stat-value">${diversityScore.toFixed(0)}%</span>
+                </div>
+                
+                ${topTool ? `
+                <div class="tool-top-tool">
+                    <div class="tool-icon">🏆</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Most Used: ${topTool[0]}</div>
+                        <div class="tool-usage">${topTool[1]} calls (${((topTool[1] / totalToolCalls) * 100).toFixed(1)}%)</div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
         }
         
         function updateSessionsTable() {
@@ -2867,7 +3292,7 @@
                 localStorage.setItem('claude-analytics-theme', theme);
                 
                 // Update charts if they exist to use new theme colors
-                if (tokenChart || projectChart) {
+                if (tokenChart || projectChart || toolChart) {
                     setTimeout(() => {
                         if (allData) {
                             updateCharts(allData);

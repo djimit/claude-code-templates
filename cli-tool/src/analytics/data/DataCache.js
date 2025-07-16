@@ -19,6 +19,7 @@ class DataCache {
       tokenUsage: new Map(), // filepath -> { usage, timestamp }
       modelInfo: new Map(), // filepath -> { info, timestamp }
       statusSquares: new Map(), // filepath -> { squares, timestamp }
+      toolUsage: new Map(), // filepath -> { usage, timestamp }
       
       // Expensive computations cache
       sessions: { data: null, timestamp: 0, dependencies: new Set() },
@@ -320,6 +321,32 @@ class DataCache {
   }
 
   /**
+   * Cache tool usage analysis
+   * @param {string} filepath - File path
+   * @param {Function} extractFn - Tool usage extraction function
+   * @returns {Promise<Object>} Tool usage data
+   */
+  async getCachedToolUsage(filepath, extractFn) {
+    const cached = this.caches.toolUsage.get(filepath);
+    const fileStats = await this.getFileStats(filepath);
+    
+    if (cached && cached.timestamp >= fileStats.mtime.getTime()) {
+      this.metrics.hits++;
+      return cached.usage;
+    }
+    
+    this.metrics.misses++;
+    const usage = await extractFn();
+    
+    this.caches.toolUsage.set(filepath, {
+      usage,
+      timestamp: fileStats.mtime.getTime()
+    });
+    
+    return usage;
+  }
+
+  /**
    * Smart invalidation based on file changes
    * @param {string} filepath - Path of changed file
    */
@@ -332,6 +359,7 @@ class DataCache {
     this.caches.tokenUsage.delete(filepath);
     this.caches.modelInfo.delete(filepath);
     this.caches.statusSquares.delete(filepath);
+    this.caches.toolUsage.delete(filepath);
     this.caches.fileStats.delete(filepath);
     
     // Invalidate computations that depend on this file
@@ -450,6 +478,7 @@ class DataCache {
       ['tokenUsage', this.caches.tokenUsage],
       ['modelInfo', this.caches.modelInfo],
       ['statusSquares', this.caches.statusSquares],
+      ['toolUsage', this.caches.toolUsage],
       ['fileStats', this.caches.fileStats],
       ['projectStats', this.caches.projectStats]
     ];
@@ -507,6 +536,7 @@ class DataCache {
         tokenUsage: this.caches.tokenUsage.size,
         modelInfo: this.caches.modelInfo.size,
         statusSquares: this.caches.statusSquares.size,
+        toolUsage: this.caches.toolUsage.size,
         fileStats: this.caches.fileStats.size,
         projectStats: this.caches.projectStats.size,
       },

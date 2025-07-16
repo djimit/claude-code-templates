@@ -96,20 +96,20 @@ class FileWatcher {
    * Setup periodic refresh intervals
    */
   setupPeriodicRefresh() {
-    // Periodic refresh to catch any missed changes
+    // Periodic refresh to catch any missed changes (reduced frequency)
     const dataRefreshInterval = setInterval(async () => {
       console.log(chalk.blue('⏱️  Periodic data refresh...'));
       await this.triggerDataRefresh();
-    }, 30000); // Every 30 seconds
+    }, 120000); // Every 2 minutes (reduced from 30 seconds)
 
     this.intervals.push(dataRefreshInterval);
 
-    // More frequent updates for active processes (every 10 seconds)
+    // Process updates for active processes (reduced frequency)
     const processRefreshInterval = setInterval(async () => {
       if (this.processRefreshCallback) {
         await this.processRefreshCallback();
       }
-    }, 10000);
+    }, 30000); // Every 30 seconds (reduced from 10 seconds)
 
     this.intervals.push(processRefreshInterval);
   }

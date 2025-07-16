@@ -32,14 +32,14 @@ class DataCache {
       projectStats: new Map(), // projectPath -> { data, timestamp }
     };
     
-    // Cache configuration
+    // Cache configuration (reduced TTL for aggressive memory management)
     this.config = {
-      fileContentTTL: 60000, // 1 minute for file content
-      parsedDataTTL: 30000, // 30 seconds for parsed data
-      computationTTL: 20000, // 20 seconds for expensive computations
-      metadataTTL: 10000, // 10 seconds for metadata
+      fileContentTTL: 30000, // 30 seconds for file content (reduced from 60s)
+      parsedDataTTL: 15000, // 15 seconds for parsed data (reduced from 30s)
+      computationTTL: 10000, // 10 seconds for expensive computations (reduced from 20s)
+      metadataTTL: 5000, // 5 seconds for metadata (reduced from 10s)
       processTTL: 500, // 500ms for process data
-      maxCacheSize: 100, // Reduced from 1000 to 100 to prevent memory buildup
+      maxCacheSize: 25, // Aggressively reduced to 25 to prevent memory buildup
     };
     
     // Dependency tracking for smart invalidation
@@ -55,11 +55,11 @@ class DataCache {
       evictions: 0
     };
     
-    // Start automatic cleanup interval
+    // Start automatic cleanup interval (more aggressive)
     this.cleanupInterval = setInterval(() => {
       this.evictOldEntries();
       this.enforceSizeLimits();
-    }, 30000); // Every 30 seconds
+    }, 15000); // Every 15 seconds (reduced from 30 seconds)
   }
 
   /**

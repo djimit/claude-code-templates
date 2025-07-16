@@ -530,6 +530,14 @@ class ClaudeAnalytics {
         // Calculate detailed token usage
         const detailedTokenUsage = this.calculateDetailedTokenUsage();
         
+        // Memory cleanup: limit conversation history to prevent memory buildup
+        if (this.data.conversations && this.data.conversations.length > 150) {
+          console.log(chalk.yellow(`🧹 Cleaning up conversation history: ${this.data.conversations.length} -> 150`));
+          this.data.conversations = this.data.conversations
+            .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
+            .slice(0, 150);
+        }
+        
         // Add timestamp to verify data freshness
         const dataWithTimestamp = {
           ...this.data,
@@ -796,6 +804,19 @@ class ClaudeAnalytics {
               console.log(chalk.gray(`  📊 ${conv.project}: ${conv.conversationState}`));
             });
           }
+        }
+        
+        // Memory cleanup: limit conversation history to prevent memory buildup
+        if (this.data.conversations.length > 100) {
+          console.log(chalk.yellow(`🧹 Cleaning up conversation history: ${this.data.conversations.length} -> 100`));
+          this.data.conversations = this.data.conversations
+            .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
+            .slice(0, 100);
+        }
+        
+        // Force garbage collection hint
+        if (global.gc) {
+          global.gc();
         }
         
         const dataWithTimestamp = {

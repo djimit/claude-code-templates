@@ -63,11 +63,13 @@ You'll see an interactive welcome screen:
 
 ¿What would you like to do?
 ❯ 📊 Analytics Dashboard - Monitor your Claude Code usage and sessions
-  ⚙️  Project Setup - Configure Claude Code for your project
+  🔍 Health Check - Validate your Claude Code configuration and system
+  ⚙️ Project Setup - Configure Claude Code for your project
 ```
 
 **Choose your path:**
 - **📊 Analytics Dashboard**: View your Claude Code sessions, usage patterns, and performance metrics
+- **🔍 Health Check**: Comprehensive system validation and configuration verification
 - **⚙️ Project Setup**: Configure Claude Code for your project with framework-specific commands and hooks
   
 
@@ -88,6 +90,16 @@ Monitor and optimize your Claude Code agents with our comprehensive analytics da
 - **Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
 - **Performance Monitoring**: Track Claude Code agent performance and optimization opportunities
 - **Usage Patterns**: Identify your most productive coding sessions and workflows
+
+### 🔍 Comprehensive Health Check
+Complete system validation and configuration verification:
+- **System Requirements**: Validate OS, Node.js, memory, and network connectivity
+- **Claude Code Setup**: Verify installation, authentication, and permissions
+- **Project Configuration**: Check project structure and configuration files
+- **Custom Commands**: Validate slash commands and syntax
+- **Hooks Configuration**: Verify automation hooks and command availability
+- **Interactive Results**: Real-time progress with immediate feedback and recommendations
+- **Health Score**: Overall system health percentage with actionable insights
 
 ### 📋 Smart Commands & Configuration
 Intelligent project setup with framework-specific commands:
@@ -199,6 +211,12 @@ npx claude-code-templates --yes
 # Install to custom directory
 npx claude-code-templates --directory /path/to/project
 
+# Run comprehensive system health check
+npx claude-code-templates --health-check
+npx claude-code-templates --health
+npx claude-code-templates --check
+npx claude-code-templates --verify
+
 # Analyze existing commands 
 npx claude-code-templates --commands-stats
 
@@ -264,6 +282,7 @@ npx claude-code-templates --language javascript-typescript --framework react --y
 | `-d, --directory` | Target directory | `--directory /path/to/project` |
 | `-y, --yes` | Skip prompts and use defaults | `--yes` |
 | `--dry-run` | Show what would be installed | `--dry-run` |
+| `--health-check` | Run comprehensive system validation | `--health-check` |
 | `--command-stats, --commands-stats` | Analyze existing commands | `--command-stats` |
 | `--hook-stats, --hooks-stats` | Analyze automation hooks | `--hook-stats` |
 | `--mcp-stats, --mcps-stats` | Analyze MCP server configurations | `--mcp-stats` |

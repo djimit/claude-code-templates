@@ -187,7 +187,11 @@ async function createClaudeConfig(options = {}) {
   // Copy template files
   const copySpinner = ora('Copying template files...').start();
   try {
-    await copyTemplateFiles(templateConfig, targetDir);
+    const result = await copyTemplateFiles(templateConfig, targetDir, options);
+    if (result === false) {
+      copySpinner.info('Setup cancelled by user');
+      return; // Exit early if user cancelled
+    }
     copySpinner.succeed('Template files copied successfully');
   } catch (error) {
     copySpinner.fail('Failed to copy template files');

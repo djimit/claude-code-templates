@@ -1,28 +1,116 @@
 const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
+const inquirer = require('inquirer');
 const { getHooksForLanguage, filterHooksBySelection, getMCPsForLanguage, filterMCPsBySelection } = require('./hook-scanner');
 
-async function copyTemplateFiles(templateConfig, targetDir) {
-  const templateDir = path.join(__dirname, '../templates');
+async function checkExistingFiles(targetDir, templateConfig) {
+  const existingFiles = [];
   
-  // Check if CLAUDE.md already exists
+  // Check for existing CLAUDE.md
   const claudeFile = path.join(targetDir, 'CLAUDE.md');
   if (await fs.pathExists(claudeFile)) {
-    // Create backup
-    const backupFile = path.join(targetDir, 'CLAUDE.md.backup');
-    await fs.copy(claudeFile, backupFile);
-    console.log(chalk.yellow(`📋 Existing CLAUDE.md backed up to CLAUDE.md.backup`));
+    existingFiles.push('CLAUDE.md');
   }
   
-  // Check if .claude directory already exists
+  // Check for existing .claude directory
   const claudeDir = path.join(targetDir, '.claude');
   if (await fs.pathExists(claudeDir)) {
-    // Create backup
-    const backupDir = path.join(targetDir, '.claude.backup');
-    await fs.copy(claudeDir, backupDir);
-    console.log(chalk.yellow(`📁 Existing .claude directory backed up to .claude.backup`));
+    existingFiles.push('.claude/');
   }
+  
+  // Check for existing .mcp.json
+  const mcpFile = path.join(targetDir, '.mcp.json');
+  if (await fs.pathExists(mcpFile)) {
+    existingFiles.push('.mcp.json');
+  }
+  
+  return existingFiles;
+}
+
+async function promptUserForOverwrite(existingFiles, targetDir) {
+  if (existingFiles.length === 0) {
+    return 'proceed'; // No existing files, safe to proceed
+  }
+  
+  console.log(chalk.yellow('\n⚠️  Existing Claude Code configuration detected!'));
+  console.log(chalk.yellow('The following files/directories already exist:'));
+  existingFiles.forEach(file => {
+    console.log(chalk.yellow(`   • ${file}`));
+  });
+  
+  const choices = [
+    {
+      name: '🔄 Backup and overwrite - Create backups and install new configuration',
+      value: 'backup',
+      short: 'Backup and overwrite'
+    },
+    {
+      name: '🔀 Merge configurations - Combine existing with new templates', 
+      value: 'merge',
+      short: 'Merge'
+    },
+    {
+      name: '❌ Cancel setup - Keep existing configuration unchanged',
+      value: 'cancel',
+      short: 'Cancel'
+    }
+  ];
+  
+  const answer = await inquirer.prompt([{
+    type: 'list',
+    name: 'action',
+    message: 'How would you like to proceed?',
+    choices,
+    default: 'backup'
+  }]);
+  
+  return answer.action;
+}
+
+async function createBackups(existingFiles, targetDir) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  
+  for (const file of existingFiles) {
+    const sourcePath = path.join(targetDir, file);
+    const backupPath = path.join(targetDir, `${file.replace('/', '')}.backup-${timestamp}`);
+    
+    try {
+      await fs.copy(sourcePath, backupPath);
+      console.log(chalk.green(`📋 Backed up ${file} → ${path.basename(backupPath)}`));
+    } catch (error) {
+      console.error(chalk.red(`✗ Failed to backup ${file}:`), error.message);
+      throw error;
+    }
+  }
+}
+
+async function copyTemplateFiles(templateConfig, targetDir, options = {}) {
+  const templateDir = path.join(__dirname, '../templates');
+  
+  // Check for existing files and get user preference
+  const existingFiles = await checkExistingFiles(targetDir, templateConfig);
+  let userAction = 'proceed';
+  
+  if (!options.yes && !options.dryRun) {
+    userAction = await promptUserForOverwrite(existingFiles, targetDir);
+    
+    if (userAction === 'cancel') {
+      console.log(chalk.blue('✓ Setup cancelled. Your existing configuration remains unchanged.'));
+      return false; // Indicate cancellation
+    }
+  } else if (existingFiles.length > 0) {
+    // In --yes mode, default to backup behavior
+    userAction = 'backup';
+  }
+  
+  // Create backups if requested
+  if (userAction === 'backup' && existingFiles.length > 0) {
+    await createBackups(existingFiles, targetDir);
+  }
+  
+  // Determine overwrite behavior based on user choice
+  const shouldOverwrite = userAction !== 'merge';
   
   // Copy base files and framework-specific files
   for (const file of templateConfig.files) {
@@ -40,14 +128,21 @@ async function copyTemplateFiles(templateConfig, targetDir) {
         for (const frameworkFile of frameworkFiles) {
           const srcFile = path.join(sourcePath, frameworkFile);
           const destFile = path.join(destPath, frameworkFile);
-          await fs.copy(srcFile, destFile, { overwrite: true });
+          
+          // In merge mode, skip if file already exists
+          if (userAction === 'merge' && await fs.pathExists(destFile)) {
+            console.log(chalk.blue(`⏭️  Skipped ${frameworkFile} (already exists)`));
+            continue;
+          }
+          
+          await fs.copy(srcFile, destFile, { overwrite: shouldOverwrite });
         }
         
         console.log(chalk.green(`✓ Copied framework commands ${file.source} → ${file.destination}`));
       } else if (file.source.includes('.claude') && !file.source.includes('examples/')) {
         // This is base .claude directory - copy it but handle commands specially
         await fs.copy(sourcePath, destPath, { 
-          overwrite: true,
+          overwrite: shouldOverwrite,
           filter: (src) => {
             // Skip the commands directory itself - we'll handle it separately
             return !src.endsWith('.claude/commands');
@@ -69,24 +164,47 @@ async function copyTemplateFiles(templateConfig, targetDir) {
             if (!excludeCommands.includes(baseCommand)) {
               const srcFile = path.join(baseCommandsPath, baseCommand);
               const destFile = path.join(destCommandsPath, baseCommand);
-              await fs.copy(srcFile, destFile, { overwrite: true });
+              
+              // In merge mode, skip if file already exists
+              if (userAction === 'merge' && await fs.pathExists(destFile)) {
+                console.log(chalk.blue(`⏭️  Skipped ${baseCommand} (already exists)`));
+                continue;
+              }
+              
+              await fs.copy(srcFile, destFile, { overwrite: shouldOverwrite });
             }
           }
         }
         
         console.log(chalk.green(`✓ Copied base configuration and commands ${file.source} → ${file.destination}`));
       } else if (file.source.includes('settings.json') && templateConfig.selectedHooks) {
-        // Handle settings.json with hook filtering
-        await processSettingsFile(sourcePath, destPath, templateConfig);
-        console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected hooks)`));
+        // In merge mode, merge settings instead of overwriting
+        if (userAction === 'merge') {
+          await mergeSettingsFile(sourcePath, destPath, templateConfig);
+          console.log(chalk.green(`✓ Merged ${file.source} → ${file.destination} (with selected hooks)`));
+        } else {
+          await processSettingsFile(sourcePath, destPath, templateConfig);
+          console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected hooks)`));
+        }
       } else if (file.source.includes('.mcp.json') && templateConfig.selectedMCPs) {
-        // Handle .mcp.json with MCP filtering
-        await processMCPFile(sourcePath, destPath, templateConfig);
-        console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected MCPs)`));
+        // In merge mode, merge MCP config instead of overwriting
+        if (userAction === 'merge') {
+          await mergeMCPFile(sourcePath, destPath, templateConfig);
+          console.log(chalk.green(`✓ Merged ${file.source} → ${file.destination} (with selected MCPs)`));
+        } else {
+          await processMCPFile(sourcePath, destPath, templateConfig);
+          console.log(chalk.green(`✓ Copied ${file.source} → ${file.destination} (with selected MCPs)`));
+        }
       } else {
-        // Copy regular files (CLAUDE.md, settings.json, etc.)
+        // Copy regular files (CLAUDE.md, etc.)
+        // In merge mode, skip if file already exists
+        if (userAction === 'merge' && await fs.pathExists(destPath)) {
+          console.log(chalk.blue(`⏭️  Skipped ${file.destination} (already exists)`));
+          continue;
+        }
+        
         await fs.copy(sourcePath, destPath, { 
-          overwrite: true,
+          overwrite: shouldOverwrite,
           filter: (src) => {
             // Skip commands directory during regular copy - we handle them above
             return !src.includes('.claude/commands');
@@ -99,6 +217,8 @@ async function copyTemplateFiles(templateConfig, targetDir) {
       throw error;
     }
   }
+  
+  return true; // Indicate successful completion
   
   // Copy selected commands individually
   if (templateConfig.selectedCommands && templateConfig.selectedCommands.length > 0) {

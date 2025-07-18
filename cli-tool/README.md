@@ -28,6 +28,16 @@ Monitor and optimize your Claude Code agents with our comprehensive analytics da
 - **Performance Monitoring**: Track Claude Code agent performance and optimization opportunities
 - **Web Interface**: Clean, terminal-style dashboard at `http://localhost:3333`
 
+### 🔍 Comprehensive Health Check
+Complete system validation and configuration verification:
+- **System Requirements**: Validate OS, Node.js, memory, and network connectivity
+- **Claude Code Setup**: Verify installation, authentication, and permissions
+- **Project Configuration**: Check project structure and configuration files
+- **Custom Commands**: Validate slash commands and syntax
+- **Hooks Configuration**: Verify automation hooks and command availability
+- **Interactive Results**: Real-time progress with immediate feedback and recommendations
+- **Health Score**: Overall system health percentage with actionable insights
+
 ### 📋 Smart Project Setup
 Intelligent project configuration with framework-specific commands:
 - **Auto-Detection**: Automatically detect your project type and suggest optimal configurations
@@ -59,13 +69,22 @@ Intelligent project configuration with framework-specific commands:
 ```bash
 cd my-react-app
 npx claude-code-templates
-# Choose between Analytics Dashboard or Project Setup
+# Choose between Analytics Dashboard, Health Check, or Project Setup
 ```
 
 ### Analytics Dashboard
 ```bash
 # Launch real-time analytics dashboard
 npx claude-code-templates --analytics
+```
+
+### Health Check
+```bash
+# Run comprehensive system validation
+npx claude-code-templates --health-check
+npx claude-code-templates --health
+npx claude-code-templates --check
+npx claude-code-templates --verify
 ```
 
 ### Framework-Specific Quick Setup
@@ -109,6 +128,10 @@ npx create-claude-config     # Create-style command
 | `-y, --yes` | Skip prompts and use defaults | `--yes` |
 | `--dry-run` | Show what would be installed | `--dry-run` |
 | `--analytics` | Launch real-time analytics dashboard | `--analytics` |
+| `--health-check` | Run comprehensive system validation | `--health-check` |
+| `--health` | Run system health check (alias) | `--health` |
+| `--check` | Run system validation (alias) | `--check` |
+| `--verify` | Verify system configuration (alias) | `--verify` |
 | `--commands-stats` | Analyze existing commands | `--commands-stats` |
 | `--hooks-stats` | Analyze automation hooks | `--hooks-stats` |
 | `--mcps-stats` | Analyze MCP server configurations | `--mcps-stats` |

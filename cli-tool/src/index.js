@@ -12,6 +12,59 @@ const { runCommandStats } = require('./command-stats');
 const { runHookStats } = require('./hook-stats');
 const { runMCPStats } = require('./mcp-stats');
 const { runAnalytics } = require('./analytics');
+const { runHealthCheck } = require('./health-check');
+
+async function showMainMenu() {
+  console.log(chalk.blue('🚀 Welcome to Claude Code Templates!'));
+  console.log('');
+  
+  const initialChoice = await inquirer.prompt([{
+    type: 'list',
+    name: 'action',
+    message: 'What would you like to do?',
+    choices: [
+      {
+        name: '📊 Analytics Dashboard - Monitor your Claude Code usage and sessions',
+        value: 'analytics',
+        short: 'Analytics Dashboard'
+      },
+      {
+        name: '🔍 Health Check - Verify your Claude Code setup and configuration',
+        value: 'health',
+        short: 'Health Check'
+      },
+      {
+        name: '⚙️ Project Setup - Configure Claude Code for your project',
+        value: 'setup',
+        short: 'Project Setup'
+      }
+    ],
+    default: 'analytics'
+  }]);
+  
+  if (initialChoice.action === 'analytics') {
+    console.log(chalk.blue('📊 Launching Claude Code Analytics Dashboard...'));
+    await runAnalytics({});
+    return;
+  }
+  
+  if (initialChoice.action === 'health') {
+    console.log(chalk.blue('🔍 Running Health Check...'));
+    const healthResult = await runHealthCheck();
+    if (healthResult.runSetup) {
+      console.log(chalk.blue('⚙️  Starting Project Setup...'));
+      // Continue with setup flow
+      return await createClaudeConfig({});
+    } else {
+      console.log(chalk.green('👍 Health check completed. Returning to main menu...'));
+      return await showMainMenu();
+    }
+  }
+  
+  // Continue with setup if user chose 'setup'
+  console.log(chalk.blue('⚙️  Setting up Claude Code configuration...'));
+  return await createClaudeConfig({ setupFromMenu: true });
+}
 
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
@@ -40,38 +93,22 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
-  // Add initial choice prompt (only if no specific options are provided)
-  if (!options.yes && !options.language && !options.framework && !options.dryRun) {
-    console.log(chalk.blue('🚀 Welcome to Claude Code Templates!'));
-    console.log('');
-    
-    const initialChoice = await inquirer.prompt([{
-      type: 'list',
-      name: 'action',
-      message: 'What would you like to do?',
-      choices: [
-        {
-          name: '📊 Analytics Dashboard - Monitor your Claude Code usage and sessions',
-          value: 'analytics',
-          short: 'Analytics Dashboard'
-        },
-        {
-          name: '⚙️  Project Setup - Configure Claude Code for your project',
-          value: 'setup',
-          short: 'Project Setup'
-        }
-      ],
-      default: 'analytics'
-    }]);
-    
-    if (initialChoice.action === 'analytics') {
-      console.log(chalk.blue('📊 Launching Claude Code Analytics Dashboard...'));
-      await runAnalytics(options);
-      return;
+  // Handle health check
+  let shouldRunSetup = false;
+  if (options.healthCheck || options.health || options.check || options.verify) {
+    const healthResult = await runHealthCheck();
+    if (healthResult.runSetup) {
+      console.log(chalk.blue('⚙️  Starting Project Setup...'));
+      shouldRunSetup = true;
+    } else {
+      console.log(chalk.green('👍 Health check completed. Returning to main menu...'));
+      return await showMainMenu();
     }
-    
-    // Continue with setup if user chose 'setup'
-    console.log(chalk.blue('⚙️  Setting up Claude Code configuration...'));
+  }
+  
+  // Add initial choice prompt (only if no specific options are provided and not continuing from health check or menu)
+  if (!shouldRunSetup && !options.setupFromMenu && !options.yes && !options.language && !options.framework && !options.dryRun) {
+    return await showMainMenu();
   } else {
     console.log(chalk.blue('🚀 Setting up Claude Code configuration...'));
   }
@@ -186,4 +223,4 @@ async function createClaudeConfig(options = {}) {
   }
 }
 
-module.exports = createClaudeConfig;
+module.exports = { createClaudeConfig, showMainMenu };

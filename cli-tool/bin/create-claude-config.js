@@ -3,7 +3,7 @@
 const { program } = require('commander');
 const chalk = require('chalk');
 const boxen = require('boxen');
-const createClaudeConfig = require('../src/index');
+const { createClaudeConfig } = require('../src/index');
 
 // ASCII Art for Claude Code Templates
 const banner = chalk.hex('#D97706')(`
@@ -45,6 +45,7 @@ program
   .option('--hook-stats, --hooks-stats', 'analyze existing automation hooks and offer optimization')
   .option('--mcp-stats, --mcps-stats', 'analyze existing MCP server configurations and offer optimization')
   .option('--analytics', 'launch real-time Claude Code analytics dashboard')
+  .option('--health-check, --health, --check, --verify', 'run comprehensive health check to verify Claude Code setup')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

@@ -16,6 +16,7 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
+                    <span class="status-dot"></span>
                     <h1>🤖 Claude Code Templates</h1>
                     <p>Ready-to-use configurations for your development projects</p>
                 </div>
@@ -31,28 +32,29 @@
         </div>
     </header>
 
-    <main class="main">
-        <div class="container">
-            <section class="intro">
-                <h2>Choose Your Development Stack</h2>
-                <p>Select a template to quickly set up Claude Code configuration for your project. Click on any card to see the installation command.</p>
-            </section>
-
-            <section class="templates-grid" id="templatesGrid">
-                <!-- Templates will be loaded here by JavaScript -->
-            </section>
-
-            <section class="footer-info">
-                <div class="install-info">
-                    <h3>Installation</h3>
-                    <p>First, install the Claude Code Templates CLI:</p>
-                    <div class="code-block">
-                        <code>npm install -g claude-code-templates</code>
-                        <button class="copy-btn" onclick="copyToClipboard('npm install -g claude-code-templates')">Copy</button>
-                    </div>
+    <main class="terminal">
+        <section class="install-section">
+            <div class="command-block">
+                <div class="command-label">$ Installation</div>
+                <div class="command-description">First, install the Claude Code Templates CLI:</div>
+                <div class="command-line">
+                    <span class="prompt">$</span>
+                    <code class="command">npm install -g claude-code-templates</code>
+                    <button class="copy-btn" onclick="copyToClipboard('npm install -g claude-code-templates')">Copy</button>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
+
+        <section class="intro-section">
+            <div class="command-block">
+                <div class="command-label">$ Available Templates</div>
+                <div class="command-description">Select a template to quickly set up Claude Code configuration for your project. Click on any card to see the installation command.</div>
+            </div>
+        </section>
+
+        <section class="templates-grid" id="templatesGrid">
+            <!-- Templates will be loaded here by JavaScript -->
+        </section>
     </main>
 
     <footer class="footer">

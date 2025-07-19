@@ -1,3 +1,22 @@
+/* Terminal theme CSS based on Claude Code Analytics dashboard */
+:root {
+    /* Dark theme colors (terminal style) */
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --border-primary: #30363d;
+    --border-secondary: #21262d;
+    --text-primary: #c9d1d9;
+    --text-secondary: #7d8590;
+    --text-accent: #d57455;
+    --text-success: #3fb950;
+    --text-warning: #f97316;
+    --text-error: #f85149;
+    --text-info: #a5d6ff;
+    --shadow-primary: rgba(0, 0, 0, 0.4);
+    --shadow-secondary: rgba(1, 4, 9, 0.85);
+}
+
 /* Reset and base styles */
 * {
     margin: 0;
@@ -6,24 +25,24 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     min-height: 100vh;
+    line-height: 1.4;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
 /* Header */
 .header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -37,73 +56,161 @@ body {
 }
 
 .logo h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: normal;
+    color: var(--text-accent);
     margin-bottom: 0.25rem;
 }
 
 .logo p {
-    color: #718096;
-    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
 }
 
 .github-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #2d3748;
+    color: var(--text-primary);
     text-decoration: none;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
-    background: rgba(45, 55, 72, 0.1);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
     transition: all 0.2s ease;
 }
 
 .github-link:hover {
-    background: rgba(45, 55, 72, 0.2);
-    transform: translateY(-1px);
+    background: var(--bg-primary);
+    border-color: var(--border-secondary);
 }
 
-/* Main content */
-.main {
-    padding: 3rem 0;
-}
-
-.intro {
-    text-align: center;
-    margin-bottom: 3rem;
-    color: white;
-}
-
-.intro h2 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.intro p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    max-width: 600px;
+/* Terminal main content */
+.terminal {
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 20px;
+}
+
+.terminal-header {
+    border-bottom: 1px solid var(--border-primary);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.terminal-title {
+    color: var(--text-accent);
+    font-size: 1.25rem;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-success);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.terminal-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+/* Command blocks */
+.command-block {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.command-label {
+    color: var(--text-accent);
+    font-size: 1rem;
+    font-weight: normal;
+    margin-bottom: 8px;
+}
+
+.command-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+}
+
+.command-line {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    padding: 12px 16px;
+}
+
+.prompt {
+    color: var(--text-success);
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.command {
+    flex: 1;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    background: none;
+    border: none;
+    outline: none;
+}
+
+.copy-btn {
+    background: var(--text-info);
+    color: var(--bg-primary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-family: inherit;
+}
+
+.copy-btn:hover {
+    opacity: 0.8;
+}
+
+/* Install and intro sections */
+.install-section,
+.intro-section {
+    margin-bottom: 30px;
 }
 
 /* Templates grid */
 .templates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-bottom: 4rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
 }
 
 /* Template card */
 .template-card {
-    background: white;
-    border-radius: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
@@ -112,8 +219,8 @@ body {
 }
 
 .template-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: var(--text-accent);
+    box-shadow: 0 4px 12px var(--shadow-primary);
 }
 
 .card-inner {
@@ -143,38 +250,36 @@ body {
 
 .card-back {
     transform: rotateY(180deg);
-    background: #2d3748;
-    color: white;
+    background: var(--bg-tertiary);
 }
 
 .framework-logo {
     width: 64px;
     height: 64px;
     margin-bottom: 1rem;
-    border-radius: 12px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    color: #495057;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 2.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
 }
 
 .framework-logo i {
-    font-size: 3rem;
+    font-size: 2.5rem;
 }
 
 .template-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2d3748;
+    font-size: 1.1rem;
+    font-weight: normal;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .template-description {
-    color: #718096;
-    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
     text-align: center;
 }
 
@@ -187,144 +292,72 @@ body {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: #ffd700;
-    color: #2d3748;
+    background: var(--text-warning);
+    color: var(--bg-primary);
     padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: normal;
 }
 
 /* Command display on card back */
 .command-display {
     text-align: center;
+    width: 100%;
 }
 
 .command-display h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin-bottom: 1rem;
-    color: #e2e8f0;
+    color: var(--text-accent);
+    font-weight: normal;
 }
 
 .command-code {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1rem;
-    border-radius: 8px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.9rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+    padding: 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.8rem;
     word-break: break-all;
     margin-bottom: 1rem;
-    position: relative;
+    color: var(--text-primary);
 }
 
 .copy-command-btn {
-    background: #48bb78;
-    color: white;
+    background: var(--text-success);
+    color: var(--bg-primary);
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.8rem;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: opacity 0.2s ease;
+    font-family: inherit;
 }
 
 .copy-command-btn:hover {
-    background: #38a169;
-}
-
-/* Footer info section */
-.footer-info {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.install-info h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 1rem;
-}
-
-.install-info p {
-    color: #718096;
-    margin-bottom: 1rem;
-}
-
-.code-block {
-    display: flex;
-    align-items: center;
-    background: #2d3748;
-    border-radius: 8px;
-    padding: 1rem;
-    gap: 1rem;
-}
-
-.code-block code {
-    flex: 1;
-    color: #e2e8f0;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.9rem;
-}
-
-.copy-btn {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.copy-btn:hover {
-    background: #5a67d8;
+    opacity: 0.8;
 }
 
 /* Footer */
 .footer {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    color: white;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+    color: var(--text-secondary);
     text-align: center;
     padding: 2rem 0;
+    margin-top: 2rem;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .intro h2 {
-        font-size: 2rem;
-    }
-
-    .templates-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .template-card {
-        height: 180px;
-    }
-
-    .code-block {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-
-/* Loading animation */
+/* Loading and error states */
 .loading {
     text-align: center;
-    color: white;
-    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
     padding: 2rem;
+    grid-column: 1 / -1;
 }
 
 .loading::after {
@@ -337,4 +370,95 @@ body {
     40% { content: '.'; }
     60% { content: '..'; }
     80%, 100% { content: '...'; }
+}
+
+.error-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-error);
+    background: var(--bg-secondary);
+    border: 1px solid var(--text-error);
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.error-message h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+
+.retry-btn {
+    background: var(--text-error);
+    color: var(--bg-primary);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    transition: opacity 0.2s ease;
+    font-family: inherit;
+}
+
+.retry-btn:hover {
+    opacity: 0.8;
+}
+
+/* Copy feedback animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .terminal {
+        padding: 15px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .terminal-title {
+        font-size: 1.1rem;
+    }
+
+    .templates-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .template-card {
+        height: 180px;
+    }
+
+    .command-line {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .command {
+        text-align: center;
+    }
 }

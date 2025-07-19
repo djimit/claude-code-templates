@@ -97,6 +97,9 @@ function parseTemplatesConfig(fileContent) {
         // Parse the JSON
         const config = JSON.parse(configString);
         
+        // Debug: Log the parsed config
+        console.log('Parsed templates config:', config);
+        
         return config;
     } catch (error) {
         console.error('Error parsing templates config:', error);
@@ -252,14 +255,19 @@ function getInstallationFiles(languageKey, frameworkKey) {
     const languageData = templatesData[languageKey];
     let files = [...(languageData.files || [])];
     
+    // Debug: Log the files to see what we're getting
+    console.log('Base files for', languageKey, ':', files);
+    
     // Add framework-specific files if applicable
     if (frameworkKey !== 'none' && languageData.frameworks && languageData.frameworks[frameworkKey]) {
         const frameworkData = languageData.frameworks[frameworkKey];
         if (frameworkData.additionalFiles) {
             files = files.concat(frameworkData.additionalFiles);
+            console.log('Added framework files for', frameworkKey, ':', frameworkData.additionalFiles);
         }
     }
     
+    console.log('Final files list:', files);
     return files;
 }
 

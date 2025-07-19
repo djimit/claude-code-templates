@@ -647,29 +647,25 @@ body {
 .view-files-btn,
 .copy-command-btn {
     border: none;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: all 0.2s ease;
     font-family: inherit;
     flex: 1;
-    min-width: 100px;
-}
-
-.view-files-btn {
-    background: var(--text-info);
-    color: var(--bg-primary);
-}
-
-.copy-command-btn {
-    background: var(--text-success);
-    color: var(--bg-primary);
+    min-width: 80px;
+    font-weight: normal;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
 }
 
 .view-files-btn:hover,
 .copy-command-btn:hover {
-    opacity: 0.8;
+    background: var(--border-primary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
 }
 
 /* Footer */

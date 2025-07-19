@@ -309,6 +309,9 @@ body {
     padding: 20px;
     position: relative;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
 }
 
 .step-card:hover {
@@ -332,6 +335,12 @@ body {
     font-weight: bold;
 }
 
+.step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .step-content h3 {
     color: var(--text-primary);
     font-size: 1.1rem;
@@ -344,6 +353,7 @@ body {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin-bottom: 16px;
+    flex: 1;
 }
 
 .step-highlight {
@@ -352,6 +362,11 @@ body {
     border-radius: 6px;
     padding: 12px;
     text-align: center;
+    margin-top: auto;
+}
+
+.command-line {
+    margin-top: auto;
 }
 
 .highlight-text {

@@ -236,6 +236,60 @@ body {
     opacity: 0.8;
 }
 
+/* Stats section */
+.stats-section {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.stats-grid {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.stat-card:hover {
+    border-color: var(--text-accent);
+    box-shadow: 0 4px 12px var(--shadow-primary);
+    transform: translateY(-2px);
+}
+
+.stat-link {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stat-badge {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: normal;
+    text-align: center;
+}
+
+.stat-card:hover .stat-label {
+    color: var(--text-primary);
+}
+
 /* Steps section */
 .steps-section {
     margin-bottom: 40px;
@@ -683,6 +737,17 @@ body {
         border-radius: 2px;
     }
 
+    .stats-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        min-width: 250px;
+        max-width: 300px;
+    }
+
     .steps-grid {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -740,6 +805,16 @@ body {
     
     .header-content {
         padding: 0.75rem 0;
+    }
+    
+    .stat-card {
+        min-width: 200px;
+        max-width: 250px;
+        padding: 0.75rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
     }
 }
 

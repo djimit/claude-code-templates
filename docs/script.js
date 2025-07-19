@@ -157,11 +157,16 @@ function createTemplateCard(languageKey, languageData, frameworkKey, frameworkDa
             </div>
             <div class="card-back">
                 <div class="command-display">
-                    <h3>Installation Command</h3>
+                    <h3>Installation Options</h3>
                     <div class="command-code">${frameworkData.command}</div>
-                    <button class="copy-command-btn" onclick="copyToClipboard('${frameworkData.command}')">
-                        Copy Command
-                    </button>
+                    <div class="action-buttons">
+                        <button class="view-files-btn" onclick="showInstallationFiles('${languageKey}', '${frameworkKey}', '${displayName}')">
+                            📁 View Files
+                        </button>
+                        <button class="copy-command-btn" onclick="copyToClipboard('${frameworkData.command}')">
+                            📋 Copy Command
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,8 +174,11 @@ function createTemplateCard(languageKey, languageData, frameworkKey, frameworkDa
     
     // Add click handler for card flip (only if not coming soon)
     if (!languageData.comingSoon) {
-        card.addEventListener('click', () => {
-            card.classList.toggle('flipped');
+        card.addEventListener('click', (e) => {
+            // Don't flip if clicking on buttons
+            if (!e.target.closest('button')) {
+                card.classList.toggle('flipped');
+            }
         });
     }
     
@@ -180,6 +188,100 @@ function createTemplateCard(languageKey, languageData, frameworkKey, frameworkDa
 // Get framework icon from mapping
 function getFrameworkIcon(framework) {
     return FRAMEWORK_ICONS[framework] || FRAMEWORK_ICONS['default'];
+}
+
+// Get installation files for a specific template
+function getInstallationFiles(languageKey, frameworkKey) {
+    if (!templatesData || !templatesData[languageKey]) {
+        return [];
+    }
+    
+    const languageData = templatesData[languageKey];
+    let files = [...(languageData.files || [])];
+    
+    // Add framework-specific files if applicable
+    if (frameworkKey !== 'none' && languageData.frameworks && languageData.frameworks[frameworkKey]) {
+        const frameworkData = languageData.frameworks[frameworkKey];
+        if (frameworkData.additionalFiles) {
+            files = files.concat(frameworkData.additionalFiles);
+        }
+    }
+    
+    return files;
+}
+
+// Show installation files popup
+function showInstallationFiles(languageKey, frameworkKey, displayName) {
+    const files = getInstallationFiles(languageKey, frameworkKey);
+    
+    if (files.length === 0) {
+        showCopyFeedback('No files to display');
+        return;
+    }
+    
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>📁 Installation Files - ${displayName}</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-description">The following files will be installed in your project:</p>
+                    <div class="files-table">
+                        <div class="table-header">
+                            <div class="column-header">File</div>
+                            <div class="column-header">Destination</div>
+                            <div class="column-header">Type</div>
+                        </div>
+                        ${files.map(file => `
+                            <div class="table-row">
+                                <div class="file-source">${file.source}</div>
+                                <div class="file-destination">${file.destination}</div>
+                                <div class="file-type">${getFileType(file.destination)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-footer">
+                        <p class="file-count">Total: ${files.length} file${files.length > 1 ? 's' : ''}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    const modal = document.createElement('div');
+    modal.innerHTML = modalHTML;
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+    
+    // Add event listener for ESC key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Get file type based on extension/name
+function getFileType(filename) {
+    if (filename.endsWith('.md')) return 'Documentation';
+    if (filename.endsWith('.json')) return 'Configuration';
+    if (filename.includes('.claude')) return 'Commands';
+    if (filename.includes('commands')) return 'Commands';
+    return 'Configuration';
 }
 
 // Copy to clipboard function

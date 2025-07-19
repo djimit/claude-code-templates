@@ -8,6 +8,8 @@
 
 **CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard. Open source and runs locally.
 
+🌐 **[Browse Templates Online](https://davila7.github.io/claude-code-templates/)** - Explore all available templates with interactive previews and installation commands.
+
 ## 📋 Quick Start
 
 ```bash

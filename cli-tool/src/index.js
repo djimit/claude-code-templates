@@ -204,6 +204,8 @@ async function createClaudeConfig(options = {}) {
   console.log(chalk.white('  1. Review the generated CLAUDE.md file'));
   console.log(chalk.white('  2. Customize the configuration for your project'));
   console.log(chalk.white('  3. Start using Claude Code with: claude'));
+  console.log('');
+  console.log(chalk.blue('🌐 View all available templates at: https://davila7.github.io/claude-code-templates/'));
   
   if (config.language !== 'common') {
     console.log(chalk.yellow(`💡 Language-specific features for ${config.language} have been configured`));

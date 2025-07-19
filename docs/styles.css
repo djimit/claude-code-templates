@@ -371,6 +371,89 @@ body {
     margin-bottom: 30px;
 }
 
+/* Add New Template Card Styles */
+.add-template-card {
+    background: linear-gradient(135deg, var(--text-success) 0%, #2d7d32 100%);
+    border: 1px solid var(--text-success);
+    position: relative;
+    overflow: hidden;
+}
+
+.add-template-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+.add-template-card:hover {
+    border-color: #2d7d32;
+    box-shadow: 0 6px 20px rgba(63, 185, 80, 0.3);
+    transform: translateY(-2px);
+}
+
+.add-template-card .framework-logo {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.add-template-card .template-title {
+    color: white;
+    font-weight: 600;
+}
+
+.add-template-card .template-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.add-template-card .card-back {
+    background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
+}
+
+.add-template-card .command-display h3 {
+    color: white;
+}
+
+.add-template-info {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.add-template-info p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.add-template-info ul {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8rem;
+    margin-left: 1rem;
+    line-height: 1.4;
+}
+
+.add-template-info li {
+    margin-bottom: 0.25rem;
+}
+
+.contribute-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    font-weight: 500;
+}
+
+.contribute-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 /* Tools section */
 .tools-grid {
     display: grid;
@@ -952,6 +1035,17 @@ body {
     font-family: inherit;
 }
 
+.file-link {
+    color: var(--text-info);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.file-link:hover {
+    color: var(--text-accent);
+    text-decoration: underline;
+}
+
 .file-destination {
     color: var(--text-primary);
     font-family: inherit;
@@ -971,6 +1065,37 @@ body {
 .file-count {
     color: var(--text-secondary);
     font-size: 0.8rem;
+    margin-bottom: 15px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.github-folder-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.github-folder-link:hover {
+    background: var(--bg-primary);
+    border-color: var(--text-accent);
+    color: var(--text-accent);
+}
+
+.github-folder-link svg {
+    flex-shrink: 0;
 }
 
 /* Modal animations */
@@ -990,6 +1115,252 @@ body {
     }
 }
 
+/* Contribution modal styles */
+.contribute-modal {
+    max-width: 900px;
+}
+
+.contribute-intro {
+    margin-bottom: 30px;
+}
+
+.contribute-intro p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.contribute-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.contribute-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.contribute-step:hover {
+    border-color: var(--text-accent);
+    box-shadow: 0 2px 8px var(--shadow-primary);
+}
+
+.step-number-contrib {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--text-accent);
+    color: var(--bg-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.step-content-contrib {
+    flex: 1;
+}
+
+.step-content-contrib h4 {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+}
+
+.step-content-contrib p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0 0 15px 0;
+}
+
+.step-content-contrib ul {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 15px 0 0 20px;
+}
+
+.step-content-contrib li {
+    margin-bottom: 5px;
+}
+
+.step-content-contrib a {
+    color: var(--text-info);
+    text-decoration: none;
+}
+
+.step-content-contrib a:hover {
+    color: var(--text-accent);
+    text-decoration: underline;
+}
+
+.step-command {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 10px 0;
+    font-family: inherit;
+}
+
+.step-command code {
+    flex: 1;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    background: none;
+    border: none;
+    font-family: inherit;
+}
+
+.step-command .copy-btn {
+    background: var(--text-success);
+    color: var(--bg-primary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    font-family: inherit;
+}
+
+.step-command .copy-btn:hover {
+    opacity: 0.8;
+}
+
+.contribution-types {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.contrib-type {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.contrib-type strong {
+    color: var(--text-accent);
+    font-size: 0.9rem;
+}
+
+.contrib-type small {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.contrib-type code {
+    background: var(--bg-secondary);
+    color: var(--text-info);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-family: inherit;
+}
+
+.claude-prompt {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+}
+
+.claude-prompt h5 {
+    color: var(--text-accent);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prompt-text {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.prompt-text pre {
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+}
+
+.copy-prompt-btn {
+    background: var(--text-info);
+    color: var(--bg-primary);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.copy-prompt-btn:hover {
+    opacity: 0.8;
+}
+
+.contribute-footer {
+    border-top: 1px solid var(--border-primary);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.help-section h4 {
+    color: var(--text-accent);
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+}
+
+.help-section p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.help-section a {
+    color: var(--text-info);
+    text-decoration: none;
+}
+
+.help-section a:hover {
+    color: var(--text-accent);
+    text-decoration: underline;
+}
+
 /* Modal responsive design */
 @media (max-width: 768px) {
     .modal-overlay {
@@ -1000,9 +1371,57 @@ body {
         max-height: 90vh;
     }
     
+    .contribute-modal {
+        max-width: 100%;
+    }
+    
     .modal-header,
     .modal-body {
         padding: 15px;
+    }
+    
+    .contribute-steps {
+        gap: 20px;
+    }
+    
+    .contribute-step {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .step-number-contrib {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+        align-self: flex-start;
+    }
+    
+    .step-command {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .step-command code {
+        text-align: center;
+        word-break: break-all;
+    }
+    
+    .contribution-types {
+        gap: 12px;
+    }
+    
+    .contrib-type {
+        padding: 12px;
+    }
+    
+    .claude-prompt {
+        padding: 15px;
+    }
+    
+    .prompt-text pre {
+        font-size: 0.75rem;
     }
     
     .table-header,

@@ -8,6 +8,7 @@ const TEMPLATES_CONFIG = {
     files: [
       { source: 'common/CLAUDE.md', destination: 'CLAUDE.md' },
       { source: 'common/.claude', destination: '.claude' },
+      { source: 'common/.claude/settings.json', destination: '.claude/settings.json' },
       { source: 'common/.mcp.json', destination: '.mcp.json' }
     ]
   },
@@ -17,6 +18,7 @@ const TEMPLATES_CONFIG = {
     files: [
       { source: 'javascript-typescript/CLAUDE.md', destination: 'CLAUDE.md' },
       { source: 'javascript-typescript/.claude', destination: '.claude' },
+      { source: 'javascript-typescript/.claude/settings.json', destination: '.claude/settings.json' },
       { source: 'javascript-typescript/.mcp.json', destination: '.mcp.json' }
     ],
     frameworks: {
@@ -52,6 +54,7 @@ const TEMPLATES_CONFIG = {
     files: [
       { source: 'python/CLAUDE.md', destination: 'CLAUDE.md' },
       { source: 'python/.claude', destination: '.claude' },
+      { source: 'python/.claude/settings.json', destination: '.claude/settings.json' },
       { source: 'python/.mcp.json', destination: '.mcp.json' }
     ],
     frameworks: {
@@ -82,6 +85,7 @@ const TEMPLATES_CONFIG = {
     files: [
       { source: 'ruby/CLAUDE.md', destination: 'CLAUDE.md' },
       { source: 'ruby/.claude', destination: '.claude' },
+      { source: 'ruby/.claude/settings.json', destination: '.claude/settings.json' },
       { source: 'ruby/.mcp.json', destination: '.mcp.json' }
     ],
     frameworks: {

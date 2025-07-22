@@ -119,28 +119,12 @@ class DataCache {
       return cached.messages;
     }
     
-    // Cache miss - parse conversation
+    // Cache miss - parse conversation with tool correlation
     this.metrics.misses++;
     const content = await this.getFileContent(filepath);
+    const lines = content.trim().split('\n').filter(line => line.trim());
     
-    const messages = content.trim().split('\n')
-      .filter(line => line.trim())
-      .map(line => {
-        try {
-          const item = JSON.parse(line);
-          if (item.message && item.message.role) {
-            return {
-              role: item.message.role,
-              timestamp: new Date(item.timestamp),
-              content: item.message.content,
-              model: item.message.model || null,
-              usage: item.message.usage || null,
-            };
-          }
-        } catch {}
-        return null;
-      })
-      .filter(Boolean);
+    const messages = this.parseAndCorrelateToolMessages(lines);
     
     this.caches.parsedConversations.set(filepath, {
       messages,
@@ -148,6 +132,127 @@ class DataCache {
     });
     
     return messages;
+  }
+
+  /**
+   * Parse JSONL lines and correlate tool_use with tool_result
+   * @param {Array} lines - JSONL lines
+   * @returns {Array} Parsed and correlated messages
+   */
+  parseAndCorrelateToolMessages(lines) {
+    const entries = [];
+    const toolUseMap = new Map();
+    
+    // First pass: parse all entries and map tool_use entries
+    for (const line of lines) {
+      try {
+        const item = JSON.parse(line);
+        if (item.message && (item.type === 'assistant' || item.type === 'user')) {
+          entries.push(item);
+          
+          // Track tool_use entries by their ID
+          if (item.type === 'assistant' && item.message.content) {
+            const toolUseBlock = Array.isArray(item.message.content) 
+              ? item.message.content.find(c => c.type === 'tool_use')
+              : (item.message.content.type === 'tool_use' ? item.message.content : null);
+            
+            if (toolUseBlock && toolUseBlock.id) {
+              toolUseMap.set(toolUseBlock.id, item);
+              if (toolUseBlock.id === 'toolu_01D8RMQYDySWAscQCC6pfDWf') {
+                // Debug: Specific tool_use mapped for debugging
+              }
+            }
+          }
+        }
+      } catch (error) {
+        // Skip invalid JSONL lines
+      }
+    }
+    
+    // Second pass: correlate tool_result with tool_use (first process ALL tool_results)
+    for (const item of entries) {
+      if (item.type === 'user' && item.message.content) {
+        // Check if this is a tool_result entry
+        const toolResultBlock = Array.isArray(item.message.content)
+          ? item.message.content.find(c => c.type === 'tool_result')
+          : (item.message.content.type === 'tool_result' ? item.message.content : null);
+        
+        if (toolResultBlock && toolResultBlock.tool_use_id) {
+          // This is a tool_result - attach it to the corresponding tool_use
+          const toolUseEntry = toolUseMap.get(toolResultBlock.tool_use_id);
+          if (toolUseEntry) {
+            // Enhance tool result with additional metadata
+            const enhancedToolResult = {
+              ...toolResultBlock,
+              // Include additional metadata from toolUseResult if available
+              ...(item.toolUseResult && {
+                stdout: item.toolUseResult.stdout,
+                stderr: item.toolUseResult.stderr,
+                interrupted: item.toolUseResult.interrupted,
+                isImage: item.toolUseResult.isImage,
+                returnCodeInterpretation: item.toolUseResult.returnCodeInterpretation
+              })
+            };
+            
+            // Attach tool result to the tool use entry
+            if (!toolUseEntry.toolResults) {
+              toolUseEntry.toolResults = [];
+            }
+            toolUseEntry.toolResults.push(enhancedToolResult);
+            // console.log: Tool result attached successfully
+          }
+        }
+      }
+    }
+    
+    // Third pass: process messages and filter out standalone tool_result entries
+    const processedMessages = [];
+    
+    for (const item of entries) {
+      if (item.type === 'user' && item.message.content) {
+        // Check if this is a tool_result entry (skip it as we've already processed it)
+        const toolResultBlock = Array.isArray(item.message.content)
+          ? item.message.content.find(c => c.type === 'tool_result')
+          : (item.message.content.type === 'tool_result' ? item.message.content : null);
+        
+        if (toolResultBlock && toolResultBlock.tool_use_id) {
+          // Skip standalone tool_result entries - they've been attached to their tool_use
+          continue;
+        }
+      }
+      
+      // Convert to our standard format
+      if (item.toolResults) {
+        // console.log: Processing item with tool results
+      }
+      
+      // Debug specific item we're looking for
+      if (item.message && item.message.content && Array.isArray(item.message.content)) {
+        const toolUseBlock = item.message.content.find(c => c.type === 'tool_use' && c.id === 'toolu_01D8RMQYDySWAscQCC6pfDWf');
+        if (toolUseBlock) {
+          // Debug: Processing tool_use item
+        }
+      }
+      const parsed = {
+        id: item.message.id || item.uuid || null,
+        role: item.message.role || (item.type === 'assistant' ? 'assistant' : 'user'),
+        timestamp: new Date(item.timestamp),
+        content: item.message.content,
+        model: item.message.model || null,
+        usage: item.message.usage || null,
+        toolResults: item.toolResults || null, // Include attached tool results (populated during correlation)
+        isCompactSummary: item.isCompactSummary || false, // Preserve compact summary flag
+        uuid: item.uuid || null, // Include UUID for message identification
+        type: item.type || null // Include type field
+      };
+      
+      // Debug log for our specific tool_use
+      // Debug: Final message processing completed
+      
+      processedMessages.push(parsed);
+    }
+    
+    return processedMessages;
   }
 
   /**

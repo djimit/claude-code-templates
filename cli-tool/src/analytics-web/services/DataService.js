@@ -91,17 +91,18 @@ class DataService {
 
       return data;
     } catch (error) {
-      console.error(`Error fetching ${endpoint}:`, error);
+      console.warn(`Server not available for ${endpoint}:`, error.message);
       
       // Return cached data if available, even if stale
       if (this.cache.has(cacheKey)) {
-        console.warn('Using stale cached data due to fetch error');
         return this.cache.get(cacheKey).data;
       }
       
+      // No fallback data - throw error if server unavailable
       throw error;
     }
   }
+
 
   /**
    * Get conversations data
@@ -109,6 +110,19 @@ class DataService {
    */
   async getConversations() {
     return await this.cachedFetch('/api/data');
+  }
+
+  /**
+   * Get paginated conversations
+   * @param {number} page - Page number (0-based)
+   * @param {number} limit - Number of conversations per page
+   * @returns {Promise<Object>} Paginated conversations data
+   */
+  async getConversationsPaginated(page = 0, limit = 10) {
+    const cacheDuration = this.realTimeEnabled ? 30000 : 5000;
+    return await this.cachedFetch(`/api/conversations?page=${page}&limit=${limit}`, {
+      cacheDuration
+    });
   }
 
   /**
@@ -160,7 +174,6 @@ class DataService {
    */
   clearCache() {
     this.cache.clear();
-    console.log('DataService cache cleared');
   }
 
   /**
@@ -181,34 +194,45 @@ class DataService {
    * Setup WebSocket integration for real-time updates
    */
   setupWebSocketIntegration() {
-    if (!this.webSocketService) return;
+    if (!this.webSocketService) {
+      this.startFallbackPolling();
+      return;
+    }
     
-    console.log('🔌 Setting up WebSocket integration for DataService');
     
     // Listen for data refresh events
     this.webSocketService.on('data_refresh', (data) => {
-      console.log('📊 Real-time data refresh received');
       this.handleRealTimeDataRefresh(data);
     });
     
     // Listen for conversation state changes
     this.webSocketService.on('conversation_state_change', (data) => {
-      console.log('🔄 Real-time conversation state change');
       this.handleRealTimeStateChange(data);
+    });
+    
+    // Listen for new messages
+    this.webSocketService.on('new_message', (data) => {
+      this.handleNewMessage(data);
     });
     
     // Listen for connection status
     this.webSocketService.on('connected', () => {
-      console.log('✅ WebSocket connected - enabling real-time updates');
       this.realTimeEnabled = true;
       this.subscribeToChannels();
+      this.stopFallbackPolling(); // Stop polling when WebSocket connects
     });
     
     this.webSocketService.on('disconnected', () => {
-      console.log('❌ WebSocket disconnected - falling back to polling');
       this.realTimeEnabled = false;
       this.startFallbackPolling();
     });
+    
+    // Start polling immediately as fallback, stop if WebSocket connects successfully
+    setTimeout(() => {
+      if (!this.realTimeEnabled) {
+        this.startFallbackPolling();
+      }
+    }, 1000); // Give WebSocket 1 second to connect
   }
   
   /**
@@ -221,7 +245,6 @@ class DataService {
       await this.webSocketService.subscribe('data_updates');
       await this.webSocketService.subscribe('conversation_updates');
       await this.webSocketService.subscribe('system_updates');
-      console.log('📡 Subscribed to real-time channels');
     } catch (error) {
       console.error('Error subscribing to channels:', error);
     }
@@ -253,13 +276,29 @@ class DataService {
   }
   
   /**
+   * Handle real-time new message
+   * @param {Object} data - New message data
+   */
+  handleNewMessage(data) {
+    
+    // Clear relevant cache entries for the affected conversation
+    this.clearCacheEntry(`/api/conversations/${data.conversationId}/messages`);
+    
+    // Notify listeners about the new message
+    this.notifyListeners('new_message', {
+      conversationId: data.conversationId,
+      message: data.message,
+      metadata: data.metadata
+    });
+  }
+  
+  /**
    * Start periodic data refresh (fallback when WebSocket unavailable)
    * @param {number} interval - Refresh interval in milliseconds
    */
   startPeriodicRefresh(interval = 30000) {
     // Don't start polling if real-time is enabled
     if (this.realTimeEnabled) {
-      console.log('⚡ Real-time updates enabled - skipping periodic refresh');
       return;
     }
     
@@ -267,7 +306,6 @@ class DataService {
       clearInterval(this.refreshInterval);
     }
 
-    console.log('📅 Starting periodic refresh (fallback mode)');
     this.refreshInterval = setInterval(async () => {
       try {
         // Only refresh if real-time is not available
@@ -292,8 +330,16 @@ class DataService {
    */
   startFallbackPolling() {
     if (!this.refreshInterval) {
-      console.log('🔄 Starting fallback polling due to WebSocket disconnect');
-      this.startPeriodicRefresh(10000); // More frequent polling as fallback
+      this.startPeriodicRefresh(5000); // Very frequent polling as fallback (5 seconds)
+    }
+  }
+  
+  /**
+   * Stop fallback polling when WebSocket reconnects
+   */
+  stopFallbackPolling() {
+    if (this.refreshInterval) {
+      this.stopPeriodicRefresh();
     }
   }
 
@@ -312,7 +358,6 @@ class DataService {
    */
   async requestRefresh() {
     if (this.webSocketService && this.realTimeEnabled) {
-      console.log('🔄 Requesting refresh via WebSocket');
       try {
         await this.webSocketService.requestRefresh();
         return true;
@@ -322,11 +367,39 @@ class DataService {
     }
     
     // Fallback to cache clearing
-    console.log('🔄 Falling back to cache clear for refresh');
     this.clearCache();
     return false;
   }
   
+  /**
+   * Clear server-side cache via API
+   * @param {string} type - Cache type to clear ('all', 'conversations', or undefined for all)
+   * @returns {Promise<boolean>} Success status
+   */
+  async clearServerCache(type = 'all') {
+    try {
+      const response = await fetch('/api/cache/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Also clear local cache
+        this.clearCache();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
   /**
    * Set WebSocket service (for late initialization)
    * @param {WebSocketService} webSocketService - WebSocket service instance

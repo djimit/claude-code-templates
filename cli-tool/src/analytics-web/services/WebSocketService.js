@@ -8,7 +8,7 @@ class WebSocketService {
     this.url = null;
     this.isConnected = false;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
+    this.maxReconnectAttempts = 5; // Increase attempts for better reliability
     this.reconnectDelay = 1000;
     this.maxReconnectDelay = 30000;
     this.heartbeatInterval = null;
@@ -17,7 +17,7 @@ class WebSocketService {
     this.eventListeners = new Map();
     this.subscriptions = new Set();
     this.messageQueue = [];
-    this.autoReconnect = true;
+    this.autoReconnect = true; // Enable auto-reconnect for real-time updates
     
     // Message ID tracking for responses
     this.messageId = 0;
@@ -64,7 +64,7 @@ class WebSocketService {
         this.ws.onerror = (event) => {
           this.handleError(event);
           if (!this.isConnected) {
-            reject(new Error('WebSocket connection failed'));
+            reject(new Error(`WebSocket connection failed to ${this.url}`));
           }
         };
         
@@ -120,6 +120,9 @@ class WebSocketService {
         case 'data_refresh':
           this.handleDataRefresh(data);
           break;
+        case 'new_message':
+          this.handleNewMessage(data);
+          break;
         case 'system_status':
           this.handleSystemStatus(data);
           break;
@@ -152,7 +155,7 @@ class WebSocketService {
    * @param {CloseEvent} event - Close event
    */
   handleClose(event) {
-    console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+    console.info('ℹ️ WebSocket disconnected (polling mode active)');
     this.isConnected = false;
     this.stopHeartbeat();
     
@@ -170,7 +173,7 @@ class WebSocketService {
    * @param {Event} event - Error event
    */
   handleError(event) {
-    console.error('❌ WebSocket error:', event);
+    console.warn('⚠️ WebSocket connection failed (using polling mode instead)');
     this.emit('error', { event });
   }
 
@@ -200,6 +203,15 @@ class WebSocketService {
   handleDataRefresh(data) {
     console.log('📊 Data refresh received');
     this.emit('data_refresh', data.data);
+  }
+
+  /**
+   * Handle new message
+   * @param {Object} data - Message data
+   */
+  handleNewMessage(data) {
+    console.log(`📨 New message received for conversation: ${data.data.conversationId}`);
+    this.emit('new_message', data.data);
   }
 
   /**

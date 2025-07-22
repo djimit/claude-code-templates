@@ -93,7 +93,7 @@ class ConversationAnalyzer {
       };
 
       const jsonlFiles = await findJsonlFiles(this.claudeDir);
-      console.log(chalk.blue(`Found ${jsonlFiles.length} conversation files`));
+      // Loading conversation files quietly for better UX
 
       for (const filePath of jsonlFiles) {
         const stats = await this.getFileStats(filePath);
@@ -216,26 +216,96 @@ class ConversationAnalyzer {
       return await this.dataCache.getParsedConversation(filepath);
     }
     
-    // Fallback to direct parsing
+    // Fallback to direct parsing with tool correlation
     const content = await fs.readFile(filepath, 'utf8');
-    return content.trim().split('\n')
-      .filter(line => line.trim())
-      .map(line => {
-        try {
-          const item = JSON.parse(line);
-          if (item.message && item.message.role) {
-            return {
-              role: item.message.role,
-              timestamp: new Date(item.timestamp),
-              content: item.message.content,
-              model: item.message.model || null,
-              usage: item.message.usage || null,
-            };
+    const lines = content.trim().split('\n').filter(line => line.trim());
+    
+    return this.parseAndCorrelateToolMessages(lines);
+  }
+
+  /**
+   * Parse JSONL lines and correlate tool_use with tool_result
+   * @param {Array} lines - JSONL lines
+   * @returns {Array} Parsed and correlated messages
+   */
+  parseAndCorrelateToolMessages(lines) {
+    const entries = [];
+    const toolUseMap = new Map();
+    
+    // First pass: parse all entries and map tool_use entries
+    for (const line of lines) {
+      try {
+        const item = JSON.parse(line);
+        if (item.message && (item.type === 'assistant' || item.type === 'user')) {
+          entries.push(item);
+          
+          // Track tool_use entries by their ID
+          if (item.type === 'assistant' && item.message.content) {
+            const toolUseBlock = Array.isArray(item.message.content) 
+              ? item.message.content.find(c => c.type === 'tool_use')
+              : (item.message.content.type === 'tool_use' ? item.message.content : null);
+            
+            if (toolUseBlock && toolUseBlock.id) {
+              toolUseMap.set(toolUseBlock.id, item);
+            }
           }
-        } catch {}
-        return null;
-      })
-      .filter(Boolean);
+        }
+      } catch (error) {
+        // Skip invalid JSONL lines
+      }
+    }
+    
+    // Second pass: correlate tool_result with tool_use and filter out standalone tool_result entries
+    const processedMessages = [];
+    
+    for (const item of entries) {
+      if (item.type === 'user' && item.message.content) {
+        // Check if this is a tool_result entry
+        const toolResultBlock = Array.isArray(item.message.content)
+          ? item.message.content.find(c => c.type === 'tool_result')
+          : (item.message.content.type === 'tool_result' ? item.message.content : null);
+        
+        if (toolResultBlock && toolResultBlock.tool_use_id) {
+          // This is a tool_result - attach it to the corresponding tool_use
+          // console.log(`🔍 ConversationAnalyzer: Found tool_result for ${toolResultBlock.tool_use_id}, content: "${toolResultBlock.content}"`);
+          const toolUseEntry = toolUseMap.get(toolResultBlock.tool_use_id);
+          // console.log(`🔍 ConversationAnalyzer: toolUseEntry found: ${!!toolUseEntry}`);
+          if (toolUseEntry) {
+            // Attach tool result to the tool use entry
+            if (!toolUseEntry.toolResults) {
+              toolUseEntry.toolResults = [];
+            }
+            toolUseEntry.toolResults.push(toolResultBlock);
+            // console.log(`✅ ConversationAnalyzer: Attached tool result to ${toolResultBlock.tool_use_id}, content length: ${toolResultBlock.content?.length || 0}`);
+            // Don't add this tool_result as a separate message
+            continue;
+          } else {
+            // console.log(`❌ ConversationAnalyzer: No tool_use found for ${toolResultBlock.tool_use_id}`);
+          }
+        }
+      }
+      
+      // Convert to our standard format
+      if (item.toolResults) {
+        // console.log(`ConversationAnalyzer: Processing item with ${item.toolResults.length} tool results`);
+      }
+      const parsed = {
+        id: item.message.id || item.uuid || null,
+        role: item.message.role || (item.type === 'assistant' ? 'assistant' : 'user'),
+        timestamp: new Date(item.timestamp),
+        content: item.message.content,
+        model: item.message.model || null,
+        usage: item.message.usage || null,
+        toolResults: item.toolResults || null, // Include attached tool results
+        isCompactSummary: item.isCompactSummary || false, // Preserve compact summary flag
+        uuid: item.uuid || null, // Include UUID for message identification
+        type: item.type || null // Include type field
+      };
+      
+      processedMessages.push(parsed);
+    }
+    
+    return processedMessages;
   }
 
   /**
@@ -576,7 +646,8 @@ class ConversationAnalyzer {
     const totalFileSize = conversations.reduce((sum, conv) => sum + conv.fileSize, 0);
 
     // Calculate real Claude sessions (5-hour periods)
-    const claudeSessions = await this.calculateClaudeSessions(conversations);
+    const claudeSessionsResult = await this.calculateClaudeSessions(conversations);
+    const claudeSessions = claudeSessionsResult?.total || 0;
 
     return {
       totalConversations,
@@ -585,8 +656,11 @@ class ConversationAnalyzer {
       activeProjects,
       avgTokensPerConversation,
       totalFileSize: this.formatBytes(totalFileSize),
+      dataSize: this.formatBytes(totalFileSize), // Alias for original dashboard compatibility
       lastActivity: conversations.length > 0 ? conversations[0].lastModified : null,
       claudeSessions,
+      claudeSessionsDetail: claudeSessions > 0 ? `${claudeSessions} session${claudeSessions > 1 ? 's' : ''}` : 'no sessions',
+      claudeSessionsFullData: claudeSessionsResult, // Keep full session data for detailed analysis
     };
   }
 

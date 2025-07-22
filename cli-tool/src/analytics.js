@@ -14,6 +14,7 @@ const DataCache = require('./analytics/data/DataCache');
 const WebSocketServer = require('./analytics/notifications/WebSocketServer');
 const NotificationManager = require('./analytics/notifications/NotificationManager');
 const PerformanceMonitor = require('./analytics/utils/PerformanceMonitor');
+const ConsoleBridge = require('./console-bridge');
 
 class ClaudeAnalytics {
   constructor() {
@@ -32,6 +33,7 @@ class ClaudeAnalytics {
     this.webSocketServer = null;
     this.notificationManager = null;
     this.httpServer = null;
+    this.consoleBridge = null;
     this.data = {
       conversations: [],
       summary: {},
@@ -494,6 +496,36 @@ class ClaudeAnalytics {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  /**
+   * Handle conversation file changes and detect new messages
+   * @param {string} conversationId - Conversation ID that changed
+   * @param {string} filePath - Path to the conversation file
+   */
+  async handleConversationChange(conversationId, filePath) {
+    try {
+      
+      // Get the latest messages from the file
+      const messages = await this.conversationAnalyzer.getParsedConversation(filePath);
+      
+      if (messages && messages.length > 0) {
+        // Get the most recent message
+        const latestMessage = messages[messages.length - 1];
+        
+        
+        // Send WebSocket notification for new message
+        if (this.notificationManager) {
+          this.notificationManager.notifyNewMessage(conversationId, latestMessage, {
+            totalMessages: messages.length,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
+      }
+    } catch (error) {
+      console.error(chalk.red(`Error handling conversation change for ${conversationId}:`), error);
+    }
+  }
+
   setupFileWatchers() {
     // Setup file watchers using the FileWatcher module
     this.fileWatcher.setupFileWatchers(
@@ -513,11 +545,30 @@ class ClaudeAnalytics {
         this.data.orphanProcesses = enrichmentResult.orphanProcesses;
       },
       // DataCache for cache invalidation
-      this.dataCache
+      this.dataCache,
+      // Conversation change callback for real-time message updates
+      async (conversationId, filePath) => {
+        await this.handleConversationChange(conversationId, filePath);
+      }
     );
   }
 
   setupWebServer() {
+    // Add CORS middleware
+    this.app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+        return;
+      }
+      
+      next();
+    });
+    
     // Add performance monitoring middleware
     this.app.use(this.performanceMonitor.createExpressMiddleware());
     
@@ -532,8 +583,7 @@ class ClaudeAnalytics {
         
         // Memory cleanup: limit conversation history to prevent memory buildup
         if (this.data.conversations && this.data.conversations.length > 150) {
-          console.log(chalk.yellow(`🧹 Cleaning up conversation history: ${this.data.conversations.length} -> 150`));
-          this.data.conversations = this.data.conversations
+            this.data.conversations = this.data.conversations
             .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
             .slice(0, 150);
         }
@@ -557,6 +607,39 @@ class ClaudeAnalytics {
       }
     });
 
+    // Paginated conversations endpoint
+    this.app.get('/api/conversations', async (req, res) => {
+      try {
+        const page = parseInt(req.query.page) || 0;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = page * limit;
+        
+        // Sort conversations by lastModified (most recent first)
+        const sortedConversations = [...this.data.conversations]
+          .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+        
+        const paginatedConversations = sortedConversations.slice(offset, offset + limit);
+        const totalCount = this.data.conversations.length;
+        const hasMore = offset + limit < totalCount;
+        
+        res.json({
+          conversations: paginatedConversations,
+          pagination: {
+            page,
+            limit,
+            offset,
+            totalCount,
+            hasMore,
+            currentCount: paginatedConversations.length
+          },
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error getting paginated conversations:', error);
+        res.status(500).json({ error: 'Failed to get conversations' });
+      }
+    });
+
     this.app.get('/api/realtime', async (req, res) => {
       const realtimeWithTimestamp = {
         ...this.data.realtimeStats,
@@ -568,7 +651,6 @@ class ClaudeAnalytics {
 
     // Force refresh endpoint
     this.app.get('/api/refresh', async (req, res) => {
-      console.log(chalk.blue('🔄 Manual refresh requested...'));
       await this.loadInitialData();
       res.json({
         success: true,
@@ -577,32 +659,112 @@ class ClaudeAnalytics {
       });
     });
 
-    // NEW: Ultra-fast endpoint ONLY for conversation states
+    // NEW: Ultra-fast endpoint for ALL conversation states
     this.app.get('/api/conversation-state', async (req, res) => {
       try {
-        // Only detect processes and calculate states - no file reading
+        // Detect running processes for accurate state calculation
         const runningProcesses = await this.processDetector.detectRunningClaudeProcesses();
-        const activeStates = [];
+        const activeStates = {};
         
-        // Quick state calculation for active conversations only
+        // Calculate states for ALL conversations, not just those with runningProcess
         for (const conversation of this.data.conversations) {
-          if (conversation.runningProcess) {
-            // Use existing state calculation but faster
-            const state = this.stateCalculator.quickStateCalculation(conversation, runningProcesses);
-            if (state) {
-              activeStates.push({
-                id: conversation.id,
-                project: conversation.project,
-                state: state,
-                timestamp: Date.now()
-              });
+          try {
+            let state;
+            
+            // First try quick calculation if there's a running process
+            if (conversation.runningProcess) {
+              state = this.stateCalculator.quickStateCalculation(conversation, runningProcesses);
             }
+            
+            // If no quick state found, use full state calculation
+            if (!state) {
+              // For conversations without running processes, use basic heuristics
+              const now = new Date();
+              const timeDiff = (now - new Date(conversation.lastModified)) / (1000 * 60); // minutes
+              
+              if (timeDiff < 5) {
+                state = 'Recently active';
+              } else if (timeDiff < 60) {
+                state = 'Idle';
+              } else if (timeDiff < 1440) { // 24 hours
+                state = 'Inactive';
+              } else {
+                state = 'Old';
+              }
+            }
+            
+            // Store state with conversation ID as key
+            activeStates[conversation.id] = state;
+            
+          } catch (error) {
+            activeStates[conversation.id] = 'unknown';
           }
         }
         
         res.json({ activeStates, timestamp: Date.now() });
       } catch (error) {
+        console.error('Error getting conversation states:', error);
         res.status(500).json({ error: 'Failed to get conversation states' });
+      }
+    });
+
+    // Conversation messages endpoint with optional pagination
+    this.app.get('/api/conversations/:id/messages', async (req, res) => {
+      try {
+        const conversationId = req.params.id;
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+        
+        const conversation = this.data.conversations.find(conv => conv.id === conversationId);
+        
+        if (!conversation) {
+          return res.status(404).json({ error: 'Conversation not found' });
+        }
+        
+        // Read all messages from the JSONL file
+        const allMessages = await this.conversationAnalyzer.getParsedConversation(conversation.filePath);
+        
+        // If pagination parameters are provided, use pagination
+        if (!isNaN(page) && !isNaN(limit)) {
+          // Sort messages by timestamp (newest first for reverse pagination)
+          const sortedMessages = allMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          
+          // Calculate pagination
+          const totalCount = sortedMessages.length;
+          const offset = page * limit;
+          const hasMore = offset + limit < totalCount;
+          
+          // Get page of messages (reverse order - newest first)
+          const paginatedMessages = sortedMessages.slice(offset, offset + limit);
+          
+          // For display, we want messages in chronological order (oldest first)
+          const messagesInDisplayOrder = [...paginatedMessages].reverse();
+          
+          res.json({
+            conversationId,
+            messages: messagesInDisplayOrder,
+            pagination: {
+              page,
+              limit,
+              offset,
+              totalCount,
+              hasMore,
+              currentCount: paginatedMessages.length
+            },
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          // Non-paginated response (backward compatibility)
+          res.json({
+            conversationId,
+            messages: allMessages,
+            messageCount: allMessages.length,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        console.error('Error loading conversation messages:', error);
+        res.status(500).json({ error: 'Failed to load conversation messages' });
       }
     });
 
@@ -798,17 +960,10 @@ class ClaudeAnalytics {
             }
           });
           
-          if (hasChanges) {
-            console.log(chalk.gray(`⚡ State update: ${activeConvs.length} active conversations`));
-            activeConvs.forEach(conv => {
-              console.log(chalk.gray(`  📊 ${conv.project}: ${conv.conversationState}`));
-            });
-          }
         }
         
         // Memory cleanup: limit conversation history to prevent memory buildup
         if (this.data.conversations.length > 100) {
-          console.log(chalk.yellow(`🧹 Cleaning up conversation history: ${this.data.conversations.length} -> 100`));
           this.data.conversations = this.data.conversations
             .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
             .slice(0, 100);
@@ -915,6 +1070,33 @@ class ClaudeAnalytics {
       }
     });
 
+    // Cache management endpoint
+    this.app.post('/api/cache/clear', (req, res) => {
+      try {
+        // Clear specific cache types or all
+        const { type } = req.body;
+        
+        if (!type || type === 'all') {
+          // Clear all caches
+          this.dataCache.invalidateComputations();
+          this.dataCache.caches.parsedConversations.clear();
+          this.dataCache.caches.fileContent.clear();
+          this.dataCache.caches.fileStats.clear();
+          res.json({ success: true, message: 'All caches cleared' });
+        } else if (type === 'conversations') {
+          // Clear only conversation-related caches
+          this.dataCache.caches.parsedConversations.clear();
+          this.dataCache.caches.fileContent.clear();
+          res.json({ success: true, message: 'Conversation caches cleared' });
+        } else {
+          res.status(400).json({ error: 'Invalid cache type. Use "all" or "conversations"' });
+        }
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+        res.status(500).json({ error: 'Failed to clear cache' });
+      }
+    });
+
     // Main dashboard route
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, 'analytics-web', 'index.html'));
@@ -936,13 +1118,23 @@ class ClaudeAnalytics {
     });
   }
 
-  async openBrowser() {
+  async openBrowser(openTo = null) {
+    const baseUrl = `http://localhost:${this.port}`;
+    let fullUrl = baseUrl;
+    
+    // Add fragment/hash for specific page
+    if (openTo === 'agents') {
+      fullUrl = `${baseUrl}/#agents`;
+      console.log(chalk.blue('🌐 Opening browser to Claude Code Chats...'));
+    } else {
+      console.log(chalk.blue('🌐 Opening browser to Claude Code Analytics...'));
+    }
+    
     try {
-      await open(`http://localhost:${this.port}`);
-      console.log(chalk.blue('🌐 Opening browser...'));
+      await open(fullUrl);
     } catch (error) {
       console.log(chalk.yellow('Could not open browser automatically. Please visit:'));
-      console.log(chalk.cyan(`http://localhost:${this.port}`));
+      console.log(chalk.cyan(fullUrl));
     }
   }
 
@@ -962,13 +1154,83 @@ class ClaudeAnalytics {
       this.notificationManager = new NotificationManager(this.webSocketServer);
       await this.notificationManager.initialize();
       
+      // Connect notification manager to file watcher for typing detection
+      this.fileWatcher.setNotificationManager(this.notificationManager);
+      
       // Setup notification subscriptions
       this.setupNotificationSubscriptions();
       
-      console.log(chalk.green('✅ WebSocket and notifications initialized'));
+      // Initialize Console Bridge for Claude Code interaction
+      await this.initializeConsoleBridge();
+      
+      console.log(chalk.green('✅ WebSocket, notifications, and console bridge initialized'));
     } catch (error) {
       console.error(chalk.red('❌ Failed to initialize WebSocket:'), error);
     }
+  }
+
+  /**
+   * Initialize Console Bridge for Claude Code interaction
+   */
+  async initializeConsoleBridge() {
+    try {
+      console.log(chalk.blue('🌉 Initializing Console Bridge...'));
+      
+      // Create console bridge on a different port (3334)
+      this.consoleBridge = new ConsoleBridge({
+        port: 3334,
+        debug: false // Set to true for detailed debugging
+      });
+      
+      // Initialize the bridge
+      const success = await this.consoleBridge.initialize();
+      
+      if (success) {
+        console.log(chalk.green('✅ Console Bridge initialized on port 3334'));
+        console.log(chalk.cyan('🔌 Web interface can connect to ws://localhost:3334 for console interactions'));
+        
+        // Bridge console interactions to main WebSocket
+        this.setupConsoleBridgeIntegration();
+      } else {
+        console.warn(chalk.yellow('⚠️ Console Bridge failed to initialize - console interactions disabled'));
+      }
+      
+    } catch (error) {
+      console.warn(chalk.yellow('⚠️ Console Bridge initialization failed:'), error.message);
+      console.log(chalk.gray('Console interactions will not be available, but analytics will continue normally'));
+    }
+  }
+
+  /**
+   * Setup integration between Console Bridge and main WebSocket
+   */
+  setupConsoleBridgeIntegration() {
+    if (!this.consoleBridge || !this.webSocketServer) return;
+    
+    // Forward console interactions from bridge to main WebSocket
+    this.consoleBridge.on('console_interaction', (interactionData) => {
+      console.log(chalk.blue('📡 Forwarding console interaction to web interface'));
+      
+      // Broadcast to main WebSocket clients
+      this.webSocketServer.broadcast({
+        type: 'console_interaction',
+        data: interactionData
+      });
+    });
+    
+    // Listen for responses from main WebSocket and forward to bridge
+    this.webSocketServer.on('console_response', (responseData) => {
+      console.log(chalk.blue('📱 Forwarding console response to Claude Code'));
+      
+      if (this.consoleBridge) {
+        this.consoleBridge.handleWebMessage({
+          type: 'console_response',
+          data: responseData
+        });
+      }
+    });
+    
+    console.log(chalk.green('🔗 Console Bridge integration established'));
   }
   
   /**
@@ -977,7 +1239,6 @@ class ClaudeAnalytics {
   setupNotificationSubscriptions() {
     // Subscribe to refresh requests from WebSocket clients
     this.notificationManager.subscribe('refresh_requested', async (notification) => {
-      console.log(chalk.blue('🔄 Refresh requested via WebSocket'));
       await this.loadInitialData();
       
       // Notify clients of the refreshed data
@@ -1108,6 +1369,7 @@ class ClaudeAnalytics {
     }
   }
 
+
   stop() {
     // Stop file watchers
     this.fileWatcher.stop();
@@ -1121,6 +1383,11 @@ class ClaudeAnalytics {
     // Shutdown notification manager
     if (this.notificationManager) {
       this.notificationManager.shutdown();
+    }
+    
+    // Shutdown console bridge
+    if (this.consoleBridge) {
+      this.consoleBridge.shutdown();
     }
     
     if (this.httpServer) {
@@ -1140,7 +1407,14 @@ class ClaudeAnalytics {
 }
 
 async function runAnalytics(options = {}) {
-  console.log(chalk.blue('📊 Starting Claude Code Analytics Dashboard...'));
+  // Determine if we're opening to a specific page
+  const openTo = options.openTo;
+  
+  if (openTo === 'agents') {
+    console.log(chalk.blue('💬 Starting Claude Code Chats Dashboard...'));
+  } else {
+    console.log(chalk.blue('📊 Starting Claude Code Analytics Dashboard...'));
+  }
 
   const analytics = new ClaudeAnalytics();
 
@@ -1151,9 +1425,15 @@ async function runAnalytics(options = {}) {
     // Web dashboard files are now static in analytics-web directory
 
     await analytics.startServer();
-    await analytics.openBrowser();
+    await analytics.openBrowser(openTo);
 
-    console.log(chalk.green('✅ Analytics dashboard is running!'));
+    if (openTo === 'agents') {
+      console.log(chalk.green('✅ Claude Code Chats dashboard is running!'));
+      console.log(chalk.cyan(`📱 Access at: http://localhost:${analytics.port}/#agents`));
+    } else {
+      console.log(chalk.green('✅ Analytics dashboard is running!'));
+      console.log(chalk.cyan(`📱 Access at: http://localhost:${analytics.port}`));
+    }
     console.log(chalk.gray('Press Ctrl+C to stop the server'));
 
     // Handle graceful shutdown
@@ -1172,6 +1452,14 @@ async function runAnalytics(options = {}) {
   }
 }
 
+
+// If this file is executed directly, run analytics
+if (require.main === module) {
+  runAnalytics().catch(error => {
+    console.error(chalk.red('❌ Analytics startup failed:'), error);
+    process.exit(1);
+  });
+}
 
 module.exports = {
   runAnalytics

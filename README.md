@@ -8,6 +8,18 @@
 
 **CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard. Open source and runs locally.
 
+** New Claude Code Web UI ** - Just run this command and you will see a web interface with all the Claude Code Messages in real-time.
+
+```bash
+
+npx claude-code-templates@latest --chats
+
+```
+
+<img width="1279" height="827" alt="Screenshot 2025-07-22 at 19 54 09" src="https://github.com/user-attachments/assets/02cbe18b-21ed-4b8f-83e9-da86b4fcd95b" />
+
+---
+
 🌐 **[Browse Templates Online](https://davila7.github.io/claude-code-templates/)** - Explore all available templates with interactive previews and installation commands.
 
 <img width="1155" height="855" alt="Screenshot 2025-07-19 at 08 45 05" src="https://github.com/user-attachments/assets/72b89472-890f-40a1-b89f-28441e6a8ce4" />

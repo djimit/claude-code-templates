@@ -8,7 +8,7 @@
 
 **CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard. Open source and runs locally.
 
-** New Claude Code Web UI ** - Just run this command and you will see a web interface with all the Claude Code Messages in real-time.
+**New Claude Code Web UI** - Just run this command and you will see a web interface with all the Claude Code Messages in real-time.
 
 ```bash
 

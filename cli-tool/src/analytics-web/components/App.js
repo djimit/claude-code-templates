@@ -236,6 +236,11 @@ class App {
         if (typeof AgentsPage !== 'undefined') {
           this.components.pages.agents = new AgentsPage(container, this.services);
           await this.components.pages.agents.initialize();
+          // Expose agentsPage globally for modal access
+          if (typeof window !== 'undefined' && window.claudeAnalyticsApp) {
+            window.claudeAnalyticsApp.agentsPage = this.components.pages.agents;
+            console.log('✅ Exposed agentsPage globally for modal access');
+          }
         } else {
           throw new Error('AgentsPage component not available. Check if components/AgentsPage.js is loaded.');
         }
@@ -266,6 +271,12 @@ class App {
    * Cleanup current page
    */
   async cleanupCurrentPage() {
+    // Clean up global references
+    if (this.currentPage === 'agents' && typeof window !== 'undefined' && window.claudeAnalyticsApp) {
+      window.claudeAnalyticsApp.agentsPage = undefined;
+      console.log('🧹 Cleaned up global agentsPage reference');
+    }
+    
     const currentPageComponent = this.components.pages[this.currentPage];
     if (currentPageComponent && currentPageComponent.onDeactivate) {
       await currentPageComponent.onDeactivate();

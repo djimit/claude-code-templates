@@ -1127,6 +1127,10 @@ class DashboardPage {
     const labels = sortedDates.map(date => new Date(date).toLocaleDateString());
     const data = sortedDates.map(date => tokensByDate[date]);
 
+    console.log('📊 Token chart - tokensByDate:', tokensByDate);
+    console.log('📊 Token chart - Labels:', labels);
+    console.log('📊 Token chart - Data:', data);
+
     this.components.tokenChart.data.labels = labels;
     this.components.tokenChart.data.datasets[0].data = data;
     this.components.tokenChart.update();

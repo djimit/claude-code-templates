@@ -265,36 +265,6 @@ Each conversation is stored in a JSONL (JSON Lines) file where each line represe
 
 ## Settings Files
 
-### Global Settings (`~/.claude/settings.json`)
-```json
-{
-  "apiKey": "encrypted-api-key",
-  "defaultModel": "claude-sonnet-4-20250514",
-  "maxTokens": 8192,
-  "temperature": 0.7,
-  "preferences": {
-    "confirmEdits": true,
-    "autoSave": false,
-    "theme": "dark"
-  }
-}
-```
-
-### Project Settings (`~/.claude/projects/PROJECT/settings.json`)
-```json
-{
-  "projectPath": "/Users/user/MyProject",
-  "projectName": "MyProject",
-  "created": "2025-07-01T10:00:00.000Z",
-  "lastAccessed": "2025-07-20T15:30:00.000Z",
-  "preferences": {
-    "includePatterns": ["*.js", "*.ts", "*.json"],
-    "excludePatterns": ["node_modules/", ".git/"],
-    "maxFileSize": "100KB"
-  }
-}
-```
-
 ## Message Flow and Relationships
 
 ### Conversation Threading

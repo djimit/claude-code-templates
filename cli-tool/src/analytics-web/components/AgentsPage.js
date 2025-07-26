@@ -974,6 +974,12 @@ class AgentsPage {
    * @param {Object} agent - Agent object
    */
   openAgentModal(agent) {
+    // If this is a specific tool, open the custom tool modal
+    if (agent.isToolDetails) {
+      this.openToolModal(agent);
+      return;
+    }
+
     const modalHTML = `
       <div class="agent-modal-overlay" id="agent-modal-overlay">
         <div class="agent-modal">
@@ -1067,6 +1073,1626 @@ class AgentsPage {
       }
     };
     document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Open tool-specific modal for any tool
+   * @param {Object} toolData - Tool data object
+   */
+  openToolModal(toolData) {
+    switch (toolData.name) {
+      case 'Read':
+        this.openReadToolModal(toolData);
+        break;
+      case 'Edit':
+        this.openEditToolModal(toolData);
+        break;
+      case 'Write':
+        this.openWriteToolModal(toolData);
+        break;
+      case 'Bash':
+        this.openBashToolModal(toolData);
+        break;
+      case 'Glob':
+        this.openGlobToolModal(toolData);
+        break;
+      case 'Grep':
+        this.openGrepToolModal(toolData);
+        break;
+      case 'TodoWrite':
+        this.openTodoWriteToolModal(toolData);
+        break;
+      default:
+        // Fallback to generic agent modal for unknown tools
+        this.openAgentModal({...toolData, isToolDetails: false});
+        break;
+    }
+  }
+
+  /**
+   * Open Read tool specific modal
+   * @param {Object} readToolData - Read tool data
+   */
+  openReadToolModal(readToolData) {
+    const input = readToolData.input || {};
+    const filePath = input.file_path || 'Unknown file';
+    const fileName = filePath.split('/').pop() || 'Unknown';
+    const fileExtension = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : 'txt';
+    const offset = input.offset;
+    const limit = input.limit;
+    const toolId = readToolData.id || 'unknown';
+    
+    // Analyze file context for project
+    const isConfigFile = ['json', 'yml', 'yaml', 'toml', 'ini', 'conf', 'config'].includes(fileExtension);
+    const isDocFile = ['md', 'txt', 'rst', 'adoc'].includes(fileExtension);
+    const isCodeFile = ['js', 'ts', 'py', 'go', 'rs', 'java', 'cpp', 'c', 'h', 'css', 'html', 'jsx', 'tsx'].includes(fileExtension);
+    const isProjectRoot = fileName.toLowerCase().includes('claude') || fileName.toLowerCase().includes('readme') || fileName.toLowerCase().includes('package');
+    const isTestFile = fileName.toLowerCase().includes('test') || fileName.toLowerCase().includes('spec');
+    
+    let fileCategory = '';
+    let filePurpose = '';
+    let contextIcon = '📄';
+    
+    if (isProjectRoot) {
+      fileCategory = 'Project Documentation';
+      filePurpose = 'Understanding project structure and setup';
+      contextIcon = '📋';
+    } else if (fileName.toLowerCase().includes('claude')) {
+      fileCategory = 'Claude Configuration';
+      filePurpose = 'Reading project instructions for AI assistant';
+      contextIcon = '🤖';
+    } else if (isConfigFile) {
+      fileCategory = 'Configuration File';
+      filePurpose = 'Understanding project settings and dependencies';
+      contextIcon = '⚙️';
+    } else if (isDocFile) {
+      fileCategory = 'Documentation';
+      filePurpose = 'Reading project documentation or specifications';
+      contextIcon = '📚';
+    } else if (isTestFile) {
+      fileCategory = 'Test File';
+      filePurpose = 'Analyzing test cases and specifications';
+      contextIcon = '🧪';
+    } else if (isCodeFile) {
+      fileCategory = 'Source Code';
+      filePurpose = 'Analyzing implementation and logic';
+      contextIcon = '💻';
+    } else {
+      fileCategory = 'Project File';
+      filePurpose = 'Reading project-related content';
+      contextIcon = '📄';
+    }
+    
+    // Get directory context
+    const pathParts = filePath.split('/');
+    const projectContext = pathParts.includes('claude-code-templates') ? 'Claude Code Templates Project' : 'Current Project';
+    const relativeDir = pathParts.slice(-3, -1).join('/') || 'root';
+    
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal read-tool-modal">
+          <div class="agent-modal-header">
+            <div class="agent-modal-title">
+              <div class="agent-title-main">
+                <div class="tool-icon read-tool">
+                  <span style="font-size: 20px;">${contextIcon}</span>
+                </div>
+                <div class="agent-title-info">
+                  <h3>File Read: ${fileName}</h3>
+                  <div class="agent-subtitle">
+                    <span class="tool-type-badge">${fileCategory}</span>
+                    <span class="tool-id-badge">ID: ${toolId.slice(-8)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+          </div>
+          
+          <div class="agent-modal-content">
+            <div class="raw-parameters-section primary-section">
+              <h4>🔧 Tool Parameters</h4>
+              <div class="raw-params-container">
+                <pre class="raw-params-json">${JSON.stringify(input, null, 2)}</pre>
+              </div>
+              <div class="params-summary">
+                <span class="param-chip">Tool ID: ${toolId.slice(-8)}</span>
+                <span class="param-chip">File: ${fileName}</span>
+                ${offset ? `<span class="param-chip">From line: ${offset}</span>` : ''}
+                ${limit ? `<span class="param-chip">Lines: ${limit}</span>` : '<span class="param-chip">Complete file</span>'}
+              </div>
+            </div>
+
+            <div class="read-operation-section">
+              <h4>📖 Read Operation Details</h4>
+              <div class="operation-details">
+                <div class="operation-item">
+                  <span class="operation-label">Full Path:</span>
+                  <code class="operation-value">${filePath}</code>
+                </div>
+                ${offset ? `
+                  <div class="operation-item">
+                    <span class="operation-label">Starting Line:</span>
+                    <code class="operation-value">${offset}</code>
+                  </div>
+                ` : `
+                  <div class="operation-item">
+                    <span class="operation-label">Read Scope:</span>
+                    <code class="operation-value">From beginning</code>
+                  </div>
+                `}
+                ${limit ? `
+                  <div class="operation-item">
+                    <span class="operation-label">Lines Read:</span>
+                    <code class="operation-value">${limit} lines</code>
+                  </div>
+                ` : `
+                  <div class="operation-item">
+                    <span class="operation-label">Read Scope:</span>
+                    <code class="operation-value">Complete file</code>
+                  </div>
+                `}
+                <div class="operation-item">
+                  <span class="operation-label">Tool ID:</span>
+                  <code class="operation-value">${toolId}</code>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="file-insights-section">
+              <h4>📊 File Insights</h4>
+              <div class="insights-grid">
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">${contextIcon}</span>
+                    <span class="insight-title">File Classification</span>
+                  </div>
+                  <div class="insight-content">${fileCategory}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">📍</span>
+                    <span class="insight-title">Location Context</span>
+                  </div>
+                  <div class="insight-content">${relativeDir}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">🎯</span>
+                    <span class="insight-title">Read Strategy</span>
+                  </div>
+                  <div class="insight-content">${offset && limit ? `Partial read (${limit} lines from ${offset})` : limit ? `Limited read (${limit} lines)` : offset ? `From line ${offset}` : 'Complete file'}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">🚀</span>
+                    <span class="insight-title">Project Impact</span>
+                  </div>
+                  <div class="insight-content">${filePurpose}</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close - store reference for cleanup
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Open Edit tool specific modal
+   * @param {Object} editToolData - Edit tool data
+   */
+  openEditToolModal(editToolData) {
+    const input = editToolData.input || {};
+    const filePath = input.file_path || 'Unknown file';
+    const fileName = filePath.split('/').pop() || 'Unknown';
+    const oldString = input.old_string || '';
+    const newString = input.new_string || '';
+    const replaceAll = input.replace_all || false;
+    const toolId = editToolData.id || 'unknown';
+    
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal edit-tool-modal">
+          <div class="agent-modal-header">
+            <div class="agent-modal-title">
+              <div class="agent-title-main">
+                <div class="tool-icon edit-tool">
+                  <span style="font-size: 20px;">✏️</span>
+                </div>
+                <div class="agent-title-info">
+                  <h3>File Edit: ${fileName}</h3>
+                  <div class="agent-subtitle">
+                    <span class="tool-type-badge">File Modification</span>
+                    <span class="tool-id-badge">ID: ${toolId.slice(-8)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+          </div>
+          
+          <div class="agent-modal-content">
+            <div class="raw-parameters-section primary-section">
+              <h4>🔧 Tool Parameters</h4>
+              <div class="raw-params-container">
+                <pre class="raw-params-json">${JSON.stringify(input, null, 2)}</pre>
+              </div>
+              <div class="params-summary">
+                <span class="param-chip">Tool ID: ${toolId.slice(-8)}</span>
+                <span class="param-chip">File: ${fileName}</span>
+                <span class="param-chip">Replace All: ${replaceAll ? 'Yes' : 'No'}</span>
+                <span class="param-chip">Change Size: ${oldString.length} → ${newString.length} chars</span>
+              </div>
+            </div>
+
+            <div class="edit-changes-section">
+              <div class="diff-header-section">
+                <h4>📝 Edit Diff</h4>
+                <div class="diff-mode-toggle">
+                  <button class="diff-mode-btn active" data-mode="lines" onclick="window.switchDiffMode('lines', this)">
+                    <span>📋</span> By Lines
+                  </button>
+                  <button class="diff-mode-btn" data-mode="compact" onclick="window.switchDiffMode('compact', this)">
+                    <span>🔍</span> Smart Diff
+                  </button>
+                </div>
+              </div>
+              <div class="diff-container" id="diff-container">
+                ${this.generateDiffView(oldString, newString, 'lines')}
+              </div>
+            </div>
+
+
+            <div class="file-insights-section">
+              <h4>📊 Edit Insights</h4>
+              <div class="insights-grid">
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">📄</span>
+                    <span class="insight-title">Target File</span>
+                  </div>
+                  <div class="insight-content">${fileName}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">📏</span>
+                    <span class="insight-title">Content Change</span>
+                  </div>
+                  <div class="insight-content">${oldString.length > newString.length ? 'Reduced' : oldString.length < newString.length ? 'Expanded' : 'Same'} (${newString.length - oldString.length > 0 ? '+' : ''}${newString.length - oldString.length} chars)</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">🔄</span>
+                    <span class="insight-title">Replace Mode</span>
+                  </div>
+                  <div class="insight-content">${replaceAll ? 'All Occurrences' : 'First Occurrence'}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">🎯</span>
+                    <span class="insight-title">Edit Type</span>
+                  </div>
+                  <div class="insight-content">${oldString.length === 0 ? 'Addition' : newString.length === 0 ? 'Deletion' : 'Modification'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+    
+    // Store the tool data for mode switching
+    window.currentEditData = { oldString, newString };
+    
+    // Add global function for diff mode switching
+    const self = this;
+    window.switchDiffMode = function(mode, button) {
+      // Update button states
+      document.querySelectorAll('.diff-mode-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      
+      // Update diff content
+      const container = document.getElementById('diff-container');
+      if (container && window.currentEditData) {
+        container.innerHTML = self.generateDiffView(
+          window.currentEditData.oldString, 
+          window.currentEditData.newString, 
+          mode
+        );
+      }
+    };
+  }
+
+  /**
+   * Generate diff view for edit changes
+   * @param {string} oldText - Original text
+   * @param {string} newText - New text
+   * @param {string} mode - 'lines' or 'compact'
+   * @returns {string} HTML diff view
+   */
+  generateDiffView(oldText, newText, mode = 'lines') {
+    if (mode === 'compact') {
+      return this.generateSmartDiff(oldText, newText);
+    }
+    
+    // Split text into lines for better diff visualization
+    const oldLines = oldText.split('\n');
+    const newLines = newText.split('\n');
+    
+    // Limit lines for display (show first 20 lines max)
+    const maxLines = 20;
+    const oldDisplay = oldLines.slice(0, maxLines);
+    const newDisplay = newLines.slice(0, maxLines);
+    const oldTruncated = oldLines.length > maxLines;
+    const newTruncated = newLines.length > maxLines;
+    
+    let diffHtml = '<div class="diff-editor">';
+    
+    // Header with file info
+    diffHtml += `
+      <div class="diff-header">
+        <span class="diff-stats">-${oldLines.length} lines, +${newLines.length} lines</span>
+      </div>
+    `;
+    
+    // Old text (removed lines)
+    if (oldDisplay.length > 0) {
+      diffHtml += '<div class="diff-section removed">';
+      oldDisplay.forEach((line) => {
+        diffHtml += `
+          <div class="diff-line removed-line">
+            <span class="line-prefix">-</span>
+            <span class="line-content">${this.escapeHtml(line) || ' '}</span>
+          </div>
+        `;
+      });
+      if (oldTruncated) {
+        diffHtml += `
+          <div class="diff-line truncated">
+            <span class="line-prefix"></span>
+            <span class="line-content">... ${oldLines.length - maxLines} more lines ...</span>
+          </div>
+        `;
+      }
+      diffHtml += '</div>';
+    }
+    
+    // New text (added lines)
+    if (newDisplay.length > 0) {
+      diffHtml += '<div class="diff-section added">';
+      newDisplay.forEach((line) => {
+        diffHtml += `
+          <div class="diff-line added-line">
+            <span class="line-prefix">+</span>
+            <span class="line-content">${this.escapeHtml(line) || ' '}</span>
+          </div>
+        `;
+      });
+      if (newTruncated) {
+        diffHtml += `
+          <div class="diff-line truncated">
+            <span class="line-prefix"></span>
+            <span class="line-content">... ${newLines.length - maxLines} more lines ...</span>
+          </div>
+        `;
+      }
+      diffHtml += '</div>';
+    }
+    
+    diffHtml += '</div>';
+    
+    return diffHtml;
+  }
+
+  /**
+   * Generate smart diff that shows only changed sections
+   * @param {string} oldText - Original text
+   * @param {string} newText - New text
+   * @returns {string} HTML smart diff view
+   */
+  generateSmartDiff(oldText, newText) {
+    const oldLines = oldText.split('\n');
+    const newLines = newText.split('\n');
+    
+    // Find differences using simple line-by-line comparison
+    const changes = this.findLineChanges(oldLines, newLines);
+    
+    let diffHtml = '<div class="diff-editor smart-diff">';
+    
+    // Header with file info
+    diffHtml += `
+      <div class="diff-header">
+        <span class="diff-stats">Smart diff showing ${changes.length} change block${changes.length !== 1 ? 's' : ''}</span>
+      </div>
+    `;
+    
+    if (changes.length === 0) {
+      diffHtml += `
+        <div class="no-changes">
+          <span class="no-changes-text">No line-level changes detected (whitespace or formatting only)</span>
+        </div>
+      `;
+    } else {
+      changes.forEach((change, index) => {
+        diffHtml += `<div class="change-block" data-change-index="${index}">`;
+        
+        // Show removed lines
+        if (change.removed.length > 0) {
+          change.removed.forEach(line => {
+            diffHtml += `
+              <div class="diff-line removed-line smart">
+                <span class="line-prefix">-</span>
+                <span class="line-content">${this.escapeHtml(line) || ' '}</span>
+              </div>
+            `;
+          });
+        }
+        
+        // Show added lines
+        if (change.added.length > 0) {
+          change.added.forEach(line => {
+            diffHtml += `
+              <div class="diff-line added-line smart">
+                <span class="line-prefix">+</span>
+                <span class="line-content">${this.escapeHtml(line) || ' '}</span>
+              </div>
+            `;
+          });
+        }
+        
+        diffHtml += '</div>';
+        
+        // Add separator between change blocks (except for the last one)
+        if (index < changes.length - 1) {
+          diffHtml += '<div class="change-separator">⋯</div>';
+        }
+      });
+    }
+    
+    diffHtml += '</div>';
+    
+    return diffHtml;
+  }
+
+  /**
+   * Find line changes between old and new text
+   * @param {string[]} oldLines - Original lines
+   * @param {string[]} newLines - New lines
+   * @returns {Array} Array of change blocks
+   */
+  findLineChanges(oldLines, newLines) {
+    const changes = [];
+    
+    // Simple approach: if texts are different, show both
+    // This can be enhanced with more sophisticated diff algorithms
+    if (oldLines.join('\n') !== newLines.join('\n')) {
+      // For now, treat as one big change block
+      // This could be enhanced to find actual line-by-line differences
+      changes.push({
+        removed: oldLines.slice(0, 10), // Limit to first 10 lines
+        added: newLines.slice(0, 10)    // Limit to first 10 lines
+      });
+    }
+    
+    return changes;
+  }
+
+  /**
+   * Open Write tool specific modal
+   * @param {Object} writeToolData - Write tool data
+   */
+  openWriteToolModal(writeToolData) {
+    const input = writeToolData.input || {};
+    const filePath = input.file_path || 'Unknown file';
+    const fileName = filePath.split('/').pop() || 'Unknown';
+    const fileExtension = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : 'txt';
+    const content = input.content || '';
+    const toolId = writeToolData.id || 'unknown';
+    
+    // Analyze file context
+    const isConfigFile = ['json', 'yml', 'yaml', 'toml', 'ini', 'conf', 'config'].includes(fileExtension);
+    const isDocFile = ['md', 'txt', 'rst', 'adoc'].includes(fileExtension);
+    const isCodeFile = ['js', 'ts', 'py', 'go', 'rs', 'java', 'cpp', 'c', 'h', 'css', 'html', 'jsx', 'tsx'].includes(fileExtension);
+    const isProjectRoot = fileName.toLowerCase().includes('claude') || fileName.toLowerCase().includes('readme') || fileName.toLowerCase().includes('package');
+    
+    let fileCategory = '';
+    let contextIcon = '📝';
+    
+    if (isProjectRoot) {
+      fileCategory = 'Project Documentation';
+      contextIcon = '📋';
+    } else if (fileName.toLowerCase().includes('claude')) {
+      fileCategory = 'Claude Configuration';
+      contextIcon = '🤖';
+    } else if (isConfigFile) {
+      fileCategory = 'Configuration File';
+      contextIcon = '⚙️';
+    } else if (isDocFile) {
+      fileCategory = 'Documentation';
+      contextIcon = '📚';
+    } else if (isCodeFile) {
+      fileCategory = 'Source Code';
+      contextIcon = '💻';
+    } else {
+      fileCategory = 'Project File';
+      contextIcon = '📝';
+    }
+    
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal write-tool-modal">
+          <div class="agent-modal-header">
+            <div class="agent-modal-title">
+              <div class="agent-title-main">
+                <div class="tool-icon write-tool">
+                  <span style="font-size: 20px;">${contextIcon}</span>
+                </div>
+                <div class="agent-title-info">
+                  <h3>File Creation: ${fileName}</h3>
+                  <div class="agent-subtitle">
+                    <span class="tool-type-badge">${fileCategory}</span>
+                    <span class="tool-id-badge">ID: ${toolId.slice(-8)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+          </div>
+          
+          <div class="agent-modal-content">
+            <div class="raw-parameters-section primary-section">
+              <h4>🔧 Tool Parameters</h4>
+              <div class="raw-params-container">
+                <pre class="raw-params-json">${JSON.stringify(input, null, 2)}</pre>
+              </div>
+              <div class="params-summary">
+                <span class="param-chip">Tool ID: ${toolId.slice(-8)}</span>
+                <span class="param-chip">File: ${fileName}</span>
+                <span class="param-chip">Size: ${content.length} characters</span>
+                <span class="param-chip">Type: ${fileExtension.toUpperCase()}</span>
+              </div>
+            </div>
+
+            <div class="file-content-section">
+              <div class="content-header-section">
+                <h4>📄 File Content Preview</h4>
+                <div class="content-stats">
+                  <span class="content-stat">${content.split('\\n').length} lines</span>
+                  <span class="content-stat">${content.length} chars</span>
+                  <span class="content-stat">${Math.round(content.length / 1024 * 100) / 100} KB</span>
+                </div>
+              </div>
+              <div class="content-preview-container">
+                <pre class="content-preview">${this.escapeHtml(content.substring(0, 1000))}${content.length > 1000 ? '\\n\\n... [truncated, showing first 1000 characters]' : ''}</pre>
+              </div>
+            </div>
+
+
+            <div class="file-insights-section">
+              <h4>📊 Creation Insights</h4>
+              <div class="insights-grid">
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">${contextIcon}</span>
+                    <span class="insight-title">File Type</span>
+                  </div>
+                  <div class="insight-content">${fileCategory}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">📏</span>
+                    <span class="insight-title">Content Size</span>
+                  </div>
+                  <div class="insight-content">${content.length} characters</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">📊</span>
+                    <span class="insight-title">Structure</span>
+                  </div>
+                  <div class="insight-content">${content.split('\\n').length} lines</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">🚀</span>
+                    <span class="insight-title">Purpose</span>
+                  </div>
+                  <div class="insight-content">${content.length === 0 ? 'Empty file' : content.length < 100 ? 'Simple file' : content.length < 1000 ? 'Medium file' : 'Large file'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Open Glob tool specific modal
+   * @param {Object} globToolData - Glob tool data
+   */
+  openGlobToolModal(globToolData) {
+    console.log('🔍 Opening Glob tool modal with data:', globToolData);
+    
+    if (!globToolData || !globToolData.input) {
+      console.warn('⚠️ Glob tool data missing or invalid');
+      return;
+    }
+
+    // Extract Glob parameters
+    const pattern = globToolData.input.pattern || '';
+    const searchPath = globToolData.input.path || '(current directory)';
+    
+    // Categorize glob pattern
+    let patternType = 'General';
+    let patternDescription = 'File pattern search';
+    
+    if (pattern.includes('**')) {
+      patternType = 'Recursive';
+      patternDescription = 'Deep directory search with recursive matching';
+    } else if (pattern.includes('*')) {
+      patternType = 'Wildcard';
+      patternDescription = 'Basic wildcard pattern matching';
+    } else if (pattern.includes('.')) {
+      patternType = 'Extension';
+      patternDescription = 'File extension filtering';
+    } else if (pattern.includes('/')) {
+      patternType = 'Path-based';
+      patternDescription = 'Directory structure pattern';
+    }
+
+    // Detect pattern specifics
+    const isJavaScript = pattern.includes('.js') || pattern.includes('.ts') || pattern.includes('.jsx') || pattern.includes('.tsx');
+    const isStyles = pattern.includes('.css') || pattern.includes('.scss') || pattern.includes('.sass');
+    const isMarkdown = pattern.includes('.md') || pattern.includes('.mdx');
+    const isConfig = pattern.includes('config') || pattern.includes('.json') || pattern.includes('.yml') || pattern.includes('.yaml');
+    
+    let projectContext = '';
+    if (isJavaScript) projectContext = 'JavaScript/TypeScript files';
+    else if (isStyles) projectContext = 'Stylesheet files';
+    else if (isMarkdown) projectContext = 'Documentation files';
+    else if (isConfig) projectContext = 'Configuration files';
+    else projectContext = 'General file search';
+
+    const modalContent = `
+      <div class="agent-modal-header">
+        <div class="agent-modal-title">
+          <div class="agent-title-main">
+            <div class="tool-icon glob-tool">
+              <span style="font-size: 20px;">🔍</span>
+            </div>
+            <div class="agent-title-info">
+              <h3>Glob Pattern: ${this.escapeHtml(pattern)}</h3>
+              <div class="agent-subtitle">
+                <span class="tool-type-badge">${patternType}</span>
+                <span class="tool-id-badge">ID: ${globToolData.id ? globToolData.id.slice(-8) : 'unknown'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+      </div>
+      
+      <div class="agent-modal-content">
+        <!-- Primary Section: Tool Parameters -->
+        <div class="raw-parameters-section primary-section">
+          <h4>🔧 Tool Parameters</h4>
+          <div class="raw-params-container">
+            <pre class="raw-params-json">${this.escapeHtml(JSON.stringify(globToolData.input, null, 2))}</pre>
+          </div>
+        </div>
+
+        <!-- Pattern Analysis -->
+        <div class="glob-pattern-section">
+          <h4>🎯 Pattern Analysis</h4>
+          <div class="tool-details-grid">
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Search Pattern:</span>
+              <span class="tool-detail-value pattern-display">${this.escapeHtml(pattern)}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Pattern Type:</span>
+              <span class="tool-detail-value">${patternType}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Description:</span>
+              <span class="tool-detail-value">${patternDescription}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Search Location:</span>
+              <span class="tool-detail-value">${this.escapeHtml(searchPath)}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Target Files:</span>
+              <span class="tool-detail-value">${projectContext}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pattern Breakdown -->
+        <div class="glob-components-section">
+          <h4>🧩 Pattern Components</h4>
+          <div class="pattern-breakdown">
+            ${this.analyzeGlobPattern(pattern)}
+          </div>
+        </div>
+
+        <!-- File Discovery Insights -->
+        <div class="glob-insights-section">
+          <h4>📊 Discovery Insights</h4>
+          <div class="tool-insights">
+            <div class="insight-item">
+              <span class="insight-label">Scope:</span>
+              <span class="insight-value">${pattern.includes('**') ? 'Recursive (all subdirectories)' : 'Current level only'}</span>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Efficiency:</span>
+              <span class="insight-value">${pattern.length > 20 ? 'Complex pattern (slower)' : 'Simple pattern (fast)'}</span>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Match Strategy:</span>
+              <span class="insight-value">${pattern.includes('*') ? 'Wildcard matching' : 'Exact pattern'}</span>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">File Context:</span>
+              <span class="insight-value">${projectContext}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal glob-tool-modal">
+          ${modalContent}
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close - store reference for cleanup
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Analyze glob pattern components
+   * @param {string} pattern - Glob pattern to analyze
+   * @returns {string} HTML breakdown of pattern
+   */
+  analyzeGlobPattern(pattern) {
+    if (!pattern) return '<span class="pattern-empty">No pattern specified</span>';
+    
+    const components = [];
+    const parts = pattern.split('/');
+    
+    parts.forEach((part, index) => {
+      let description = '';
+      let type = 'literal';
+      
+      if (part === '**') {
+        description = 'Recursive directory wildcard (matches any nested path)';
+        type = 'recursive';
+      } else if (part.includes('*')) {
+        if (part === '*') {
+          description = 'Match any single directory or filename';
+          type = 'wildcard';
+        } else if (part.startsWith('*.')) {
+          description = `Match files with ${part.substring(2)} extension`;
+          type = 'extension';
+        } else {
+          description = 'Partial wildcard match';
+          type = 'partial-wildcard';
+        }
+      } else if (part.includes('?')) {
+        description = 'Single character wildcard';
+        type = 'char-wildcard';
+      } else if (part.includes('[') && part.includes(']')) {
+        description = 'Character class match';
+        type = 'char-class';
+      } else if (part) {
+        description = 'Literal directory/filename';
+        type = 'literal';
+      }
+      
+      if (part) {
+        components.push(`
+          <div class="pattern-component ${type}">
+            <code class="pattern-part">${this.escapeHtml(part)}</code>
+            <span class="pattern-desc">${description}</span>
+          </div>
+        `);
+      }
+    });
+    
+    return components.length > 0 ? components.join('') : '<span class="pattern-empty">Empty pattern</span>';
+  }
+
+  /**
+   * Open Grep tool specific modal
+   * @param {Object} grepToolData - Grep tool data
+   */
+  openGrepToolModal(grepToolData) {
+    console.log('🔍 Opening Grep tool modal with data:', grepToolData);
+    
+    if (!grepToolData || !grepToolData.input) {
+      console.warn('⚠️ Grep tool data missing or invalid');
+      return;
+    }
+
+    // Extract Grep parameters
+    const pattern = grepToolData.input.pattern || '';
+    const searchPath = grepToolData.input.path || '(current directory)';
+    const outputMode = grepToolData.input.output_mode || 'files_with_matches';
+    const glob = grepToolData.input.glob || '';
+    const type = grepToolData.input.type || '';
+    const caseInsensitive = grepToolData.input['-i'] || false;
+    const contextBefore = grepToolData.input['-B'] || 0;
+    const contextAfter = grepToolData.input['-A'] || 0;
+    const contextAround = grepToolData.input['-C'] || 0;
+    const showLineNumbers = grepToolData.input['-n'] || false;
+    const multiline = grepToolData.input.multiline || false;
+    
+    // Analyze search pattern
+    let patternType = 'Literal';
+    let patternComplexity = 'Simple';
+    let searchScope = 'Text content';
+    
+    // Detect regex patterns
+    if (pattern.includes('.*') || pattern.includes('.+') || pattern.includes('\\w') || pattern.includes('\\d')) {
+      patternType = 'Regular Expression';
+      patternComplexity = 'Complex';
+    } else if (pattern.includes('*') || pattern.includes('?') || pattern.includes('[') || pattern.includes(']')) {
+      patternType = 'Wildcard Pattern';
+      patternComplexity = 'Moderate';
+    }
+    
+    // Detect specific search types
+    if (pattern.includes('function') || pattern.includes('class') || pattern.includes('import')) {
+      searchScope = 'Code structure';
+    } else if (pattern.includes('TODO') || pattern.includes('FIXME') || pattern.includes('NOTE')) {
+      searchScope = 'Code comments';
+    } else if (pattern.includes('error') || pattern.includes('Error') || pattern.includes('exception')) {
+      searchScope = 'Error handling';
+    } else if (pattern.includes('test') || pattern.includes('spec') || pattern.includes('describe')) {
+      searchScope = 'Test code';
+    }
+    
+    // File type analysis
+    let fileContext = 'All files';
+    if (type) {
+      switch (type) {
+        case 'js': fileContext = 'JavaScript files'; break;
+        case 'ts': fileContext = 'TypeScript files'; break;
+        case 'py': fileContext = 'Python files'; break;
+        case 'go': fileContext = 'Go files'; break;
+        case 'rust': fileContext = 'Rust files'; break;
+        case 'java': fileContext = 'Java files'; break;
+        case 'css': fileContext = 'CSS files'; break;
+        case 'html': fileContext = 'HTML files'; break;
+        case 'md': fileContext = 'Markdown files'; break;
+        default: fileContext = `${type} files`; break;
+      }
+    } else if (glob) {
+      if (glob.includes('*.js') || glob.includes('*.ts')) fileContext = 'JavaScript/TypeScript files';
+      else if (glob.includes('*.py')) fileContext = 'Python files';
+      else if (glob.includes('*.md')) fileContext = 'Documentation files';
+      else if (glob.includes('*.css') || glob.includes('*.scss')) fileContext = 'Stylesheet files';
+      else fileContext = `Files matching "${glob}"`;
+    }
+
+    const modalContent = `
+      <div class="agent-modal-header">
+        <div class="agent-modal-title">
+          <div class="agent-title-main">
+            <div class="tool-icon grep-tool">
+              <span style="font-size: 20px;">🔍</span>
+            </div>
+            <div class="agent-title-info">
+              <h3>Grep Search: ${this.escapeHtml(pattern)}</h3>
+              <div class="agent-subtitle">
+                <span class="tool-type-badge">${patternType}</span>
+                <span class="tool-id-badge">ID: ${grepToolData.id ? grepToolData.id.slice(-8) : 'unknown'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+      </div>
+      
+      <div class="agent-modal-content">
+        <!-- Primary Section: Tool Parameters -->
+        <div class="raw-parameters-section primary-section">
+          <h4>🔧 Tool Parameters</h4>
+          <div class="raw-params-container">
+            <pre class="raw-params-json">${this.escapeHtml(JSON.stringify(grepToolData.input, null, 2))}</pre>
+          </div>
+        </div>
+
+        <!-- Search Configuration -->
+        <div class="grep-config-section">
+          <h4>🎯 Search Configuration</h4>
+          <div class="tool-details-grid">
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Search Pattern:</span>
+              <span class="tool-detail-value search-pattern">${this.escapeHtml(pattern)}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Pattern Type:</span>
+              <span class="tool-detail-value">${patternType}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Complexity:</span>
+              <span class="tool-detail-value">${patternComplexity}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Search Location:</span>
+              <span class="tool-detail-value">${this.escapeHtml(searchPath)}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Target Files:</span>
+              <span class="tool-detail-value">${fileContext}</span>
+            </div>
+            <div class="tool-detail-item">
+              <span class="tool-detail-label">Output Mode:</span>
+              <span class="tool-detail-value">${outputMode.replace('_', ' ')}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Options -->
+        <div class="grep-options-section">
+          <h4>⚙️ Search Options</h4>
+          <div class="search-options">
+            ${this.generateGrepOptionsDisplay(grepToolData.input)}
+          </div>
+        </div>
+
+        <!-- Pattern Analysis -->
+        <div class="grep-pattern-section">
+          <h4>🧩 Pattern Analysis</h4>
+          <div class="pattern-analysis">
+            ${this.analyzeGrepPattern(pattern)}
+          </div>
+        </div>
+
+        <!-- Search Insights -->
+        <div class="grep-insights-section">
+          <h4>📊 Search Insights</h4>
+          <div class="tool-insights">
+            <div class="insight-item">
+              <span class="insight-label">Search Scope:</span>
+              <span class="insight-value">${searchScope}</span>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Case Sensitivity:</span>
+              <span class="insight-value">${caseInsensitive ? 'Case insensitive' : 'Case sensitive'}</span>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Multiline Mode:</span>
+              <span class="insight-value">${multiline ? 'Enabled (cross-line patterns)' : 'Disabled (single-line only)'}</span>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Context Lines:</span>
+              <span class="insight-value">${contextAround > 0 ? `${contextAround} lines around` : contextBefore > 0 || contextAfter > 0 ? `${contextBefore} before, ${contextAfter} after` : 'None'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal grep-tool-modal">
+          ${modalContent}
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close - store reference for cleanup
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Generate Grep options display
+   * @param {Object} input - Grep input parameters
+   * @returns {string} HTML for options display
+   */
+  generateGrepOptionsDisplay(input) {
+    const options = [];
+    
+    if (input['-i']) options.push({ name: 'Case Insensitive (-i)', status: 'enabled', desc: 'Ignore case when matching' });
+    if (input['-n']) options.push({ name: 'Line Numbers (-n)', status: 'enabled', desc: 'Show line numbers in output' });
+    if (input.multiline) options.push({ name: 'Multiline Mode', status: 'enabled', desc: 'Allow patterns to span multiple lines' });
+    if (input['-A']) options.push({ name: `After Context (-A ${input['-A']})`, status: 'enabled', desc: `Show ${input['-A']} lines after matches` });
+    if (input['-B']) options.push({ name: `Before Context (-B ${input['-B']})`, status: 'enabled', desc: `Show ${input['-B']} lines before matches` });
+    if (input['-C']) options.push({ name: `Around Context (-C ${input['-C']})`, status: 'enabled', desc: `Show ${input['-C']} lines around matches` });
+    if (input.glob) options.push({ name: `File Filter (--glob)`, status: 'enabled', desc: `Only search files matching "${input.glob}"` });
+    if (input.type) options.push({ name: `File Type (--type)`, status: 'enabled', desc: `Only search ${input.type} files` });
+    if (input.head_limit) options.push({ name: `Result Limit`, status: 'enabled', desc: `Limit to first ${input.head_limit} results` });
+    
+    if (options.length === 0) {
+      return '<div class="no-options">Using default search options</div>';
+    }
+    
+    return options.map(option => `
+      <div class="search-option ${option.status}">
+        <div class="option-header">
+          <span class="option-name">${option.name}</span>
+          <span class="option-status ${option.status}">${option.status}</span>
+        </div>
+        <div class="option-desc">${option.desc}</div>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Analyze grep pattern components
+   * @param {string} pattern - Grep pattern to analyze
+   * @returns {string} HTML breakdown of pattern
+   */
+  analyzeGrepPattern(pattern) {
+    if (!pattern) return '<div class="pattern-empty">No pattern specified</div>';
+    
+    const analysis = [];
+    
+    // Detect regex components
+    if (pattern.includes('.*')) {
+      analysis.push({ component: '.*', desc: 'Match any characters (zero or more)', type: 'regex' });
+    }
+    if (pattern.includes('.+')) {
+      analysis.push({ component: '.+', desc: 'Match any characters (one or more)', type: 'regex' });
+    }
+    if (pattern.includes('\\w')) {
+      analysis.push({ component: '\\w', desc: 'Match word characters (letters, digits, underscore)', type: 'regex' });
+    }
+    if (pattern.includes('\\d')) {
+      analysis.push({ component: '\\d', desc: 'Match digit characters (0-9)', type: 'regex' });
+    }
+    if (pattern.includes('\\s')) {
+      analysis.push({ component: '\\s', desc: 'Match whitespace characters', type: 'regex' });
+    }
+    if (pattern.includes('^')) {
+      analysis.push({ component: '^', desc: 'Match start of line', type: 'anchor' });
+    }
+    if (pattern.includes('$')) {
+      analysis.push({ component: '$', desc: 'Match end of line', type: 'anchor' });
+    }
+    if (pattern.includes('|')) {
+      analysis.push({ component: '|', desc: 'Logical OR (alternative patterns)', type: 'operator' });
+    }
+    
+    // Detect character classes
+    const charClassMatch = pattern.match(/\[([^\]]+)\]/g);
+    if (charClassMatch) {
+      charClassMatch.forEach(match => {
+        analysis.push({ component: match, desc: `Match any character in the set: ${match}`, type: 'charclass' });
+      });
+    }
+    
+    // Detect groups
+    const groupMatch = pattern.match(/\(([^)]+)\)/g);
+    if (groupMatch) {
+      groupMatch.forEach(match => {
+        analysis.push({ component: match, desc: `Capture group: ${match}`, type: 'group' });
+      });
+    }
+    
+    if (analysis.length === 0) {
+      return '<div class="pattern-simple">Simple literal text search</div>';
+    }
+    
+    return analysis.map(item => `
+      <div class="pattern-component ${item.type}">
+        <code class="pattern-part">${this.escapeHtml(item.component)}</code>
+        <span class="pattern-desc">${item.desc}</span>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Open TodoWrite tool specific modal
+   * @param {Object} todoToolData - TodoWrite tool data
+   */
+  openTodoWriteToolModal(todoToolData) {
+    console.log('📝 Opening TodoWrite tool modal with data:', todoToolData);
+    
+    if (!todoToolData || !todoToolData.input) {
+      console.warn('⚠️ TodoWrite tool data missing or invalid');
+      return;
+    }
+
+    // Extract TodoWrite parameters
+    const todos = todoToolData.input.todos || [];
+    const todoCount = todos.length;
+    
+    // Analyze todos
+    const statusCounts = {
+      pending: 0,
+      in_progress: 0,
+      completed: 0
+    };
+    
+    const priorityCounts = {
+      high: 0,
+      medium: 0,
+      low: 0
+    };
+    
+    todos.forEach(todo => {
+      if (statusCounts.hasOwnProperty(todo.status)) {
+        statusCounts[todo.status]++;
+      }
+      if (priorityCounts.hasOwnProperty(todo.priority)) {
+        priorityCounts[todo.priority]++;
+      }
+    });
+    
+    // Calculate completion rate
+    const completionRate = todoCount > 0 ? Math.round((statusCounts.completed / todoCount) * 100) : 0;
+    
+    // Find longest and shortest todos
+    const todoLengths = todos.map(todo => todo.content.length);
+    const avgLength = todoLengths.length > 0 ? Math.round(todoLengths.reduce((a, b) => a + b, 0) / todoLengths.length) : 0;
+
+    const modalContent = `
+      <div class="agent-modal-header">
+        <div class="agent-modal-title">
+          <div class="agent-title-main">
+            <div class="tool-icon todo-tool">
+              <span style="font-size: 20px;">📝</span>
+            </div>
+            <div class="agent-title-info">
+              <h3>Todo Management: ${todoCount} tasks</h3>
+              <div class="agent-subtitle">
+                <span class="tool-type-badge">${completionRate}% Complete</span>
+                <span class="tool-id-badge">ID: ${todoToolData.id ? todoToolData.id.slice(-8) : 'unknown'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+      </div>
+      
+      <div class="agent-modal-content">
+        <!-- Primary Section: Tool Parameters -->
+        <div class="raw-parameters-section primary-section">
+          <h4>🔧 Tool Parameters</h4>
+          <div class="raw-params-container">
+            <pre class="raw-params-json">${this.escapeHtml(JSON.stringify(todoToolData.input, null, 2))}</pre>
+          </div>
+        </div>
+
+        <!-- Todo Summary -->
+        <div class="todo-summary-section">
+          <h4>📊 Todo Summary</h4>
+          <div class="todo-summary">
+            <div class="summary-stats">
+              <div class="stat-item">
+                <span class="stat-number">${todoCount}</span>
+                <span class="stat-label">Total Todos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">${completionRate}%</span>
+                <span class="stat-label">Completion Rate</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">${avgLength}</span>
+                <span class="stat-label">Avg Length</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Breakdown -->
+        <div class="todo-status-section">
+          <h4>📈 Status Breakdown</h4>
+          <div class="status-breakdown">
+            <div class="status-item pending">
+              <div class="status-info">
+                <span class="status-name">Pending</span>
+                <span class="status-count">${statusCounts.pending}</span>
+              </div>
+              <div class="status-bar">
+                <div class="status-fill" style="width: ${todoCount > 0 ? (statusCounts.pending / todoCount) * 100 : 0}%"></div>
+              </div>
+            </div>
+            <div class="status-item in-progress">
+              <div class="status-info">
+                <span class="status-name">In Progress</span>
+                <span class="status-count">${statusCounts.in_progress}</span>
+              </div>
+              <div class="status-bar">
+                <div class="status-fill" style="width: ${todoCount > 0 ? (statusCounts.in_progress / todoCount) * 100 : 0}%"></div>
+              </div>
+            </div>
+            <div class="status-item completed">
+              <div class="status-info">
+                <span class="status-name">Completed</span>
+                <span class="status-count">${statusCounts.completed}</span>
+              </div>
+              <div class="status-bar">
+                <div class="status-fill" style="width: ${todoCount > 0 ? (statusCounts.completed / todoCount) * 100 : 0}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Priority Distribution -->
+        <div class="todo-priority-section">
+          <h4>🎯 Priority Distribution</h4>
+          <div class="priority-distribution">
+            <div class="priority-item high">
+              <span class="priority-label">High Priority</span>
+              <span class="priority-count">${priorityCounts.high}</span>
+            </div>
+            <div class="priority-item medium">
+              <span class="priority-label">Medium Priority</span>
+              <span class="priority-count">${priorityCounts.medium}</span>
+            </div>
+            <div class="priority-item low">
+              <span class="priority-label">Low Priority</span>
+              <span class="priority-count">${priorityCounts.low}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Todo Items -->
+        <div class="todo-items-section">
+          <h4>📋 Todo Items</h4>
+          <div class="todo-items">
+            ${this.generateTodoItemsDisplay(todos)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal todo-tool-modal">
+          ${modalContent}
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close - store reference for cleanup
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Generate todo items display
+   * @param {Array} todos - Array of todo items
+   * @returns {string} HTML for todo items
+   */
+  generateTodoItemsDisplay(todos) {
+    if (!todos || todos.length === 0) {
+      return '<div class="no-todos">No todos found</div>';
+    }
+    
+    return todos.map((todo, index) => `
+      <div class="todo-item ${todo.status} ${todo.priority}">
+        <div class="todo-header">
+          <span class="todo-index">#${index + 1}</span>
+          <span class="todo-status ${todo.status}">${todo.status.replace('_', ' ')}</span>
+          <span class="todo-priority ${todo.priority}">${todo.priority}</span>
+        </div>
+        <div class="todo-content">${this.escapeHtml(todo.content)}</div>
+        <div class="todo-meta">
+          <span class="todo-id">ID: ${todo.id}</span>
+          <span class="todo-length">${todo.content.length} chars</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Open Bash tool specific modal
+   * @param {Object} bashToolData - Bash tool data
+   */
+  openBashToolModal(bashToolData) {
+    const input = bashToolData.input || {};
+    const command = input.command || 'Unknown command';
+    const description = input.description || '';
+    const timeout = input.timeout || 120000; // Default 2 minutes
+    const toolId = bashToolData.id || 'unknown';
+    
+    // Analyze command type
+    const isGitCommand = command.startsWith('git ');
+    const isNpmCommand = command.startsWith('npm ') || command.startsWith('yarn ') || command.startsWith('pnpm ');
+    const isFileCommand = command.includes('ls') || command.includes('cat') || command.includes('find') || command.includes('grep');
+    const isBuildCommand = command.includes('build') || command.includes('compile') || command.includes('make');
+    const isTestCommand = command.includes('test') || command.includes('jest') || command.includes('mocha');
+    const isSystemCommand = command.includes('ps') || command.includes('kill') || command.includes('sudo');
+    
+    let commandCategory = '';
+    let contextIcon = '⚡';
+    
+    if (isGitCommand) {
+      commandCategory = 'Git Operation';
+      contextIcon = '🔧';
+    } else if (isNpmCommand) {
+      commandCategory = 'Package Management';
+      contextIcon = '📦';
+    } else if (isBuildCommand) {
+      commandCategory = 'Build Process';
+      contextIcon = '🔨';
+    } else if (isTestCommand) {
+      commandCategory = 'Testing';
+      contextIcon = '🧪';
+    } else if (isFileCommand) {
+      commandCategory = 'File Operations';
+      contextIcon = '📁';
+    } else if (isSystemCommand) {
+      commandCategory = 'System Command';
+      contextIcon = '🖥️';
+    } else {
+      commandCategory = 'Shell Command';
+      contextIcon = '⚡';
+    }
+    
+    // Parse command for better display
+    const commandParts = command.split(' ');
+    const mainCommand = commandParts[0] || '';
+    const args = commandParts.slice(1).join(' ') || '';
+    
+    const modalHTML = `
+      <div class="agent-modal-overlay" id="agent-modal-overlay">
+        <div class="agent-modal bash-tool-modal">
+          <div class="agent-modal-header">
+            <div class="agent-modal-title">
+              <div class="agent-title-main">
+                <div class="tool-icon bash-tool">
+                  <span style="font-size: 20px;">${contextIcon}</span>
+                </div>
+                <div class="agent-title-info">
+                  <h3>Command: ${mainCommand}</h3>
+                  <div class="agent-subtitle">
+                    <span class="tool-type-badge">${commandCategory}</span>
+                    <span class="tool-id-badge">ID: ${toolId.slice(-8)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="agent-modal-close" id="agent-modal-close">&times;</button>
+          </div>
+          
+          <div class="agent-modal-content">
+            <div class="raw-parameters-section primary-section">
+              <h4>🔧 Tool Parameters</h4>
+              <div class="raw-params-container">
+                <pre class="raw-params-json">${JSON.stringify(input, null, 2)}</pre>
+              </div>
+              <div class="params-summary">
+                <span class="param-chip">Tool ID: ${toolId.slice(-8)}</span>
+                <span class="param-chip">Command: ${mainCommand}</span>
+                <span class="param-chip">Timeout: ${timeout/1000}s</span>
+                ${description ? `<span class="param-chip">Described: Yes</span>` : `<span class="param-chip">Described: No</span>`}
+              </div>
+            </div>
+
+            <div class="command-execution-section">
+              <div class="command-header-section">
+                <h4>💻 Command Execution</h4>
+                <div class="command-stats">
+                  <span class="command-stat">${commandParts.length} parts</span>
+                  <span class="command-stat">${command.length} chars</span>
+                  <span class="command-stat">${timeout/1000}s timeout</span>
+                </div>
+              </div>
+              <div class="command-display-container">
+                <div class="command-line">
+                  <span class="command-prompt">$</span>
+                  <span class="command-text">${this.escapeHtml(command)}</span>
+                </div>
+                ${description ? `
+                  <div class="command-description">
+                    <span class="description-label">Description:</span>
+                    <span class="description-text">${this.escapeHtml(description)}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="command-analysis-section">
+              <h4>🔍 Command Analysis</h4>
+              <div class="analysis-grid">
+                <div class="analysis-item">
+                  <span class="analysis-label">Main Command:</span>
+                  <code class="analysis-value">${this.escapeHtml(mainCommand)}</code>
+                </div>
+                ${args ? `
+                  <div class="analysis-item">
+                    <span class="analysis-label">Arguments:</span>
+                    <code class="analysis-value">${this.escapeHtml(args)}</code>
+                  </div>
+                ` : ''}
+                <div class="analysis-item">
+                  <span class="analysis-label">Category:</span>
+                  <code class="analysis-value">${commandCategory}</code>
+                </div>
+                <div class="analysis-item">
+                  <span class="analysis-label">Timeout:</span>
+                  <code class="analysis-value">${timeout === 120000 ? 'Default (2min)' : `${timeout/1000}s`}</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="file-insights-section">
+              <h4>📊 Execution Insights</h4>
+              <div class="insights-grid">
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">${contextIcon}</span>
+                    <span class="insight-title">Command Type</span>
+                  </div>
+                  <div class="insight-content">${commandCategory}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">⏱️</span>
+                    <span class="insight-title">Timeout</span>
+                  </div>
+                  <div class="insight-content">${timeout/1000} seconds</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">📝</span>
+                    <span class="insight-title">Complexity</span>
+                  </div>
+                  <div class="insight-content">${commandParts.length < 3 ? 'Simple' : commandParts.length < 6 ? 'Medium' : 'Complex'}</div>
+                </div>
+                <div class="insight-card">
+                  <div class="insight-header">
+                    <span class="insight-icon">🎯</span>
+                    <span class="insight-title">Documentation</span>
+                  </div>
+                  <div class="insight-content">${description ? 'Documented' : 'No description'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Bind close events
+    document.getElementById('agent-modal-close').addEventListener('click', () => this.closeAgentModal());
+    document.getElementById('agent-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'agent-modal-overlay') {
+        this.closeAgentModal();
+      }
+    });
+    
+    // ESC key to close
+    this.modalKeydownHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeAgentModal();
+      }
+    };
+    document.addEventListener('keydown', this.modalKeydownHandler);
+  }
+
+  /**
+   * Escape HTML to prevent XSS
+   * @param {string} text - Text to escape
+   * @returns {string} Escaped text
+   */
+  escapeHtml(text) {
+    if (typeof text !== 'string') return String(text);
+    
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   /**
@@ -1397,6 +3023,10 @@ class AgentsPage {
    */
   renderConversationsList(conversations, states, append = false) {
     const listContainer = this.container.querySelector('#conversations-list');
+    if (!listContainer) {
+      console.warn('conversations-list element not found in AgentsPage - component may not be active');
+      return;
+    }
     const filteredConversations = this.filterConversations(conversations, states);
     
     // Calculate count based on filters
@@ -3021,6 +4651,18 @@ class AgentsPage {
    * @param {Object} activeStates - Active conversation states (direct object, not nested)
    */
   updateConversationStates(activeStates) {
+    if (!this.isInitialized) {
+      console.warn('AgentsPage: updateConversationStates called before initialization');
+      return;
+    }
+    
+    // Check if we're still on the agents page by verifying our key element exists
+    const conversationsContainer = this.container.querySelector('#conversations-list');
+    if (!conversationsContainer) {
+      console.log('AgentsPage: Not on agents page, skipping conversation states update');
+      return;
+    }
+    
     const conversations = this.stateService.getStateProperty('conversations') || [];
     
     

@@ -47,21 +47,7 @@ const config: Config = {
           editUrl:
             'https://github.com/davila7/claude-code-templates/tree/main/docu/',
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/davila7/claude-code-templates/tree/main/docu/',
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        blog: false, // Disable blog functionality
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -70,8 +56,8 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    // Social card for sharing
+    image: 'img/logo.svg',
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: true,
@@ -88,12 +74,11 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Documentation',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://davila7.github.io/claude-code-templates/',
-          label: 'Templates',
+          label: 'Browse Templates',
           position: 'left',
         },
         {
@@ -107,11 +92,36 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Documentation',
           items: [
             {
-              label: 'Tutorial',
+              label: 'Getting Started',
               to: '/docs/intro',
+            },
+            {
+              label: 'CLI Usage',
+              to: '/docs/cli-usage',
+            },
+            {
+              label: 'Available Templates',
+              to: '/docs/available-templates',
+            },
+          ],
+        },
+        {
+          title: 'Resources',
+          items: [
+            {
+              label: 'Browse Templates',
+              href: 'https://davila7.github.io/claude-code-templates/',
+            },
+            {
+              label: 'GitHub Repository',
+              href: 'https://github.com/davila7/claude-code-templates',
+            },
+            {
+              label: 'Issues & Support',
+              href: 'https://github.com/davila7/claude-code-templates/issues',
             },
           ],
         },
@@ -119,29 +129,12 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Contribute',
+              href: 'https://github.com/davila7/claude-code-templates/blob/main/CONTRIBUTING.md',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/davila7/claude-code-templates',
+              label: 'License',
+              href: 'https://github.com/davila7/claude-code-templates/blob/main/LICENSE',
             },
           ],
         },

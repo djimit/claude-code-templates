@@ -45,6 +45,9 @@ jobs:
 
       - name: Create combined site structure
         run: |
+          echo "--- Listing contents of docu/build before copying ---"
+          ls -R docu/build
+          
           # Create the main site directory
           mkdir -p _site
           
@@ -54,6 +57,9 @@ jobs:
           # Copy Docusaurus build to /docu subdirectory
           mkdir -p _site/docu
           cp -r docu/build/* _site/docu/
+
+          echo "--- Listing contents of _site after copying ---"
+          ls -R _site
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

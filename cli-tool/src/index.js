@@ -80,6 +80,22 @@ async function showMainMenu() {
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
   
+  // Handle individual component installation
+  if (options.agent) {
+    await installIndividualAgent(options.agent, targetDir, options);
+    return;
+  }
+  
+  if (options.command) {
+    await installIndividualCommand(options.command, targetDir, options);
+    return;
+  }
+  
+  if (options.mcp) {
+    await installIndividualMCP(options.mcp, targetDir, options);
+    return;
+  }
+  
   // Handle command stats analysis (both singular and plural)
   if (options.commandStats || options.commandsStats) {
     await runCommandStats(options);
@@ -251,6 +267,173 @@ async function createClaudeConfig(options = {}) {
   if (!options.dryRun) {
     await runPostInstallationValidation(targetDir, templateConfig);
   }
+}
+
+// Individual component installation functions
+async function installIndividualAgent(agentName, targetDir, options) {
+  console.log(chalk.blue(`🤖 Installing agent: ${agentName}`));
+  
+  try {
+    // Check if components directory exists
+    const componentsPath = path.join(__dirname, '..', 'components', 'agents');
+    const agentFile = path.join(componentsPath, `${agentName}.md`);
+    
+    if (!await fs.pathExists(agentFile)) {
+      console.log(chalk.red(`❌ Agent "${agentName}" not found`));
+      console.log(chalk.yellow('Available agents:'));
+      
+      // List available agents
+      if (await fs.pathExists(componentsPath)) {
+        const agents = await fs.readdir(componentsPath);
+        agents.filter(f => f.endsWith('.md')).forEach(agent => {
+          console.log(chalk.cyan(`  - ${agent.replace('.md', '')}`));
+        });
+      }
+      return;
+    }
+    
+    // For agents, they are typically part of templates, so we need to determine
+    // the appropriate language/framework and install the complete template
+    const agentContent = await fs.readFile(agentFile, 'utf8');
+    const language = extractLanguageFromAgent(agentContent, agentName);
+    const framework = extractFrameworkFromAgent(agentContent, agentName);
+    
+    console.log(chalk.yellow(`📝 Agent "${agentName}" is part of ${language}/${framework} template`));
+    console.log(chalk.blue('🚀 Installing complete template with this agent...'));
+    
+    // Install the template that contains this agent (avoid recursion)
+    const setupOptions = {
+      ...options,
+      language,
+      framework,
+      yes: true,
+      targetDirectory: targetDir,
+      agent: null // Remove agent to avoid recursion
+    };
+    delete setupOptions.agent;
+    await createClaudeConfig(setupOptions);
+    
+    console.log(chalk.green(`✅ Agent "${agentName}" installed successfully!`));
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing agent: ${error.message}`));
+  }
+}
+
+async function installIndividualCommand(commandName, targetDir, options) {
+  console.log(chalk.blue(`⚡ Installing command: ${commandName}`));
+  
+  try {
+    // Check if components directory exists
+    const componentsPath = path.join(__dirname, '..', 'components', 'commands');
+    const commandFile = path.join(componentsPath, `${commandName}.md`);
+    
+    if (!await fs.pathExists(commandFile)) {
+      console.log(chalk.red(`❌ Command "${commandName}" not found`));
+      console.log(chalk.yellow('Available commands:'));
+      
+      // List available commands
+      if (await fs.pathExists(componentsPath)) {
+        const commands = await fs.readdir(componentsPath);
+        commands.filter(f => f.endsWith('.md')).forEach(command => {
+          console.log(chalk.cyan(`  - ${command.replace('.md', '')}`));
+        });
+      }
+      return;
+    }
+    
+    // Create .claude/commands directory if it doesn't exist
+    const commandsDir = path.join(targetDir, '.claude', 'commands');
+    await fs.ensureDir(commandsDir);
+    
+    // Copy the command file
+    const targetFile = path.join(commandsDir, `${commandName}.md`);
+    await fs.copy(commandFile, targetFile);
+    
+    console.log(chalk.green(`✅ Command "${commandName}" installed successfully!`));
+    console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing command: ${error.message}`));
+  }
+}
+
+async function installIndividualMCP(mcpName, targetDir, options) {
+  console.log(chalk.blue(`🔌 Installing MCP: ${mcpName}`));
+  
+  try {
+    // Check if components directory exists
+    const componentsPath = path.join(__dirname, '..', 'components', 'mcps');
+    const mcpFile = path.join(componentsPath, `${mcpName}.json`);
+    
+    if (!await fs.pathExists(mcpFile)) {
+      console.log(chalk.red(`❌ MCP "${mcpName}" not found`));
+      console.log(chalk.yellow('Available MCPs:'));
+      
+      // List available MCPs
+      if (await fs.pathExists(componentsPath)) {
+        const mcps = await fs.readdir(componentsPath);
+        mcps.filter(f => f.endsWith('.json')).forEach(mcp => {
+          console.log(chalk.cyan(`  - ${mcp.replace('.json', '')}`));
+        });
+      }
+      return;
+    }
+    
+    // Read the MCP configuration
+    const mcpConfig = await fs.readJson(mcpFile);
+    
+    // Check if .mcp.json exists in target directory
+    const targetMcpFile = path.join(targetDir, '.mcp.json');
+    let existingConfig = {};
+    
+    if (await fs.pathExists(targetMcpFile)) {
+      existingConfig = await fs.readJson(targetMcpFile);
+      console.log(chalk.yellow('📝 Existing .mcp.json found, merging configurations...'));
+    }
+    
+    // Merge configurations
+    const mergedConfig = {
+      ...existingConfig,
+      ...mcpConfig
+    };
+    
+    // Write the merged configuration
+    await fs.writeJson(targetMcpFile, mergedConfig, { spaces: 2 });
+    
+    console.log(chalk.green(`✅ MCP "${mcpName}" installed successfully!`));
+    console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetMcpFile)}`));
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing MCP: ${error.message}`));
+  }
+}
+
+// Helper functions to extract language/framework from agent content
+function extractLanguageFromAgent(content, agentName) {
+  // Try to determine language from agent content or filename
+  if (agentName.includes('react') || content.includes('React')) return 'javascript-typescript';
+  if (agentName.includes('django') || content.includes('Django')) return 'python';
+  if (agentName.includes('fastapi') || content.includes('FastAPI')) return 'python';
+  if (agentName.includes('flask') || content.includes('Flask')) return 'python';
+  if (agentName.includes('rails') || content.includes('Rails')) return 'ruby';
+  if (agentName.includes('api-security') || content.includes('API security')) return 'javascript-typescript';
+  if (agentName.includes('database') || content.includes('database')) return 'javascript-typescript';
+  
+  // Default to javascript-typescript for general agents
+  return 'javascript-typescript';
+}
+
+function extractFrameworkFromAgent(content, agentName) {
+  // Try to determine framework from agent content or filename
+  if (agentName.includes('react') || content.includes('React')) return 'react';
+  if (agentName.includes('django') || content.includes('Django')) return 'django';
+  if (agentName.includes('fastapi') || content.includes('FastAPI')) return 'fastapi';
+  if (agentName.includes('flask') || content.includes('Flask')) return 'flask';
+  if (agentName.includes('rails') || content.includes('Rails')) return 'rails';
+  
+  // For general agents, return none to install the base template
+  return 'none';
 }
 
 module.exports = { createClaudeConfig, showMainMenu };

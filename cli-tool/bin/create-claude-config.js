@@ -54,6 +54,9 @@ program
   .option('--analytics', 'launch real-time Claude Code analytics dashboard')
   .option('--chats, --agents', 'launch Claude Code chats/agents dashboard (opens directly to conversations)')
   .option('--health-check, --health, --check, --verify', 'run comprehensive health check to verify Claude Code setup')
+  .option('--agent <agent>', 'install specific agent component')
+  .option('--command <command>', 'install specific command component')
+  .option('--mcp <mcp>', 'install specific MCP component')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

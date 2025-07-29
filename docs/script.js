@@ -1029,46 +1029,15 @@ function createComponentCard(component) {
 // Generate install command for component
 function generateInstallCommand(component) {
     if (component.type === 'agents') {
-        const language = getLanguageFromAgent(component);
-        const framework = getFrameworkFromAgent(component);
-        return `npx claude-code-templates@latest --language=${language} --framework=${framework}`;
+        return `npx claude-code-templates@latest --agent=${component.name} --yes`;
     } else if (component.type === 'commands') {
-        return `mkdir -p .claude/commands && curl -o .claude/commands/${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/${component.filename}`;
+        return `npx claude-code-templates@latest --command=${component.name} --yes`;
     } else if (component.type === 'mcps') {
-        return `curl -o ./${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/${component.filename}`;
+        return `npx claude-code-templates@latest --mcp=${component.name} --yes`;
     }
     return `npx claude-code-templates@latest`;
 }
 
-// Helper function to extract language from agent
-function getLanguageFromAgent(component) {
-    // Parse agent name to determine best language match
-    const name = component.name.toLowerCase();
-    
-    if (name.includes('react') || name.includes('performance')) return 'javascript-typescript';
-    if (name.includes('api') || name.includes('database') || name.includes('security')) return 'javascript-typescript';
-    if (name.includes('python') || name.includes('django') || name.includes('flask')) return 'python';
-    if (name.includes('ruby') || name.includes('rails')) return 'ruby';
-    
-    // Default to JavaScript/TypeScript for most agents
-    return 'javascript-typescript';
-}
-
-// Helper function to extract framework from agent  
-function getFrameworkFromAgent(component) {
-    const name = component.name.toLowerCase();
-    
-    if (name.includes('react')) return 'react';
-    if (name.includes('vue')) return 'vue';
-    if (name.includes('angular')) return 'angular';
-    if (name.includes('django')) return 'django';
-    if (name.includes('flask')) return 'flask';
-    if (name.includes('fastapi')) return 'fastapi';
-    if (name.includes('rails')) return 'rails';
-    
-    // Default to node for JavaScript/TypeScript agents
-    return 'node';
-}
 
 // Get installation notes (removed to match template cards design)
 function getInstallationNotes() {

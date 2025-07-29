@@ -10,6 +10,7 @@ const ProcessDetector = require('./analytics/core/ProcessDetector');
 const ConversationAnalyzer = require('./analytics/core/ConversationAnalyzer');
 const FileWatcher = require('./analytics/core/FileWatcher');
 const SessionAnalyzer = require('./analytics/core/SessionAnalyzer');
+const AgentAnalyzer = require('./analytics/core/AgentAnalyzer');
 const DataCache = require('./analytics/data/DataCache');
 const WebSocketServer = require('./analytics/notifications/WebSocketServer');
 const NotificationManager = require('./analytics/notifications/NotificationManager');
@@ -24,6 +25,7 @@ class ClaudeAnalytics {
     this.processDetector = new ProcessDetector();
     this.fileWatcher = new FileWatcher();
     this.sessionAnalyzer = new SessionAnalyzer();
+    this.agentAnalyzer = new AgentAnalyzer();
     this.dataCache = new DataCache();
     this.performanceMonitor = new PerformanceMonitor({
       enabled: true,
@@ -664,6 +666,28 @@ class ClaudeAnalytics {
       } catch (error) {
         console.error('Error getting paginated conversations:', error);
         res.status(500).json({ error: 'Failed to get conversations' });
+      }
+    });
+
+    // Agent usage analytics endpoint
+    this.app.get('/api/agents', async (req, res) => {
+      try {
+        const startDate = req.query.startDate;
+        const endDate = req.query.endDate;
+        const dateRange = (startDate || endDate) ? { startDate, endDate } : null;
+        
+        const agentAnalysis = await this.agentAnalyzer.analyzeAgentUsage(this.data.conversations, dateRange);
+        const agentSummary = this.agentAnalyzer.generateSummary(agentAnalysis);
+        
+        res.json({
+          ...agentAnalysis,
+          summary: agentSummary,
+          dateRange,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error getting agent analytics:', error);
+        res.status(500).json({ error: 'Failed to get agent analytics' });
       }
     });
 
@@ -1661,12 +1685,88 @@ class ClaudeAnalytics {
       const timeSinceLastUpdate = now - lastUpdate;
       const timeSinceLastUpdateMinutes = Math.floor(timeSinceLastUpdate / (1000 * 60));
       
-      // Based on observed pattern: ~2 hours and 21 minutes session limit
-      const sessionLimitMs = 2 * 60 * 60 * 1000 + 21 * 60 * 1000; // 2h 21m
-      const timeRemaining = sessionLimitMs - sessionDuration;
-      const timeRemainingMinutes = Math.floor(timeRemaining / (1000 * 60));
-      const timeRemainingHours = Math.floor(timeRemainingMinutes / 60);
-      const remainingMinutesDisplay = timeRemainingMinutes % 60;
+      // CORRECTED: Calculate next reset time based on scheduled reset hours
+      // Claude sessions reset at specific times, not fixed durations
+      const resetHours = [1, 7, 13, 19]; // 1am, 7am, 1pm, 7pm local time
+      const sessionStartDate = new Date(startTime);
+      
+      // Find next reset time after session start
+      let nextResetTime = new Date(sessionStartDate);
+      nextResetTime.setMinutes(0, 0, 0); // Set to exact hour
+      
+      // Find the next reset hour
+      let foundReset = false;
+      for (let i = 0; i < resetHours.length * 2; i++) { // Check up to 2 full days
+        const currentDay = Math.floor(i / resetHours.length);
+        const hourIndex = i % resetHours.length;
+        const resetHour = resetHours[hourIndex];
+        
+        const testResetTime = new Date(sessionStartDate);
+        testResetTime.setDate(testResetTime.getDate() + currentDay);
+        testResetTime.setHours(resetHour, 0, 0, 0);
+        
+        if (testResetTime > sessionStartDate) {
+          nextResetTime = testResetTime;
+          foundReset = true;
+          break;
+        }
+      }
+      
+      if (!foundReset) {
+        // Fallback: assume next day 7am if no pattern found
+        nextResetTime.setDate(nextResetTime.getDate() + 1);
+        nextResetTime.setHours(7, 0, 0, 0);
+      }
+      
+      const sessionLimitMs = nextResetTime.getTime() - startTime;
+      let timeRemaining = nextResetTime.getTime() - now;
+      let timeRemainingMinutes = Math.floor(timeRemaining / (1000 * 60));
+      let timeRemainingHours = Math.floor(timeRemainingMinutes / 60);
+      let remainingMinutesDisplay = timeRemainingMinutes % 60;
+      
+      // If session is expired but has recent activity, calculate next reset time
+      if (timeRemaining <= 0) {
+        const RECENT_ACTIVITY_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+        const timeSinceLastUpdate = now - lastUpdate;
+        
+        if (timeSinceLastUpdate < RECENT_ACTIVITY_THRESHOLD) {
+          // Session was renewed, find the NEXT reset time
+          let nextNextResetTime = new Date(nextResetTime);
+          let foundNextReset = false;
+          
+          for (let i = 0; i < resetHours.length; i++) {
+            const resetHour = resetHours[i];
+            const testResetTime = new Date(nextResetTime);
+            
+            if (resetHour > nextResetTime.getHours()) {
+              // Same day, later hour
+              testResetTime.setHours(resetHour, 0, 0, 0);
+            } else {
+              // Next day
+              testResetTime.setDate(testResetTime.getDate() + 1);
+              testResetTime.setHours(resetHour, 0, 0, 0);
+            }
+            
+            if (testResetTime > nextResetTime) {
+              nextNextResetTime = testResetTime;
+              foundNextReset = true;
+              break;
+            }
+          }
+          
+          if (!foundNextReset) {
+            // Default to next day 1am
+            nextNextResetTime.setDate(nextNextResetTime.getDate() + 1);
+            nextNextResetTime.setHours(1, 0, 0, 0);
+          }
+          
+          timeRemaining = nextNextResetTime.getTime() - now;
+          timeRemainingMinutes = Math.floor(timeRemaining / (1000 * 60));
+          timeRemainingHours = Math.floor(timeRemainingMinutes / 60);
+          remainingMinutesDisplay = timeRemainingMinutes % 60;
+          nextResetTime = nextNextResetTime;
+        }
+      }
       
       return {
         hasSession: true,
@@ -1691,13 +1791,15 @@ class ClaudeAnalytics {
           hours: timeRemainingHours,
           remainingMinutes: remainingMinutesDisplay,
           formatted: timeRemaining > 0 ? `${timeRemainingHours}h ${remainingMinutesDisplay}m` : 'Session expired',
-          isExpired: timeRemaining <= 0
+          isExpired: timeRemaining <= 0 && timeSinceLastUpdate >= (5 * 60 * 1000) // Expired only if past reset time AND no recent activity
         },
         sessionLimit: {
           ms: sessionLimitMs,
-          hours: 2,
-          minutes: 21,
-          formatted: '2h 21m'
+          hours: Math.floor(sessionLimitMs / (1000 * 60 * 60)),
+          minutes: Math.floor((sessionLimitMs % (1000 * 60 * 60)) / (1000 * 60)),
+          formatted: `${Math.floor(sessionLimitMs / (1000 * 60 * 60))}h ${Math.floor((sessionLimitMs % (1000 * 60 * 60)) / (1000 * 60))}m`,
+          nextResetTime: nextResetTime.toISOString(),
+          resetHour: nextResetTime.getHours()
         }
       };
     } catch (error) {

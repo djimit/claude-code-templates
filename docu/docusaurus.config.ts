@@ -28,6 +28,25 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
+  // GitHub Pages deployment configuration
+  trailingSlash: false,
+  
+  // Add plugin to create .nojekyll file automatically
+  plugins: [
+    function createNojekyllPlugin() {
+      return {
+        name: 'create-nojekyll',
+        async postBuild({ outDir }) {
+          const fs = require('fs');
+          const path = require('path');
+          const nojekyllPath = path.join(outDir, '.nojekyll');
+          fs.writeFileSync(nojekyllPath, '');
+          console.log('✅ Created .nojekyll file for GitHub Pages');
+        },
+      };
+    },
+  ],
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".

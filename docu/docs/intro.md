@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Claude Code Templates
 
-**Claude Code Templates** is a powerful Command Line Interface (CLI) tool designed to streamline the setup, configuration, and monitoring of your Claude Code projects. It provides a comprehensive stack of internal tools to ensure the correct and efficient utilization of Claude Code within your development workflow.
+**Claude Code Templates** is a powerful Command Line Interface (CLI) tool designed to streamline the setup, configuration, and monitoring of your Claude Code projects. It provides both complete project templates and individual components (Agents, Commands, MCPs) to ensure the correct and efficient utilization of Claude Code within your development workflow.
 
 ## Key Functionalities
 
@@ -21,6 +21,14 @@ Automated project configuration and optimization:
 - **Command Configuration**: Sets up pre-configured development, build, and test commands tailored to your stack.
 - **Agent Installation**: Installs specialized Claude Code agents for framework-specific assistance.
 - **Workflow Optimization**: Implements Claude Code-specific enhancements and best practices for an optimized development workflow.
+
+### 🧩 Individual Components
+Granular control over Claude Code functionality:
+- **🤖 Agents**: AI specialists for specific development tasks (react-performance-optimization, api-security-audit, database-optimization)
+- **⚡ Commands**: Custom slash commands for Claude Code (check-file, generate-tests, optimize-imports)
+- **🔌 MCPs**: Model Context Protocol integrations for external services (github-integration, database-integration, deepgraph-react)
+- **Unified Interface**: Browse and install components individually through the web interface
+- **Flexible Installation**: Choose between complete templates or selective component installation
 
 ### 📊 Real-time Analytics Dashboard & Agent Chats Manager
 Complementary monitoring and analysis tools:
@@ -71,6 +79,7 @@ Built with modern Node.js technologies:
 ## Documentation
 
 - **[Project Setup & Configuration](./project-setup/interactive-setup)** - Detailed guide on setting up your projects.
+- **[Individual Components](./components/overview)** - Browse and install Agents, Commands, and MCPs individually.
 - **[Analytics Dashboard](./analytics/overview)** - Explore real-time monitoring and analysis tools.
 - **[Health Check](./health-check/overview)** - Understand system validation and optimization.
 -   **[Core Concepts](/docs/project-setup/what-gets-installed)** - Dive into the underlying structure and components.

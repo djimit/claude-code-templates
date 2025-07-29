@@ -39,7 +39,7 @@ let templatesData = null;
 
 // Fetch templates configuration from GitHub
 async function fetchTemplatesConfig() {
-    const grid = document.getElementById('templatesGrid');
+    const grid = document.getElementById('unifiedGrid') || document.getElementById('templatesGrid');
     grid.innerHTML = '<div class="loading">Loading templates from GitHub...</div>';
     
     try {
@@ -68,7 +68,7 @@ async function fetchTemplatesConfig() {
             <div class="error-message">
                 <h3>Error loading templates</h3>
                 <p>Could not fetch templates from GitHub. Please try again later.</p>
-                <button onclick="fetchTemplatesConfig()" class="retry-btn">Retry</button>
+                <button onclick="displayTemplates()" class="retry-btn">Retry</button>
             </div>
         `;
     }
@@ -107,7 +107,7 @@ function parseTemplatesConfig(fileContent) {
 
 // Generate template cards from fetched data
 function generateTemplateCards() {
-    const grid = document.getElementById('templatesGrid');
+    const grid = document.getElementById('unifiedGrid');
     grid.innerHTML = '';
     
     if (!templatesData) {
@@ -623,7 +623,8 @@ document.head.appendChild(style);
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
-    fetchTemplatesConfig();
+    // Start with templates view
+    displayTemplates();
 });
 
 // Add keyboard navigation
@@ -638,3 +639,689 @@ document.addEventListener('keydown', (e) => {
 
 // Auto-refresh templates every 5 minutes to pick up changes
 setInterval(fetchTemplatesConfig, 5 * 60 * 1000);
+
+// ===== UNIFIED COMPONENTS FUNCTIONALITY =====
+
+let componentsData = {
+    agents: [],
+    commands: [],
+    mcps: []
+};
+
+let currentFilter = 'templates';
+let allDataLoaded = false;
+
+// Unified filter functionality
+function setUnifiedFilter(filter) {
+    currentFilter = filter;
+    
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    
+    // Load and display content
+    if (filter === 'templates') {
+        displayTemplates();
+    } else {
+        loadAndDisplayComponents();
+    }
+}
+
+// Display templates (existing functionality)
+function displayTemplates() {
+    const unifiedGrid = document.getElementById('unifiedGrid');
+    unifiedGrid.className = 'unified-grid templates-mode';
+    
+    if (templatesData) {
+        generateTemplateCards();
+    } else {
+        unifiedGrid.innerHTML = '<div class="loading">Loading templates from GitHub...</div>';
+        fetchTemplatesConfig();
+    }
+}
+
+// Load and display components
+async function loadAndDisplayComponents() {
+    const unifiedGrid = document.getElementById('unifiedGrid');
+    unifiedGrid.className = 'unified-grid components-mode';
+    
+    if (!allDataLoaded) {
+        unifiedGrid.innerHTML = '<div class="loading">Loading components from GitHub...</div>';
+        await loadAllComponentsData();
+    }
+    
+    generateUnifiedComponentCards();
+}
+
+// Load all components data
+async function loadAllComponentsData() {
+    try {
+        // Load agents
+        const agentsData = await loadComponentType('agents');
+        componentsData.agents = agentsData;
+        
+        // Load commands  
+        const commandsData = await loadComponentType('commands');
+        componentsData.commands = commandsData;
+        
+        // Load MCPs
+        const mcpsData = await loadComponentType('mcps');
+        componentsData.mcps = mcpsData;
+        
+        allDataLoaded = true;
+        
+    } catch (error) {
+        console.error('Error loading components:', error);
+        const unifiedGrid = document.getElementById('unifiedGrid');
+        unifiedGrid.innerHTML = `
+            <div class="error-message">
+                <h3>Error loading components</h3>
+                <p>Could not fetch components from GitHub. Please try again later.</p>
+                <button onclick="loadAndDisplayComponents()" class="retry-btn">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Generate unified component cards
+function generateUnifiedComponentCards() {
+    const unifiedGrid = document.getElementById('unifiedGrid');
+    unifiedGrid.innerHTML = '';
+    
+    // Get filtered components
+    const filteredComponents = getFilteredComponents();
+    
+    // Add "Add New" card based on current filter
+    if (currentFilter !== 'templates') {
+        const addCard = createAddComponentCard(currentFilter);
+        unifiedGrid.appendChild(addCard);
+    }
+    
+    // Add component cards
+    filteredComponents.forEach(component => {
+        const card = createComponentCard(component);
+        unifiedGrid.appendChild(card);
+    });
+    
+    // Update filter button with count
+    updateFilterCount();
+}
+
+// Update filter button count
+function updateFilterCount() {
+    const filterBtn = document.querySelector(`[data-filter="${currentFilter}"]`);
+    if (filterBtn && currentFilter !== 'templates') {
+        const count = componentsData[currentFilter].length;
+        const originalText = filterBtn.textContent.split('(')[0].trim();
+        filterBtn.textContent = `${originalText} (${count})`;
+    }
+}
+
+// Get filtered components based on current filter
+function getFilteredComponents() {
+    if (currentFilter === 'templates') {
+        return [];
+    }
+    return componentsData[currentFilter] || [];
+}
+
+// Load components data from GitHub (legacy function for compatibility)
+async function loadComponentsData() {
+    const componentsGrid = document.getElementById('componentsGrid');
+    componentsGrid.innerHTML = '<div class="loading">Loading components from GitHub...</div>';
+    
+    try {
+        // Load agents
+        const agentsData = await loadComponentType('agents');
+        componentsData.agents = agentsData;
+        
+        // Load commands  
+        const commandsData = await loadComponentType('commands');
+        componentsData.commands = commandsData;
+        
+        // Load MCPs
+        const mcpsData = await loadComponentType('mcps');
+        componentsData.mcps = mcpsData;
+        
+        generateComponentCards();
+        
+    } catch (error) {
+        console.error('Error loading components:', error);
+        componentsGrid.innerHTML = `
+            <div class="error-message">
+                <h3>Error loading components</h3>
+                <p>Could not fetch components from GitHub. Please try again later.</p>
+                <button onclick="loadComponentsData()" class="retry-btn">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Load specific component type from GitHub
+async function loadComponentType(type) {
+    const baseUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/cli-tool/components/${type}`;
+    
+    try {
+        const response = await fetch(baseUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const files = await response.json();
+        const componentPromises = files.map(async (file) => {
+            if (file.name.endsWith('.md') || file.name.endsWith('.json')) {
+                const contentResponse = await fetch(file.download_url);
+                const content = await contentResponse.text();
+                
+                return {
+                    name: file.name.replace(/\.(md|json)$/, ''),
+                    type: type,
+                    filename: file.name,
+                    content: content,
+                    url: file.html_url
+                };
+            }
+            return null;
+        });
+        
+        const components = await Promise.all(componentPromises);
+        return components.filter(c => c !== null);
+        
+    } catch (error) {
+        console.error(`Error loading ${type}:`, error);
+        return [];
+    }
+}
+
+// Generate component cards with filter functionality
+function generateComponentCards() {
+    const componentsGrid = document.getElementById('componentsGrid');
+    
+    // Create filter bar
+    const filterBar = createComponentFilterBar();
+    
+    // Create components container
+    const componentsContainer = document.createElement('div');
+    componentsContainer.className = 'components-container';
+    
+    // Create Add New cards for each category
+    const addAgentCard = createAddComponentCard('agents');
+    const addCommandCard = createAddComponentCard('commands');
+    const addMcpCard = createAddComponentCard('mcps');
+    
+    // Filter and display components
+    const filteredComponents = getFilteredComponents();
+    
+    componentsContainer.innerHTML = '';
+    
+    // Add "Add New" cards based on filter
+    if (currentFilter === 'all' || currentFilter === 'agents') {
+        componentsContainer.appendChild(addAgentCard);
+    }
+    if (currentFilter === 'all' || currentFilter === 'commands') {
+        componentsContainer.appendChild(addCommandCard);
+    }
+    if (currentFilter === 'all' || currentFilter === 'mcps') {
+        componentsContainer.appendChild(addMcpCard);
+    }
+    
+    // Add component cards
+    filteredComponents.forEach(component => {
+        const card = createComponentCard(component);
+        componentsContainer.appendChild(card);
+    });
+    
+    componentsGrid.innerHTML = '';
+    componentsGrid.appendChild(filterBar);
+    componentsGrid.appendChild(componentsContainer);
+}
+
+// Create filter bar for components
+function createComponentFilterBar() {
+    const filterBar = document.createElement('div');
+    filterBar.className = 'component-filter-bar';
+    
+    const totalCounts = {
+        all: componentsData.agents.length + componentsData.commands.length + componentsData.mcps.length,
+        agents: componentsData.agents.length,
+        commands: componentsData.commands.length,
+        mcps: componentsData.mcps.length
+    };
+    
+    filterBar.innerHTML = `
+        <div class="filter-label">$ Filter Components</div>
+        <div class="filter-buttons">
+            <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setComponentFilter('all')">
+                All (${totalCounts.all})
+            </button>
+            <button class="filter-btn ${currentFilter === 'agents' ? 'active' : ''}" onclick="setComponentFilter('agents')">
+                🤖 Agents (${totalCounts.agents})
+            </button>
+            <button class="filter-btn ${currentFilter === 'commands' ? 'active' : ''}" onclick="setComponentFilter('commands')">
+                ⚡ Commands (${totalCounts.commands})
+            </button>
+            <button class="filter-btn ${currentFilter === 'mcps' ? 'active' : ''}" onclick="setComponentFilter('mcps')">
+                🔌 MCPs (${totalCounts.mcps})
+            </button>
+        </div>
+    `;
+    
+    return filterBar;
+}
+
+// Set component filter
+function setComponentFilter(filter) {
+    currentFilter = filter;
+    generateComponentCards();
+}
+
+// Get filtered components based on current filter
+function getFilteredComponents() {
+    if (currentFilter === 'all') {
+        return [...componentsData.agents, ...componentsData.commands, ...componentsData.mcps];
+    }
+    return componentsData[currentFilter] || [];
+}
+
+// Create Add Component card
+function createAddComponentCard(type) {
+    const card = document.createElement('div');
+    card.className = 'template-card add-template-card add-component-card';
+    
+    const typeConfig = {
+        agents: { icon: '🤖', name: 'Agent', description: 'AI specialist for specific development tasks' },
+        commands: { icon: '⚡', name: 'Command', description: 'Custom slash commands for Claude Code' },
+        mcps: { icon: '🔌', name: 'MCP', description: 'Model Context Protocol integration' }
+    };
+    
+    const config = typeConfig[type];
+    
+    card.innerHTML = `
+        <div class="card-inner">
+            <div class="card-front">
+                <div class="framework-logo add-template-logo">
+                    <span class="component-icon">${config.icon}</span>
+                </div>
+                <h3 class="template-title">Add New ${config.name}</h3>
+                <p class="template-description">Contribute a ${config.description.toLowerCase()}</p>
+            </div>
+            <div class="card-back">
+                <div class="command-display">
+                    <h3>🚀 Contribute ${config.name}</h3>
+                    <div class="add-template-info">
+                        <p>Help expand Claude Code by adding a new ${config.name.toLowerCase()}:</p>
+                        <ul>
+                            <li>${config.description}</li>
+                            <li>Follow established patterns</li>
+                            <li>Include documentation</li>
+                        </ul>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="view-files-btn contribute-btn" onclick="showComponentContributeModal('${type}')">
+                            📝 Start Contributing
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add click handler
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+            card.classList.toggle('flipped');
+        }
+    });
+    
+    return card;
+}
+
+// Create individual component card
+function createComponentCard(component) {
+    const card = document.createElement('div');
+    card.className = 'template-card';
+    
+    const typeConfig = {
+        agents: { icon: '🤖', color: '#ff6b6b' },
+        commands: { icon: '⚡', color: '#4ecdc4' },
+        mcps: { icon: '🔌', color: '#45b7d1' }
+    };
+    
+    const config = typeConfig[component.type];
+    const installCommand = generateInstallCommand(component);
+    
+    card.innerHTML = `
+        <div class="card-inner">
+            <div class="card-front">
+                <div class="framework-logo" style="color: ${config.color}">
+                    <span class="component-icon">${config.icon}</span>
+                </div>
+                <h3 class="template-title">${formatComponentName(component.name)}</h3>
+                <p class="template-description">${getComponentDescription(component)}</p>
+                <div class="component-type-badge" style="background: ${config.color}">
+                    ${component.type.slice(0, -1)}
+                </div>
+            </div>
+            <div class="card-back">
+                <div class="command-display">
+                    <h3>${getInstallationTitle(component)}</h3>
+                    <div class="command-code">${installCommand}</div>
+                    ${getInstallationNotes(component)}
+                    <div class="action-buttons">
+                        <button class="view-files-btn" onclick="showComponentDetails('${component.type}', '${component.name}')">
+                            📁 View Details
+                        </button>
+                        <button class="copy-command-btn" onclick="copyToClipboard('${installCommand}')">
+                            📋 Copy Command
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add click handler for card flip
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+            card.classList.toggle('flipped');
+        }
+    });
+    
+    return card;
+}
+
+// Generate install command for component
+function generateInstallCommand(component) {
+    if (component.type === 'agents') {
+        const language = getLanguageFromAgent(component);
+        const framework = getFrameworkFromAgent(component);
+        return `npx claude-code-templates@latest --language=${language} --framework=${framework}`;
+    } else if (component.type === 'commands') {
+        return `curl -o .claude/commands/${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/${component.filename}`;
+    } else if (component.type === 'mcps') {
+        return `curl -o ./${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/${component.filename}`;
+    }
+    return `npx claude-code-templates@latest`;
+}
+
+// Helper function to extract language from agent
+function getLanguageFromAgent(component) {
+    // Parse agent name to determine best language match
+    const name = component.name.toLowerCase();
+    
+    if (name.includes('react') || name.includes('performance')) return 'javascript-typescript';
+    if (name.includes('api') || name.includes('database') || name.includes('security')) return 'javascript-typescript';
+    if (name.includes('python') || name.includes('django') || name.includes('flask')) return 'python';
+    if (name.includes('ruby') || name.includes('rails')) return 'ruby';
+    
+    // Default to JavaScript/TypeScript for most agents
+    return 'javascript-typescript';
+}
+
+// Helper function to extract framework from agent  
+function getFrameworkFromAgent(component) {
+    const name = component.name.toLowerCase();
+    
+    if (name.includes('react')) return 'react';
+    if (name.includes('vue')) return 'vue';
+    if (name.includes('angular')) return 'angular';
+    if (name.includes('django')) return 'django';
+    if (name.includes('flask')) return 'flask';
+    if (name.includes('fastapi')) return 'fastapi';
+    if (name.includes('rails')) return 'rails';
+    
+    // Default to node for JavaScript/TypeScript agents
+    return 'node';
+}
+
+// Get installation title based on component type
+function getInstallationTitle(component) {
+    const titles = {
+        agents: 'Install with Template',
+        commands: 'Download Command',
+        mcps: 'Download MCP Config'
+    };
+    return titles[component.type] || 'Installation';
+}
+
+// Get installation notes
+function getInstallationNotes(component) {
+    if (component.type === 'agents') {
+        return '<div class="install-note">📝 This will install the complete template including this agent</div>';
+    } else if (component.type === 'commands') {
+        return '<div class="install-note">📝 Run this command from your project root directory</div>';
+    } else if (component.type === 'mcps') {
+        return '<div class="install-note">📝 Merge the downloaded config with your existing .mcp.json</div>';
+    }
+    return '';
+}
+
+// Format component name for display
+function formatComponentName(name) {
+    return name
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// Get component description
+function getComponentDescription(component) {
+    if (component.type === 'agents' && component.content.includes('description:')) {
+        const match = component.content.match(/description:\s*(.+?)(?:\n|color:)/s);
+        if (match) {
+            return match[1].replace(/Examples:.*$/, '').trim().substring(0, 100) + '...';
+        }
+    } else if (component.type === 'commands') {
+        const lines = component.content.split('\n');
+        const descLine = lines.find(line => line.startsWith('#') && !line.startsWith('##'));
+        if (descLine) {
+            return descLine.replace('#', '').trim().substring(0, 100) + '...';
+        }
+    } else if (component.type === 'mcps') {
+        return `MCP configuration for ${formatComponentName(component.name)}`;
+    }
+    
+    return `${component.type.slice(0, -1)} for Claude Code`;
+}
+
+// Show component details modal
+function showComponentDetails(type, name) {
+    const component = componentsData[type].find(c => c.name === name);
+    if (!component) return;
+    
+    showComponentModal(component);
+}
+
+// Show component contribute modal
+function showComponentContributeModal(type) {
+    const typeConfig = {
+        agents: { 
+            name: 'Agent', 
+            description: 'AI specialist that handles specific development tasks',
+            example: 'python-testing-specialist',
+            structure: '- Agent metadata (name, description, color)\n- Core expertise areas\n- When to use guidelines\n- Code examples and patterns'
+        },
+        commands: { 
+            name: 'Command', 
+            description: 'Custom slash command for Claude Code',
+            example: 'optimize-bundle',
+            structure: '- Command description and usage\n- Task breakdown\n- Process steps\n- Best practices and examples'
+        },
+        mcps: { 
+            name: 'MCP', 
+            description: 'Model Context Protocol integration',
+            example: 'redis-integration',
+            structure: '- MCP server configuration\n- Connection parameters\n- Environment variables\n- Usage examples'
+        }
+    };
+    
+    const config = typeConfig[type];
+    
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal()">
+            <div class="modal-content contribute-modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>📝 Contribute a New ${config.name}</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="contribute-intro">
+                        <p>Help expand Claude Code by contributing a new ${config.name.toLowerCase()}! Follow these steps:</p>
+                    </div>
+                    
+                    <div class="contribute-steps">
+                        <div class="contribute-step">
+                            <div class="step-number-contrib">1</div>
+                            <div class="step-content-contrib">
+                                <h4>Create Your ${config.name}</h4>
+                                <p>Add your ${config.name.toLowerCase()} to: <code>cli-tool/components/${type}/</code></p>
+                                <div class="component-structure">
+                                    <strong>Structure should include:</strong>
+                                    <pre>${config.structure}</pre>
+                                </div>
+                                <div class="step-command">
+                                    <strong>Example filename:</strong> <code>${config.example}.${type === 'mcps' ? 'json' : 'md'}</code>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="contribute-step">
+                            <div class="step-number-contrib">2</div>
+                            <div class="step-content-contrib">
+                                <h4>Follow the Pattern</h4>
+                                <p>Check existing ${type} in the repository to understand the structure and conventions.</p>
+                                <div class="step-command">
+                                    <a href="https://github.com/davila7/claude-code-templates/tree/main/cli-tool/components/${type}" target="_blank" class="github-folder-link">
+                                        📁 View existing ${type}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="contribute-step">
+                            <div class="step-number-contrib">3</div>
+                            <div class="step-content-contrib">
+                                <h4>Test Your Component</h4>
+                                <p>Ensure your ${config.name.toLowerCase()} works correctly with Claude Code.</p>
+                                <div class="step-command">
+                                    <code>cd cli-tool && npm test</code>
+                                    <button class="copy-btn" onclick="copyToClipboard('cd cli-tool && npm test')">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="contribute-step">
+                            <div class="step-number-contrib">4</div>
+                            <div class="step-content-contrib">
+                                <h4>Submit Pull Request</h4>
+                                <p>Submit your contribution with proper documentation:</p>
+                                <div class="step-command">
+                                    <code>git add cli-tool/components/${type}/${config.example}.${type === 'mcps' ? 'json' : 'md'}</code>
+                                    <button class="copy-btn" onclick="copyToClipboard('git add cli-tool/components/${type}/${config.example}.${type === 'mcps' ? 'json' : 'md'}')">Copy</button>
+                                </div>
+                                <div class="step-command">
+                                    <code>git commit -m "feat: Add ${config.example} ${config.name.toLowerCase()}"</code>
+                                    <button class="copy-btn" onclick="copyToClipboard('git commit -m \"feat: Add ${config.example} ${config.name.toLowerCase()}\"')">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contribute-footer">
+                        <div class="help-section">
+                            <h4>Need Help?</h4>
+                            <p>Check existing ${type} for examples or open an issue on GitHub for guidance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    const modal = document.createElement('div');
+    modal.innerHTML = modalHTML;
+    modal.className = 'modal contribute-component-modal';
+    document.body.appendChild(modal);
+    
+    // Add event listener for ESC key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
+// Show detailed component modal
+function showComponentModal(component) {
+    const typeConfig = {
+        agents: { icon: '🤖', color: '#ff6b6b' },
+        commands: { icon: '⚡', color: '#4ecdc4' },
+        mcps: { icon: '🔌', color: '#45b7d1' }
+    };
+    
+    const config = typeConfig[component.type];
+    const installCommand = generateInstallCommand(component);
+    
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal()">
+            <div class="modal-content component-modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <div class="component-modal-title">
+                        <span class="component-icon" style="color: ${config.color}">${config.icon}</span>
+                        <h3>${formatComponentName(component.name)}</h3>
+                        <span class="component-type-badge" style="background: ${config.color}">${component.type.slice(0, -1)}</span>
+                    </div>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="component-details">
+                        <div class="component-description">
+                            ${getComponentDescription(component)}
+                        </div>
+                        
+                        <div class="installation-section">
+                            <h4>📦 Installation</h4>
+                            <div class="command-line">
+                                <code>${installCommand}</code>
+                                <button class="copy-btn" onclick="copyToClipboard('${installCommand}')">Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div class="component-content">
+                            <h4>📋 Component Details</h4>
+                            <div class="component-preview">
+                                <pre><code>${component.content.substring(0, 500)}${component.content.length > 500 ? '...' : ''}</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <a href="${component.url}" target="_blank" class="github-folder-link">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.30.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    const modal = document.createElement('div');
+    modal.innerHTML = modalHTML;
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+    
+    // Add event listener for ESC key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}

@@ -50,27 +50,16 @@
 
     <main class="terminal">
         <section class="stats-section">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <a href="https://www.npmjs.com/package/claude-code-templates" target="_blank" class="stat-link">
-                        <img src="https://img.shields.io/npm/dt/claude-code-templates.svg" alt="npm downloads" class="stat-badge">
-                        <div class="stat-label">NPM Downloads</div>
-                    </a>
-                </div>
-                
-                <div class="stat-card">
-                    <a href="https://github.com/davila7/claude-code-templates" target="_blank" class="stat-link">
-                        <img src="https://img.shields.io/github/stars/davila7/claude-code-templates.svg?style=social&label=Star" alt="GitHub stars" class="stat-badge">
-                        <div class="stat-label">GitHub Stars</div>
-                    </a>
-                </div>
-                
-                <div class="stat-card">
-                    <a href="https://www.deepgraph.co/davila7/claude-code-templates" target="_blank" class="stat-link">
-                        <img src="https://img.shields.io/badge/%E2%9C%A8%20Open%20in-DeepGraph-a465f7?style=flat" alt="Open in DeepGraph" class="stat-badge">
-                        <div class="stat-label">Repository Insights</div>
-                    </a>
-                </div>
+            <div class="stats-badges">
+                <a href="https://www.npmjs.com/package/claude-code-templates" target="_blank" class="stat-badge-link">
+                    <img src="https://img.shields.io/npm/dt/claude-code-templates.svg" alt="npm downloads" class="stat-badge">
+                </a>
+                <a href="https://github.com/davila7/claude-code-templates" target="_blank" class="stat-badge-link">
+                    <img src="https://img.shields.io/github/stars/davila7/claude-code-templates.svg?style=social&label=Star" alt="GitHub stars" class="stat-badge">
+                </a>
+                <a href="https://www.deepgraph.co/davila7/claude-code-templates" target="_blank" class="stat-badge-link">
+                    <img src="https://img.shields.io/badge/%E2%9C%A8%20Open%20in-DeepGraph-a465f7?style=flat" alt="Open in DeepGraph" class="stat-badge">
+                </a>
             </div>
         </section>
         
@@ -115,15 +104,30 @@
             </div>
         </section>
 
-        <section class="intro-section">
-            <div class="command-block">
-                <div class="command-label">$ Available Templates</div>
-                <div class="command-description">Select a template to quickly set up Claude Code configuration for your project. Click on any card to see the installation options.</div>
+        <section class="unified-filter-section">
+            <div class="unified-filter-bar">
+                <div class="filter-label">$ Filter Components</div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="templates" onclick="setUnifiedFilter('templates')">
+                        📦 Templates
+                    </button>
+                    <button class="filter-btn" data-filter="agents" onclick="setUnifiedFilter('agents')">
+                        🤖 Agents
+                    </button>
+                    <button class="filter-btn" data-filter="commands" onclick="setUnifiedFilter('commands')">
+                        ⚡ Commands
+                    </button>
+                    <button class="filter-btn" data-filter="mcps" onclick="setUnifiedFilter('mcps')">
+                        🔌 MCPs
+                    </button>
+                </div>
             </div>
         </section>
 
-        <section class="templates-grid" id="templatesGrid">
-            <!-- Templates will be loaded here by JavaScript -->
+        <section class="content-grid" id="contentGrid">
+            <div class="unified-grid" id="unifiedGrid">
+                <!-- All content will be loaded here by JavaScript -->
+            </div>
         </section>
 
         <section class="additional-tools">

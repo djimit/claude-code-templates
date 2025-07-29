@@ -29,6 +29,16 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Individual Components',
+      items: [
+        'components/overview',
+        'components/agents',
+        'components/commands',
+        'components/mcps',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Analytics Dashboard',
       items: [
         'analytics/overview',

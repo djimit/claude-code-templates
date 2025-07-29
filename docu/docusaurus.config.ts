@@ -97,7 +97,7 @@ const config: Config = {
         },
         {
           href: 'https://davila7.github.io/claude-code-templates/',
-          label: 'Browse Templates',
+          label: 'Browse Components',
           position: 'left',
         },
         {
@@ -124,7 +124,7 @@ const config: Config = {
           title: 'Resources',
           items: [
             {
-              label: 'Browse Templates',
+              label: 'Browse Components',
               href: 'https://davila7.github.io/claude-code-templates/',
             },
             {

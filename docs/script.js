@@ -998,15 +998,11 @@ function createComponentCard(component) {
                 </div>
                 <h3 class="template-title">${formatComponentName(component.name)}</h3>
                 <p class="template-description">${getComponentDescription(component)}</p>
-                <div class="component-type-badge" style="background: ${config.color}">
-                    ${component.type.slice(0, -1)}
-                </div>
             </div>
             <div class="card-back">
                 <div class="command-display">
-                    <h3>${getInstallationTitle(component)}</h3>
+                    <h3>Installation Command</h3>
                     <div class="command-code">${installCommand}</div>
-                    ${getInstallationNotes(component)}
                     <div class="action-buttons">
                         <button class="view-files-btn" onclick="showComponentDetails('${component.type}', '${component.name}')">
                             📁 View Details
@@ -1037,7 +1033,7 @@ function generateInstallCommand(component) {
         const framework = getFrameworkFromAgent(component);
         return `npx claude-code-templates@latest --language=${language} --framework=${framework}`;
     } else if (component.type === 'commands') {
-        return `curl -o .claude/commands/${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/${component.filename}`;
+        return `mkdir -p .claude/commands && curl -o .claude/commands/${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/${component.filename}`;
     } else if (component.type === 'mcps') {
         return `curl -o ./${component.filename} https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/${component.filename}`;
     }
@@ -1074,25 +1070,8 @@ function getFrameworkFromAgent(component) {
     return 'node';
 }
 
-// Get installation title based on component type
-function getInstallationTitle(component) {
-    const titles = {
-        agents: 'Install with Template',
-        commands: 'Download Command',
-        mcps: 'Download MCP Config'
-    };
-    return titles[component.type] || 'Installation';
-}
-
-// Get installation notes
-function getInstallationNotes(component) {
-    if (component.type === 'agents') {
-        return '<div class="install-note">📝 This will install the complete template including this agent</div>';
-    } else if (component.type === 'commands') {
-        return '<div class="install-note">📝 Run this command from your project root directory</div>';
-    } else if (component.type === 'mcps') {
-        return '<div class="install-note">📝 Merge the downloaded config with your existing .mcp.json</div>';
-    }
+// Get installation notes (removed to match template cards design)
+function getInstallationNotes() {
     return '';
 }
 

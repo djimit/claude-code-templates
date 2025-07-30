@@ -12,6 +12,7 @@
     <script src="services/StateService.js"></script>
     
     <!-- Component Scripts -->
+    <script src="components/HeaderComponent.js"></script>
     <script src="components/Charts.js"></script>
     <!-- Dashboard.js removed - deprecated architecture -->
     <script src="components/SessionTimer.js"></script>
@@ -2644,6 +2645,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            margin-left: 56px;
             transition: margin-left 0.3s ease;
         }
         
@@ -2662,7 +2664,9 @@
             display: flex;
             flex-direction: column;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
             z-index: 1000;
             box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
             overflow: visible;
@@ -2673,6 +2677,10 @@
             background: var(--bg-secondary);
             border-right: 1px solid var(--text-accent);
             box-shadow: 4px 0 16px rgba(213, 116, 85, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
         }
         
         .sidebar-header {
@@ -4616,32 +4624,7 @@
             margin: 0 auto;
         }
 
-        /* App Layout Styles (App.js + Sidebar.js) */
-        .app {
-            display: flex;
-            min-height: 100vh;
-            background: var(--bg-primary);
-        }
-
-        .app-sidebar {
-            width: 60px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-primary);
-            transition: width 0.3s ease;
-        }
-
-        .app-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        .app-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        /* App Layout Styles (App.js + Sidebar.js) - Duplicates removed, using definitions above */
         
         /* Metrics Section */
         .metrics-section {

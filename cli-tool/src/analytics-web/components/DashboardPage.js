@@ -13,6 +13,9 @@ class DashboardPage {
     this.refreshInterval = null;
     this.isInitialized = false;
     
+    // Initialize header component
+    this.headerComponent = null;
+    
     // Subscribe to state changes
     this.unsubscribe = this.stateService.subscribe(this.handleStateChange.bind(this));
   }
@@ -118,42 +121,8 @@ class DashboardPage {
   async render() {
     this.container.innerHTML = `
       <div class="dashboard-page">
-        <!-- Page Header -->
-        <div class="page-header">
-          <div class="header-content">
-            <div class="header-left">
-              <div class="status-header">
-                <span class="session-timer-status-dot active" id="session-status-dot"></span>
-                <h1 class="page-title">
-                  Claude Code Analytics Dashboard
-                  <span class="version-badge">v1.10.1</span>
-                </h1>
-              </div>
-              <div class="page-subtitle">
-                Real-time monitoring and analytics for Claude Code sessions
-              </div>
-              <div class="last-update-header">
-                <span class="last-update-label">last update:</span>
-                <span id="last-update-header-text">Never</span>
-              </div>
-            </div>
-            <div class="header-right">
-              <div class="theme-switch-container" title="Toggle light/dark theme">
-                <div class="theme-switch" id="header-theme-switch">
-                  <div class="theme-switch-track">
-                    <div class="theme-switch-thumb" id="header-theme-switch-thumb">
-                      <span class="theme-switch-icon">🌙</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <a href="https://github.com/davila7/claude-code-templates" target="_blank" class="github-link" title="Star on GitHub">
-                <span class="github-icon">⭐</span>
-                Star on GitHub
-              </a>
-            </div>
-          </div>
-        </div>
+        <!-- Page Header (will be replaced by HeaderComponent) -->
+        <div id="dashboard-header-container"></div>
 
         <!-- Action Buttons -->
         <div class="action-buttons-container">
@@ -394,7 +363,28 @@ class DashboardPage {
     `;
 
     this.bindEvents();
-    this.initializeTheme();
+    this.initializeHeaderComponent();
+  }
+
+  /**
+   * Initialize the header component
+   */
+  initializeHeaderComponent() {
+    const headerContainer = this.container.querySelector('#dashboard-header-container');
+    if (headerContainer && typeof HeaderComponent !== 'undefined') {
+      this.headerComponent = new HeaderComponent(headerContainer, {
+        title: 'Claude Code Analytics Dashboard',
+        subtitle: 'Real-time monitoring and analytics for Claude Code sessions',
+        version: 'v1.13.2', // Fallback version
+        showVersionBadge: true,
+        showLastUpdate: true,
+        showThemeSwitch: true,
+        showGitHubLink: true,
+        dataService: this.dataService // Pass DataService for dynamic version loading
+      });
+      
+      this.headerComponent.render();
+    }
   }
 
   /**
@@ -884,11 +874,6 @@ class DashboardPage {
       retryBtn.addEventListener('click', () => this.loadInitialData());
     }
 
-    // Theme toggle (header)
-    const headerThemeSwitch = this.container.querySelector('#header-theme-switch');
-    if (headerThemeSwitch) {
-      headerThemeSwitch.addEventListener('click', () => this.toggleTheme());
-    }
   }
 
   /**
@@ -2105,74 +2090,13 @@ class DashboardPage {
     }
   }
 
-  /**
-   * Initialize theme from localStorage
-   */
-  initializeTheme() {
-    const savedTheme = localStorage.getItem('claude-analytics-theme') || 'dark';
-    const body = document.body;
-    const headerThumb = this.container.querySelector('#header-theme-switch-thumb');
-    const headerIcon = headerThumb?.querySelector('.theme-switch-icon');
-    
-    body.setAttribute('data-theme', savedTheme);
-    if (headerThumb && headerIcon) {
-      if (savedTheme === 'light') {
-        headerThumb.classList.add('light');
-        headerIcon.textContent = '☀️';
-      } else {
-        headerThumb.classList.remove('light');
-        headerIcon.textContent = '🌙';
-      }
-    }
-  }
-
-  /**
-   * Toggle theme between light and dark
-   */
-  toggleTheme() {
-    const body = document.body;
-    const headerThumb = this.container.querySelector('#header-theme-switch-thumb');
-    const headerIcon = headerThumb?.querySelector('.theme-switch-icon');
-    
-    // Also sync with global theme switch
-    const globalThumb = document.getElementById('themeSwitchThumb');
-    const globalIcon = globalThumb?.querySelector('.theme-switch-icon');
-    
-    const isLight = body.getAttribute('data-theme') === 'light';
-    const newTheme = isLight ? 'dark' : 'light';
-    
-    body.setAttribute('data-theme', newTheme);
-    
-    // Update header theme switch
-    if (headerThumb && headerIcon) {
-      headerThumb.classList.toggle('light', newTheme === 'light');
-      headerIcon.textContent = newTheme === 'light' ? '☀️' : '🌙';
-    }
-    
-    // Sync with global theme switch
-    if (globalThumb && globalIcon) {
-      globalThumb.classList.toggle('light', newTheme === 'light');
-      globalIcon.textContent = newTheme === 'light' ? '☀️' : '🌙';
-    }
-    
-    localStorage.setItem('claude-analytics-theme', newTheme);
-  }
 
   /**
    * Update last update time
    */
   updateLastUpdateTime() {
-    const currentTime = new Date().toLocaleTimeString();
-    
-    // Update both locations
-    const lastUpdateText = this.container.querySelector('#last-update-text');
-    const lastUpdateHeaderText = this.container.querySelector('#last-update-header-text');
-    
-    if (lastUpdateText) {
-      lastUpdateText.textContent = currentTime;
-    }
-    if (lastUpdateHeaderText) {
-      lastUpdateHeaderText.textContent = currentTime;
+    if (this.headerComponent) {
+      this.headerComponent.updateLastUpdateTime();
     }
   }
 
@@ -2251,6 +2175,12 @@ class DashboardPage {
    */
   destroy() {
     this.stopPeriodicRefresh();
+    
+    // Cleanup header component
+    if (this.headerComponent) {
+      this.headerComponent.destroy();
+      this.headerComponent = null;
+    }
     
     // Cleanup Chart.js instances specifically
     if (this.components.tokenChart) {

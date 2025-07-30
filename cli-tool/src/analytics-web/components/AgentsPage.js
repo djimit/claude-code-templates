@@ -16,6 +16,9 @@ class AgentsPage {
     };
     this.isInitialized = false;
     
+    // Initialize header component
+    this.headerComponent = null;
+    
     // Pagination state for conversations
     this.pagination = {
       currentPage: 0,
@@ -586,22 +589,8 @@ class AgentsPage {
   async render() {
     this.container.innerHTML = `
       <div class="agents-page">
-        <!-- Page Header -->
-        <div class="page-header conversations-header">
-          <div class="header-content">
-            <div class="header-left">
-              <div class="status-header">
-                <span class="session-timer-status-dot active"></span>
-                <h1 class="page-title">
-                  Claude Code web UI
-                </h1>
-              </div>
-              <div class="page-subtitle">
-                Monitor and analyze Claude Code agent interactions in real-time
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Page Header (will be replaced by HeaderComponent) -->
+        <div id="agents-header-container"></div>
 
         <!-- Filters Section -->
         <div class="conversations-filters">
@@ -784,6 +773,28 @@ class AgentsPage {
 
     this.bindEvents();
     this.setupInfiniteScroll();
+    this.initializeHeaderComponent();
+  }
+
+  /**
+   * Initialize the header component
+   */
+  initializeHeaderComponent() {
+    const headerContainer = this.container.querySelector('#agents-header-container');
+    if (headerContainer && typeof HeaderComponent !== 'undefined') {
+      this.headerComponent = new HeaderComponent(headerContainer, {
+        title: 'Claude Code Chats',
+        subtitle: 'Monitor and analyze Claude Code agent interactions in real-time',
+        version: 'v1.13.2', // Fallback version
+        showVersionBadge: true,
+        showLastUpdate: true,
+        showThemeSwitch: true,
+        showGitHubLink: true,
+        dataService: this.dataService // Pass DataService for dynamic version loading
+      });
+      
+      this.headerComponent.render();
+    }
   }
 
   /**
@@ -4716,6 +4727,12 @@ class AgentsPage {
    * Destroy agents page
    */
   destroy() {
+    // Cleanup header component
+    if (this.headerComponent) {
+      this.headerComponent.destroy();
+      this.headerComponent = null;
+    }
+    
     // Cleanup components
     Object.values(this.components).forEach(component => {
       if (component.destroy) {

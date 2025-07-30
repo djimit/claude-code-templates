@@ -1,0 +1,188 @@
+/**
+ * TrackingService - Download analytics using GitHub Issues as backend
+ * Records component installations for analytics without impacting user experience
+ */
+
+class TrackingService {
+    constructor() {
+        this.repoOwner = 'davila7';
+        this.repoName = 'claude-code-templates';
+        this.trackingEnabled = this.shouldEnableTracking();
+        this.timeout = 5000; // 5s timeout for tracking requests
+    }
+
+    /**
+     * Check if tracking should be enabled (respects user privacy)
+     */
+    shouldEnableTracking() {
+        // Allow users to opt-out
+        if (process.env.CCT_NO_TRACKING === 'true' || 
+            process.env.CCT_NO_ANALYTICS === 'true' ||
+            process.env.CI === 'true') {
+            return false;
+        }
+        
+        // Enable by default (anonymous usage data only)
+        return true;
+    }
+
+    /**
+     * Track a component download/installation
+     * @param {string} componentType - 'agent', 'command', or 'mcp'
+     * @param {string} componentName - Name of the component
+     * @param {object} metadata - Additional context (optional)
+     */
+    async trackDownload(componentType, componentName, metadata = {}) {
+        if (!this.trackingEnabled) {
+            return;
+        }
+
+        try {
+            // Create tracking payload
+            const trackingData = this.createTrackingPayload(componentType, componentName, metadata);
+            
+            // Fire-and-forget tracking (don't block user experience)
+            this.sendTrackingData(trackingData)
+                .catch(error => {
+                    // Silent failure - tracking should never impact functionality
+                    console.debug('📊 Tracking info (non-critical):', error.message);
+                });
+
+        } catch (error) {
+            // Silently handle any tracking errors
+            console.debug('📊 Analytics error (non-critical):', error.message);
+        }
+    }
+
+    /**
+     * Create standardized tracking payload
+     */
+    createTrackingPayload(componentType, componentName, metadata) {
+        const timestamp = new Date().toISOString();
+        
+        return {
+            event: 'component_download',
+            component_type: componentType,
+            component_name: componentName,
+            timestamp: timestamp,
+            session_id: this.generateSessionId(),
+            environment: {
+                node_version: process.version,
+                platform: process.platform,
+                arch: process.arch,
+                cli_version: this.getCliVersion()
+            },
+            metadata: metadata
+        };
+    }
+
+    /**
+     * Send tracking data to GitHub Issues (async, non-blocking)
+     */
+    async sendTrackingData(trackingData) {
+        const title = `📊 ${trackingData.component_type}:${trackingData.component_name} - ${trackingData.timestamp.split('T')[0]}`;
+        
+        const body = `\`\`\`json
+${JSON.stringify(trackingData, null, 2)}
+\`\`\`
+
+<!-- ANALYTICS_DATA -->
+Component: **${trackingData.component_name}** (${trackingData.component_type})  
+Platform: ${trackingData.environment.platform} ${trackingData.environment.arch}  
+Node: ${trackingData.environment.node_version}  
+CLI: ${trackingData.environment.cli_version}  
+Session: \`${trackingData.session_id}\`
+`;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        try {
+            const response = await fetch(`https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'claude-code-templates-cli'
+                },
+                body: JSON.stringify({
+                    title: title,
+                    body: body,
+                    labels: ['📊 analytics', 'download-tracking', `type:${trackingData.component_type}`]
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`GitHub API responded with ${response.status}`);
+            }
+
+            console.debug('📊 Download tracked successfully');
+            
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+        }
+    }
+
+    /**
+     * Generate a session ID for grouping related downloads
+     */
+    generateSessionId() {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
+    /**
+     * Get CLI version from package.json
+     */
+    getCliVersion() {
+        try {
+            const path = require('path');
+            const fs = require('fs');
+            const packagePath = path.join(__dirname, '..', 'package.json');
+            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+            return packageData.version || 'unknown';
+        } catch (error) {
+            return 'unknown';
+        }
+    }
+
+    /**
+     * Track template installation (full project setup)
+     */
+    async trackTemplateInstallation(language, framework, metadata = {}) {
+        return this.trackDownload('template', `${language}/${framework}`, {
+            ...metadata,
+            installation_type: 'full_template'
+        });
+    }
+
+    /**
+     * Track health check usage
+     */
+    async trackHealthCheck(results = {}) {
+        return this.trackDownload('health-check', 'system-validation', {
+            installation_type: 'health_check',
+            results_summary: results
+        });
+    }
+
+    /**
+     * Track analytics dashboard usage
+     */
+    async trackAnalyticsDashboard(metadata = {}) {
+        return this.trackDownload('analytics', 'dashboard-launch', {
+            installation_type: 'analytics_dashboard',
+            ...metadata
+        });
+    }
+}
+
+// Export singleton instance
+const trackingService = new TrackingService();
+
+module.exports = {
+    TrackingService,
+    trackingService
+};

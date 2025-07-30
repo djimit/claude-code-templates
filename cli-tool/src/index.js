@@ -14,6 +14,7 @@ const { runHookStats } = require('./hook-stats');
 const { runMCPStats } = require('./mcp-stats');
 const { runAnalytics } = require('./analytics');
 const { runHealthCheck } = require('./health-check');
+const { trackingService } = require('./tracking-service');
 
 async function showMainMenu() {
   console.log('');
@@ -49,12 +50,14 @@ async function showMainMenu() {
   
   if (initialChoice.action === 'analytics') {
     console.log(chalk.blue('📊 Launching Claude Code Analytics Dashboard...'));
+    trackingService.trackAnalyticsDashboard({ page: 'dashboard', source: 'interactive_menu' });
     await runAnalytics({});
     return;
   }
   
   if (initialChoice.action === 'chats') {
     console.log(chalk.blue('💬 Launching Claude Code Chats Dashboard...'));
+    trackingService.trackAnalyticsDashboard({ page: 'agents', source: 'interactive_menu' });
     await runAnalytics({ openTo: 'agents' });
     return;
   }
@@ -62,6 +65,13 @@ async function showMainMenu() {
   if (initialChoice.action === 'health') {
     console.log(chalk.blue('🔍 Running Health Check...'));
     const healthResult = await runHealthCheck();
+    
+    // Track health check usage
+    trackingService.trackHealthCheck({
+      setup_recommended: healthResult.runSetup,
+      issues_found: healthResult.issues || 0
+    });
+    
     if (healthResult.runSetup) {
       console.log(chalk.blue('⚙️  Starting Project Setup...'));
       // Continue with setup flow
@@ -116,12 +126,14 @@ async function createClaudeConfig(options = {}) {
   
   // Handle analytics dashboard
   if (options.analytics) {
+    trackingService.trackAnalyticsDashboard({ page: 'dashboard', source: 'command_line' });
     await runAnalytics(options);
     return;
   }
   
   // Handle chats/agents dashboard
   if (options.chats || options.agents) {
+    trackingService.trackAnalyticsDashboard({ page: 'agents', source: 'command_line' });
     await runAnalytics({ ...options, openTo: 'agents' });
     return;
   }
@@ -130,6 +142,14 @@ async function createClaudeConfig(options = {}) {
   let shouldRunSetup = false;
   if (options.healthCheck || options.health || options.check || options.verify) {
     const healthResult = await runHealthCheck();
+    
+    // Track health check usage
+    trackingService.trackHealthCheck({
+      setup_recommended: healthResult.runSetup,
+      issues_found: healthResult.issues || 0,
+      source: 'command_line'
+    });
+    
     if (healthResult.runSetup) {
       console.log(chalk.blue('⚙️  Starting Project Setup...'));
       shouldRunSetup = true;
@@ -244,8 +264,8 @@ async function createClaudeConfig(options = {}) {
   console.log(chalk.white('  2. Customize the configuration for your project'));
   console.log(chalk.white('  3. Start using Claude Code with: claude'));
   console.log('');
-  console.log(chalk.blue('🌐 View all available templates at: https://davila7.github.io/claude-code-templates/'));
-  console.log(chalk.blue('📖 Read the complete documentation at: https://davila7.github.io/claude-code-templates/docu/'));
+  console.log(chalk.blue('🌐 View all available templates at: https://aitmpl.com/'));
+  console.log(chalk.blue('📖 Read the complete documentation at: https://aitmpl.com/docu/'));
   
   if (config.language !== 'common') {
     console.log(chalk.yellow(`💡 Language-specific features for ${config.language} have been configured`));
@@ -261,6 +281,17 @@ async function createClaudeConfig(options = {}) {
   
   if (config.mcps && config.mcps.length > 0) {
     console.log(chalk.blue(`🔧 ${config.mcps.length} MCP servers have been configured`));
+  }
+
+  // Track successful template installation
+  if (!options.agent && !options.command && !options.mcp) {
+    trackingService.trackTemplateInstallation(config.language, config.framework, {
+      installation_method: options.setupFromMenu ? 'interactive_menu' : 'command_line',
+      dry_run: options.dryRun || false,
+      hooks_count: config.hooks ? config.hooks.length : 0,
+      mcps_count: config.mcps ? config.mcps.length : 0,
+      project_detected: !!options.detectedProject
+    });
   }
   
   // Run post-installation validation
@@ -315,6 +346,14 @@ async function installIndividualAgent(agentName, targetDir, options) {
     
     console.log(chalk.green(`✅ Agent "${agentName}" installed successfully!`));
     
+    // Track successful agent installation
+    trackingService.trackDownload('agent', agentName, {
+      language: language,
+      framework: framework,
+      installation_type: 'individual_agent',
+      template_installed: true
+    });
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing agent: ${error.message}`));
   }
@@ -352,6 +391,12 @@ async function installIndividualCommand(commandName, targetDir, options) {
     
     console.log(chalk.green(`✅ Command "${commandName}" installed successfully!`));
     console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+    
+    // Track successful command installation
+    trackingService.trackDownload('command', commandName, {
+      installation_type: 'individual_command',
+      target_directory: path.relative(process.cwd(), targetDir)
+    });
     
   } catch (error) {
     console.log(chalk.red(`❌ Error installing command: ${error.message}`));
@@ -403,6 +448,13 @@ async function installIndividualMCP(mcpName, targetDir, options) {
     
     console.log(chalk.green(`✅ MCP "${mcpName}" installed successfully!`));
     console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetMcpFile)}`));
+    
+    // Track successful MCP installation
+    trackingService.trackDownload('mcp', mcpName, {
+      installation_type: 'individual_mcp',
+      merged_with_existing: existingConfig !== null,
+      servers_count: Object.keys(mergedConfig.mcpServers || {}).length
+    });
     
   } catch (error) {
     console.log(chalk.red(`❌ Error installing MCP: ${error.message}`));

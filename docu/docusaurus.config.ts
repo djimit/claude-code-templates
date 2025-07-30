@@ -15,10 +15,10 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://davila7.github.io',
+  url: 'https://aitmpl.com',
   // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/claude-code-templates/docu/',
+  // For custom domain deployment
+  baseUrl: '/docu/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -96,7 +96,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://davila7.github.io/claude-code-templates/',
+          href: 'https://aitmpl.com/',
           label: 'Browse Components',
           position: 'left',
         },
@@ -125,7 +125,7 @@ const config: Config = {
           items: [
             {
               label: 'Browse Components',
-              href: 'https://davila7.github.io/claude-code-templates/',
+              href: 'https://aitmpl.com/',
             },
             {
               label: 'GitHub Repository',

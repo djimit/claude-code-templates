@@ -154,7 +154,7 @@ function createAddTemplateCard() {
     card.innerHTML = `
         <div class="card-inner">
             <div class="card-front">
-                <div class="framework-logo add-template-logo">
+                <div class="framework-logo">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
                     </svg>
@@ -162,29 +162,11 @@ function createAddTemplateCard() {
                 <h3 class="template-title">Add New Template</h3>
                 <p class="template-description">Contribute a new language or framework to the community</p>
             </div>
-            <div class="card-back">
-                <div class="command-display">
-                    <h3>🚀 Contribute</h3>
-                    <div class="add-template-info">
-                        <p>Help expand Claude Code Templates by adding:</p>
-                        <ul>
-                            <li>New programming languages</li>
-                            <li>Popular frameworks</li>
-                            <li>Development tools</li>
-                        </ul>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="view-files-btn contribute-btn">
-                            📝 Start Contributing
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     `;
     
     // Add click handler to open contribution modal directly (no flip)
-    card.addEventListener('click', (e) => {
+    card.addEventListener('click', () => {
         showContributeModal();
     });
     
@@ -929,9 +911,27 @@ function createAddComponentCard(type) {
     card.className = 'template-card add-template-card add-component-card';
     
     const typeConfig = {
-        agents: { icon: '🤖', name: 'Agent', description: 'AI specialist for specific development tasks' },
-        commands: { icon: '⚡', name: 'Command', description: 'Custom slash commands for Claude Code' },
-        mcps: { icon: '🔌', name: 'MCP', description: 'Model Context Protocol integration' }
+        agents: { 
+            icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>`, 
+            name: 'Agent', 
+            description: 'Create a new AI specialist agent' 
+        },
+        commands: { 
+            icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>`, 
+            name: 'Command', 
+            description: 'Add a custom slash command' 
+        },
+        mcps: { 
+            icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>`, 
+            name: 'MCP', 
+            description: 'Build a Model Context Protocol integration' 
+        }
     };
     
     const config = typeConfig[type];
@@ -939,38 +939,18 @@ function createAddComponentCard(type) {
     card.innerHTML = `
         <div class="card-inner">
             <div class="card-front">
-                <div class="framework-logo add-template-logo">
-                    <span class="component-icon">${config.icon}</span>
+                <div class="framework-logo">
+                    ${config.icon}
                 </div>
                 <h3 class="template-title">Add New ${config.name}</h3>
-                <p class="template-description">Contribute a ${config.description.toLowerCase()}</p>
-            </div>
-            <div class="card-back">
-                <div class="command-display">
-                    <h3>🚀 Contribute ${config.name}</h3>
-                    <div class="add-template-info">
-                        <p>Help expand Claude Code by adding a new ${config.name.toLowerCase()}:</p>
-                        <ul>
-                            <li>${config.description}</li>
-                            <li>Follow established patterns</li>
-                            <li>Include documentation</li>
-                        </ul>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="view-files-btn contribute-btn" onclick="showComponentContributeModal('${type}')">
-                            📝 Start Contributing
-                        </button>
-                    </div>
-                </div>
+                <p class="template-description">${config.description}</p>
             </div>
         </div>
     `;
     
-    // Add click handler
-    card.addEventListener('click', (e) => {
-        if (!e.target.closest('button')) {
-            card.classList.toggle('flipped');
-        }
+    // Add click handler to open contribution modal directly (no flip)
+    card.addEventListener('click', () => {
+        showComponentContributeModal(type);
     });
     
     return card;

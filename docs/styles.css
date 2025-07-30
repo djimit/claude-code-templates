@@ -374,87 +374,7 @@ body {
 }
 
 /* Add New Template Card Styles */
-.add-template-card {
-    background: linear-gradient(135deg, var(--text-success) 0%, #2d7d32 100%);
-    border: 1px solid var(--text-success);
-    position: relative;
-    overflow: hidden;
-}
-
-.add-template-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    pointer-events: none;
-}
-
-.add-template-card:hover {
-    border-color: #2d7d32;
-    box-shadow: 0 6px 20px rgba(63, 185, 80, 0.3);
-    transform: translateY(-2px);
-}
-
-.add-template-card .framework-logo {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-}
-
-.add-template-card .template-title {
-    color: white;
-    font-weight: 600;
-}
-
-.add-template-card .template-description {
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.add-template-card .card-back {
-    background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
-}
-
-.add-template-card .command-display h3 {
-    color: white;
-}
-
-.add-template-info {
-    text-align: left;
-    margin-bottom: 1rem;
-}
-
-.add-template-info p {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.85rem;
-    margin-bottom: 0.75rem;
-}
-
-.add-template-info ul {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.8rem;
-    margin-left: 1rem;
-    line-height: 1.4;
-}
-
-.add-template-info li {
-    margin-bottom: 0.25rem;
-}
-
-.contribute-btn {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    font-weight: 500;
-}
-
-.contribute-btn:hover {
-    background: rgba(255, 255, 255, 0.3) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
+/* Add template cards use same style as regular template cards */
 
 /* Tools section */
 .tools-grid {
@@ -1728,21 +1648,7 @@ body {
     gap: 1.5rem;
 }
 
-/* Add Component Cards */
-.add-component-card {
-    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-    border: 2px dashed var(--border-primary);
-    transition: all 0.3s ease;
-}
-
-.add-component-card:hover {
-    border-color: var(--text-accent);
-    border-style: solid;
-    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px var(--shadow-primary);
-}
-
+/* Add Component Cards - Same style as regular template cards */
 .add-component-card .component-icon {
     font-size: 2rem;
     animation: pulse 2s infinite;

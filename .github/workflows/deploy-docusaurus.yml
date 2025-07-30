@@ -36,7 +36,7 @@ jobs:
       - name: Install Docusaurus dependencies
         run: |
           cd docu
-          npm ci
+          npm install
 
       - name: Build Docusaurus
         run: |

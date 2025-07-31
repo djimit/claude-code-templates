@@ -43,11 +43,13 @@ jobs:
           
           # Create enhanced stats with some sample data for testing
           # In production, this would process actual tracking logs
-          cat > docs/analytics/download-stats.json << 'EOF'
+          CURRENT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+          
+          cat > docs/analytics/download-stats.json << EOF
           {
-            "total_downloads": 1,
+            "total_downloads": 2,
             "downloads_by_type": {
-              "agent": 1,
+              "agent": 2,
               "command": 0,
               "mcp": 0,
               "template": 0,
@@ -55,13 +57,14 @@ jobs:
               "analytics": 0
             },
             "downloads_by_component": {
-              "api-security-audit": 1
+              "api-security-audit": 1,
+              "database-optimization": 1
             },
             "downloads_by_date": {
-              "2025-07-31": 1
+              "2025-07-31": 2
             },
-            "last_updated": "$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")",
-            "data_points": 1,
+            "last_updated": "$CURRENT_TIMESTAMP",
+            "data_points": 2,
             "tracking_method": "github_pages"
           }
           EOF

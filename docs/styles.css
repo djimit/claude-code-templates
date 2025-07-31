@@ -1944,6 +1944,7 @@ body {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: 8px;
+    display: block !important; /* Always keep visible */
 }
 
 .stats-container {

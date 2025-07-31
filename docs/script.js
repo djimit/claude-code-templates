@@ -404,10 +404,11 @@ function displayDownloadStatistics(data) {
  * Hide statistics section when data is not available
  */
 function hideStatisticsSection() {
-    const statsSection = document.getElementById('downloadStatsSection');
-    if (statsSection) {
-        statsSection.style.display = 'none';
-    }
+    // Keep statistics section visible even when data is not available
+    // const statsSection = document.getElementById('downloadStatsSection');
+    // if (statsSection) {
+    //     statsSection.style.display = 'none';
+    // }
 }
 
 /**
@@ -726,10 +727,11 @@ function displayDownloadStatistics(data) {
  * Hide statistics section when data is not available
  */
 function hideStatisticsSection() {
-    const statsSection = document.getElementById('downloadStatsSection');
-    if (statsSection) {
-        statsSection.style.display = 'none';
-    }
+    // Keep statistics section visible even when data is not available
+    // const statsSection = document.getElementById('downloadStatsSection');
+    // if (statsSection) {
+    //     statsSection.style.display = 'none';
+    // }
 }
 
 /**
@@ -1621,10 +1623,11 @@ function displayDownloadStatistics(data) {
  * Hide statistics section when data is not available
  */
 function hideStatisticsSection() {
-    const statsSection = document.getElementById('downloadStatsSection');
-    if (statsSection) {
-        statsSection.style.display = 'none';
-    }
+    // Keep statistics section visible even when data is not available
+    // const statsSection = document.getElementById('downloadStatsSection');
+    // if (statsSection) {
+    //     statsSection.style.display = 'none';
+    // }
 }
 
 /**
@@ -1876,10 +1879,11 @@ function displayDownloadStatistics(data) {
  * Hide statistics section when data is not available
  */
 function hideStatisticsSection() {
-    const statsSection = document.getElementById('downloadStatsSection');
-    if (statsSection) {
-        statsSection.style.display = 'none';
-    }
+    // Keep statistics section visible even when data is not available
+    // const statsSection = document.getElementById('downloadStatsSection');
+    // if (statsSection) {
+    //     statsSection.style.display = 'none';
+    // }
 }
 
 /**

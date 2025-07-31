@@ -63,6 +63,7 @@ Quick links:
 - [Analytics Dashboard](https://aitmpl.com/docu/docs/analytics/overview) - Real-time monitoring
 - [Individual Components](https://aitmpl.com/docu/docs/components/overview) - Agents, Commands, MCPs
 - [CLI Options](https://aitmpl.com/docu/docs/cli-options) - All available commands
+- **[🔍 Tracking System Architecture](TRACKING_SYSTEM.md)** - Technical documentation with Mermaid diagrams
 
 ## 🤝 Contributing
 

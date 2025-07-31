@@ -75,8 +75,13 @@ We welcome contributions from the open source community!
 
 ## Attribution
 
-This collection includes agents from multiple sources:
-**wshobson/agents Collection** by [wshobson](https://github.com/wshobson/agents) - Licensed under MIT License (48 agents)
+This collection includes components from multiple sources:
+
+**Agents Collection:**
+- **wshobson/agents Collection** by [wshobson](https://github.com/wshobson/agents) - Licensed under MIT License (48 agents)
+
+**Commands Collection:**
+- **awesome-claude-code Commands** by [hesreallyhim](https://github.com/hesreallyhim/awesome-claude-code) - Licensed under CC0 1.0 Universal (21 commands)
 
 ## 📄 License
 

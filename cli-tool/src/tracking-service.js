@@ -99,8 +99,8 @@ class TrackingService {
                 session: trackingData.session_id.substring(0, 8) // Only first 8 chars for privacy
             });
 
-            // Use public telemetry endpoint (no auth needed, returns GIF)
-            await fetch(`https://vercel-tracking-m1wrh55ev-daniel-avilas-projects-2d322e1e.vercel.app/api/telemetry?${params}`, {
+            // Use GitHub Pages tracking endpoint via custom domain (no auth needed)
+            await fetch(`https://aitmpl.com/api/track.html?${params}`, {
                 method: 'GET',
                 mode: 'no-cors', // Prevents CORS errors
                 signal: controller.signal

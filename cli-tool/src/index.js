@@ -175,8 +175,8 @@ async function createClaudeConfig(options = {}) {
   
   let config;
   if (options.yes) {
-    // Use defaults
-    const selectedLanguage = options.language || projectInfo.detectedLanguage || 'common';
+    // Use defaults - prioritize --template over --language for backward compatibility
+    const selectedLanguage = options.template || options.language || projectInfo.detectedLanguage || 'common';
     
     // Check if selected language is coming soon
     if (selectedLanguage && TEMPLATES_CONFIG[selectedLanguage] && TEMPLATES_CONFIG[selectedLanguage].comingSoon) {
@@ -305,53 +305,39 @@ async function installIndividualAgent(agentName, targetDir, options) {
   console.log(chalk.blue(`🤖 Installing agent: ${agentName}`));
   
   try {
-    // Check if components directory exists
-    const componentsPath = path.join(__dirname, '..', 'components', 'agents');
-    const agentFile = path.join(componentsPath, `${agentName}.md`);
+    // Download agent directly from GitHub
+    const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/agents/${agentName}.md`;
+    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
     
-    if (!await fs.pathExists(agentFile)) {
-      console.log(chalk.red(`❌ Agent "${agentName}" not found`));
-      console.log(chalk.yellow('Available agents:'));
-      
-      // List available agents
-      if (await fs.pathExists(componentsPath)) {
-        const agents = await fs.readdir(componentsPath);
-        agents.filter(f => f.endsWith('.md')).forEach(agent => {
-          console.log(chalk.cyan(`  - ${agent.replace('.md', '')}`));
-        });
+    const response = await fetch(githubUrl);
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(chalk.red(`❌ Agent "${agentName}" not found`));
+        console.log(chalk.yellow('Available agents: api-security-audit, database-optimization, react-performance-optimization'));
+        return;
       }
-      return;
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    // For agents, they are typically part of templates, so we need to determine
-    // the appropriate language/framework and install the complete template
-    const agentContent = await fs.readFile(agentFile, 'utf8');
-    const language = extractLanguageFromAgent(agentContent, agentName);
-    const framework = extractFrameworkFromAgent(agentContent, agentName);
+    const agentContent = await response.text();
     
-    console.log(chalk.yellow(`📝 Agent "${agentName}" is part of ${language}/${framework} template`));
-    console.log(chalk.blue('🚀 Installing complete template with this agent...'));
+    // Create .claude/agents directory if it doesn't exist
+    const agentsDir = path.join(targetDir, '.claude', 'agents');
+    await fs.ensureDir(agentsDir);
     
-    // Install the template that contains this agent (avoid recursion)
-    const setupOptions = {
-      ...options,
-      language,
-      framework,
-      yes: true,
-      targetDirectory: targetDir,
-      agent: null // Remove agent to avoid recursion
-    };
-    delete setupOptions.agent;
-    await createClaudeConfig(setupOptions);
+    // Write the agent file
+    const targetFile = path.join(agentsDir, `${agentName}.md`);
+    await fs.writeFile(targetFile, agentContent, 'utf8');
     
     console.log(chalk.green(`✅ Agent "${agentName}" installed successfully!`));
+    console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+    console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
     
     // Track successful agent installation
     trackingService.trackDownload('agent', agentName, {
-      language: language,
-      framework: framework,
-      installation_type: 'individual_agent',
-      template_installed: true
+      installation_type: 'individual_component',
+      target_directory: path.relative(process.cwd(), targetDir),
+      source: 'github_main'
     });
     
   } catch (error) {
@@ -363,39 +349,39 @@ async function installIndividualCommand(commandName, targetDir, options) {
   console.log(chalk.blue(`⚡ Installing command: ${commandName}`));
   
   try {
-    // Check if components directory exists
-    const componentsPath = path.join(__dirname, '..', 'components', 'commands');
-    const commandFile = path.join(componentsPath, `${commandName}.md`);
+    // Download command directly from GitHub
+    const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/${commandName}.md`;
+    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
     
-    if (!await fs.pathExists(commandFile)) {
-      console.log(chalk.red(`❌ Command "${commandName}" not found`));
-      console.log(chalk.yellow('Available commands:'));
-      
-      // List available commands
-      if (await fs.pathExists(componentsPath)) {
-        const commands = await fs.readdir(componentsPath);
-        commands.filter(f => f.endsWith('.md')).forEach(command => {
-          console.log(chalk.cyan(`  - ${command.replace('.md', '')}`));
-        });
+    const response = await fetch(githubUrl);
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(chalk.red(`❌ Command "${commandName}" not found`));
+        console.log(chalk.yellow('Available commands: check-file, generate-tests'));
+        return;
       }
-      return;
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+    
+    const commandContent = await response.text();
     
     // Create .claude/commands directory if it doesn't exist
     const commandsDir = path.join(targetDir, '.claude', 'commands');
     await fs.ensureDir(commandsDir);
     
-    // Copy the command file
+    // Write the command file
     const targetFile = path.join(commandsDir, `${commandName}.md`);
-    await fs.copy(commandFile, targetFile);
+    await fs.writeFile(targetFile, commandContent, 'utf8');
     
     console.log(chalk.green(`✅ Command "${commandName}" installed successfully!`));
     console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+    console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
     
     // Track successful command installation
     trackingService.trackDownload('command', commandName, {
       installation_type: 'individual_command',
-      target_directory: path.relative(process.cwd(), targetDir)
+      target_directory: path.relative(process.cwd(), targetDir),
+      source: 'github_main'
     });
     
   } catch (error) {
@@ -407,26 +393,22 @@ async function installIndividualMCP(mcpName, targetDir, options) {
   console.log(chalk.blue(`🔌 Installing MCP: ${mcpName}`));
   
   try {
-    // Check if components directory exists
-    const componentsPath = path.join(__dirname, '..', 'components', 'mcps');
-    const mcpFile = path.join(componentsPath, `${mcpName}.json`);
+    // Download MCP directly from GitHub
+    const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/${mcpName}.json`;
+    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
     
-    if (!await fs.pathExists(mcpFile)) {
-      console.log(chalk.red(`❌ MCP "${mcpName}" not found`));
-      console.log(chalk.yellow('Available MCPs:'));
-      
-      // List available MCPs
-      if (await fs.pathExists(componentsPath)) {
-        const mcps = await fs.readdir(componentsPath);
-        mcps.filter(f => f.endsWith('.json')).forEach(mcp => {
-          console.log(chalk.cyan(`  - ${mcp.replace('.json', '')}`));
-        });
+    const response = await fetch(githubUrl);
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(chalk.red(`❌ MCP "${mcpName}" not found`));
+        console.log(chalk.yellow('Available MCPs: web-fetch, filesystem-access, github-integration, memory-integration, mysql-integration, postgresql-integration, deepgraph-react, deepgraph-nextjs, deepgraph-typescript, deepgraph-vue'));
+        return;
       }
-      return;
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    // Read the MCP configuration
-    const mcpConfig = await fs.readJson(mcpFile);
+    const mcpConfigText = await response.text();
+    const mcpConfig = JSON.parse(mcpConfigText);
     
     // Check if .mcp.json exists in target directory
     const targetMcpFile = path.join(targetDir, '.mcp.json');
@@ -448,12 +430,14 @@ async function installIndividualMCP(mcpName, targetDir, options) {
     
     console.log(chalk.green(`✅ MCP "${mcpName}" installed successfully!`));
     console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetMcpFile)}`));
+    console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
     
     // Track successful MCP installation
     trackingService.trackDownload('mcp', mcpName, {
       installation_type: 'individual_mcp',
       merged_with_existing: existingConfig !== null,
-      servers_count: Object.keys(mergedConfig.mcpServers || {}).length
+      servers_count: Object.keys(mergedConfig.mcpServers || {}).length,
+      source: 'github_main'
     });
     
   } catch (error) {

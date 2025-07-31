@@ -1939,11 +1939,8 @@ body {
 
 /* Download Statistics Section */
 .download-stats-section {
-    padding: 2rem 0;
-    margin: 2rem 0;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
+    padding: 1.5rem 0;
+    margin: 1rem 0;
     display: block !important; /* Always keep visible */
 }
 
@@ -1954,12 +1951,11 @@ body {
 }
 
 .stats-header {
-    text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .stats-title {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
@@ -2089,6 +2085,120 @@ body {
 @keyframes loading-shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
+}
+
+/* Improved compact stats design */
+.stats-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.stats-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.stats-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.stat-item-compact:hover {
+    border-color: var(--text-accent);
+    background: rgba(213, 116, 85, 0.05);
+    transform: translateY(-1px);
+}
+
+.stat-item-compact.popular-item {
+    border-color: var(--text-warning);
+    background: rgba(249, 115, 22, 0.05);
+}
+
+.stat-item-compact.popular-item:hover {
+    border-color: var(--text-warning);
+    background: rgba(249, 115, 22, 0.1);
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.stat-data {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.stat-number {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    line-height: 1.2;
+}
+
+.popular-item .stat-number {
+    color: var(--text-warning);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stats-updated {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .stats-compact {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stat-item-compact {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .stat-icon {
+        font-size: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
 }
 
 /* Responsive Design */

@@ -71,8 +71,8 @@
                 <div class="step-card">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h3>Install CLI Tool</h3>
-                        <p>Install the Claude Code Templates CLI globally</p>
+                        <h3>Install CLI Tool (Optional)</h3>
+                        <p>Install globally for convenience, or use npx to run directly</p>
                         <div class="command-line">
                             <span class="prompt">$</span>
                             <code class="command">npm install -g claude-code-templates</code>
@@ -111,54 +111,54 @@
             <div class="stats-container">
                 <div class="stats-header">
                     <div class="stats-title">📊 Community Downloads</div>
-                    <div class="stats-subtitle">Real-time usage statistics from the community</div>
+                    <div class="stats-subtitle">Real-time usage statistics</div>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
+                <div class="stats-compact">
+                    <div class="stat-item-compact">
                         <div class="stat-icon">📦</div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="totalDownloads">-</div>
-                            <div class="stat-label">Total Downloads</div>
+                        <div class="stat-data">
+                            <span class="stat-number" id="totalDownloads">-</span>
+                            <span class="stat-label">total downloads</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-item-compact">
                         <div class="stat-icon">🤖</div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="agentDownloads">-</div>
-                            <div class="stat-label">Agents</div>
+                        <div class="stat-data">
+                            <span class="stat-number" id="agentDownloads">-</span>
+                            <span class="stat-label">agents</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-item-compact">
                         <div class="stat-icon">⚡</div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="commandDownloads">-</div>
-                            <div class="stat-label">Commands</div>
+                        <div class="stat-data">
+                            <span class="stat-number" id="commandDownloads">-</span>
+                            <span class="stat-label">commands</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-item-compact">
                         <div class="stat-icon">🔌</div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="mcpDownloads">-</div>
-                            <div class="stat-label">MCPs</div>
+                        <div class="stat-data">
+                            <span class="stat-number" id="mcpDownloads">-</span>
+                            <span class="stat-label">mcps</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-item-compact">
                         <div class="stat-icon">🎯</div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="templateDownloads">-</div>
-                            <div class="stat-label">Templates</div>
+                        <div class="stat-data">
+                            <span class="stat-number" id="templateDownloads">-</span>
+                            <span class="stat-label">templates</span>
                         </div>
                     </div>
-                    <div class="stat-card popular-component">
+                    <div class="stat-item-compact popular-item">
                         <div class="stat-icon">🏆</div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="popularComponent">-</div>
-                            <div class="stat-label">Most Popular</div>
+                        <div class="stat-data">
+                            <span class="stat-number" id="popularComponent">-</span>
+                            <span class="stat-label">most popular</span>
                         </div>
                     </div>
                 </div>
                 <div class="stats-updated">
-                    <span>Last updated: <span id="statsLastUpdated">-</span></span>
+                    <span>Last updated <span id="statsLastUpdated">-</span></span>
                 </div>
             </div>
         </section>

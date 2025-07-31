@@ -129,7 +129,7 @@ function generateTemplateCards() {
         const baseCard = createTemplateCard(languageKey, languageData, 'none', {
             name: languageData.name,
             icon: getFrameworkIcon(languageKey),
-            command: `claude-code-templates --yes --language=${languageKey}`
+            command: `npx claude-code-templates@latest --template=${languageKey} --yes`
         });
         grid.appendChild(baseCard);
         
@@ -139,7 +139,7 @@ function generateTemplateCards() {
                 const frameworkCard = createTemplateCard(languageKey, languageData, frameworkKey, {
                     name: frameworkData.name,
                     icon: getFrameworkIcon(frameworkKey),
-                    command: `claude-code-templates --yes --language=${languageKey} --framework=${frameworkKey}`
+                    command: `npx claude-code-templates@latest --template=${languageKey} --yes`
                 });
                 grid.appendChild(frameworkCard);
             });

@@ -45,12 +45,18 @@ class TrackingService {
             this.sendTrackingData(trackingData)
                 .catch(error => {
                     // Silent failure - tracking should never impact functionality
-                    console.debug('📊 Tracking info (non-critical):', error.message);
+                    // Only show debug info when explicitly enabled
+                    if (process.env.CCT_DEBUG === 'true') {
+                        console.debug('📊 Tracking info (non-critical):', error.message);
+                    }
                 });
 
         } catch (error) {
             // Silently handle any tracking errors
-            console.debug('📊 Analytics error (non-critical):', error.message);
+            // Only show debug info when explicitly enabled
+            if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Analytics error (non-critical):', error.message);
+            }
         }
     }
 
@@ -118,7 +124,10 @@ Session: \`${trackingData.session_id}\`
                 throw new Error(`GitHub API responded with ${response.status}`);
             }
 
-            console.debug('📊 Download tracked successfully');
+            // Only show success message when debugging
+            if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Download tracked successfully');
+            }
             
         } catch (error) {
             clearTimeout(timeoutId);

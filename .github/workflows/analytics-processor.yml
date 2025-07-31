@@ -15,6 +15,7 @@ on:
 permissions:
   contents: write
   issues: read
+  pull-requests: write
 
 jobs:
   process-analytics:
@@ -174,7 +175,9 @@ jobs:
           # Run the analytics processing
           node process_analytics.js
 
-      - name: Commit Analytics Data
+      - name: Create Pull Request with Analytics Data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -185,6 +188,10 @@ jobs:
             if git diff --staged --quiet; then
               echo "📊 No changes in analytics data"
             else
+              # Create a new branch for the analytics update
+              BRANCH_NAME="analytics-update-$(date +%Y%m%d-%H%M%S)"
+              git checkout -b "$BRANCH_NAME"
+              
               git commit -m "📊 Update download analytics data
 
               - Processed analytics issues for download tracking
@@ -193,8 +200,30 @@ jobs:
 
               🤖 Automated analytics update"
               
-              git push
-              echo "✅ Analytics data committed and pushed"
+              git push origin "$BRANCH_NAME"
+              
+              # Create pull request using GitHub CLI
+              gh pr create \
+                --title "📊 Automated Analytics Update $(date +%Y-%m-%d)" \
+                --body "## Automated Analytics Data Update
+
+              This pull request contains updated download analytics data processed from GitHub issues.
+
+              ### Changes Made
+              - 📊 Updated download statistics in \`docs/analytics/download-stats.json\`
+              - 📈 Processed latest analytics issues for tracking
+              - 🔄 Generated automatically by GitHub Actions
+
+              ### Summary
+              The analytics processor has collected and processed download tracking data from GitHub issues labeled with \`📊 analytics\` and \`download-tracking\`.
+
+              **Safe to merge** - This only updates analytics data files.
+
+              🤖 Generated automatically by GitHub Actions" \
+                --head "$BRANCH_NAME" \
+                --base main
+              
+              echo "✅ Analytics data committed and PR created"
             fi
           else
             echo "⚠️ Analytics file not found"

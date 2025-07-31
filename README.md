@@ -73,6 +73,11 @@ We welcome contributions from the open source community!
 
 **Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.**
 
+## Attribution
+
+This collection includes agents from multiple sources:
+**wshobson/agents Collection** by [wshobson](https://github.com/wshobson/agents) - Licensed under MIT License (48 agents)
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

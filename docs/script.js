@@ -959,8 +959,8 @@ document.head.appendChild(style);
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
-    // Start with templates view
-    displayTemplates();
+    // Start with agents view (new default)
+    setUnifiedFilter('agents');
     // Load download statistics
     loadDownloadStatistics();
 });
@@ -986,7 +986,7 @@ let componentsData = {
     mcps: []
 };
 
-let currentFilter = 'templates';
+let currentFilter = 'agents';
 let allDataLoaded = false;
 let downloadStats = null;
 

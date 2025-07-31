@@ -33,11 +33,14 @@ jobs:
       - name: Prepare deployment directory
         run: |
           mkdir -p _site/docu
-          cp -r docs/* _site/
-          cp -r docu/build/* _site/docu/
+          # Copy main site content
+          cp -a docs/. _site/
+          # Copy docusaurus build content (including dotfiles)
+          cp -a docu/build/. _site/docu/
+          # Ensure .nojekyll file exists at the root
           touch _site/.nojekyll
           echo "--- Contents of deployment directory ---"
-          ls -R _site
+          ls -laR _site
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

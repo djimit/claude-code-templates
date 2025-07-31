@@ -55,8 +55,8 @@ jobs:
           cp -r docs/* _site/
           
           # Copy Docusaurus build to /docu subdirectory
-          mkdir -p _site/docu
-          cp -r docu/build/* _site/docu/
+          # Since Docusaurus baseUrl is already /docu/, we copy to root and let it handle the paths
+          cp -r docu/build/* _site/
 
           echo "--- Listing contents of _site after copying ---"
           ls -R _site

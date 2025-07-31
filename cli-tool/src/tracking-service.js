@@ -83,36 +83,27 @@ class TrackingService {
     }
 
     /**
-     * Send tracking data via GitHub Repository Dispatch (anonymous)
+     * Send tracking data to Vercel serverless function (anonymous)
      */
     async sendTrackingData(trackingData) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
         try {
-            // Use GitHub Repository Dispatch API (public endpoint, no auth needed)
-            const response = await fetch(`https://api.github.com/repos/${this.repoOwner}/${this.repoName}/dispatches`, {
+            // Use Vercel serverless function (no auth needed)
+            const response = await fetch('https://vercel-tracking-mj8fcml40-daniel-avilas-projects-2d322e1e.vercel.app/api/track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json',
                     'User-Agent': 'claude-code-templates-cli'
                 },
                 body: JSON.stringify({
-                    event_type: 'component_download',
-                    client_payload: {
-                        component_type: trackingData.component_type,
-                        component_name: trackingData.component_name,
-                        timestamp: trackingData.timestamp,
-                        session_id: trackingData.session_id,
-                        environment: {
-                            platform: trackingData.environment.platform,
-                            arch: trackingData.environment.arch,
-                            node_version: trackingData.environment.node_version,
-                            cli_version: trackingData.environment.cli_version
-                        },
-                        metadata: trackingData.metadata || {}
-                    }
+                    component_type: trackingData.component_type,
+                    component_name: trackingData.component_name,
+                    timestamp: trackingData.timestamp,
+                    session_id: trackingData.session_id,
+                    environment: trackingData.environment,
+                    metadata: trackingData.metadata || {}
                 }),
                 signal: controller.signal
             });
@@ -120,12 +111,13 @@ class TrackingService {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error(`GitHub Dispatch API responded with ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`Tracking API responded with ${response.status}: ${errorText}`);
             }
 
             // Only show success message when debugging
             if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Download tracked successfully via repository dispatch');
+                console.debug('📊 Download tracked successfully via Vercel function');
             }
             
         } catch (error) {

@@ -22,8 +22,9 @@ class TrackingService {
             return false;
         }
         
-        // Enable by default (anonymous usage data only)
-        return true;
+        // Temporarily disable tracking until we fix the endpoint
+        // TODO: Re-enable when tracking endpoint is working
+        return false;
     }
 
     /**

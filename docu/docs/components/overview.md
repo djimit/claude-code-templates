@@ -69,46 +69,64 @@ npx claude-code-templates@latest
 
 | Method | Use Case | Installation |
 |--------|----------|-------------|
-| **Complete Templates** | Full project setup with multiple components | `npx claude-code-templates@latest --language=javascript-typescript --framework=react` |
-| **Individual Components** | Selective component installation | Component-specific curl commands |
+| **Complete Templates** | Full project setup with multiple components | `npx claude-code-templates@latest --template=react --yes` |
+| **Individual Components** | Selective component installation | `npx claude-code-templates@latest --agent=name --yes` |
 
 ### Installation Commands by Type
 
 #### Installing Agents
-Agents are typically installed as part of template setups but can be configured individually:
+Agents can now be installed individually using the `--agent` parameter:
 
 ```bash
-# Install complete template with agents
-npx claude-code-templates@latest --language=javascript-typescript --framework=react
+# Install specific agents directly
+npx claude-code-templates@latest --agent=react-performance --yes
+npx claude-code-templates@latest --agent=api-security-audit --yes
+npx claude-code-templates@latest --agent=database-optimization --yes
+
+# Install complete template with all agents
+npx claude-code-templates@latest --template=react --yes
 
 # Or browse available agents in the web interface
 npx claude-code-templates@latest
 ```
 
 #### Installing Commands
-Commands can be installed directly to your `.claude/commands/` directory:
+Commands can now be installed using the `--command` parameter or manually:
 
 ```bash
-# Example: Install file checker command
-curl -o .claude/commands/check-file.md \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/check-file.md
+# Install specific commands using CLI parameter (recommended)
+npx claude-code-templates@latest --command=check-file --yes
+npx claude-code-templates@latest --command=generate-tests --yes
+npx claude-code-templates@latest --command=optimize-imports --yes
 
-# Example: Install test generator command  
+# Manual installation (alternative method)
+# Create commands directory first
+mkdir -p .claude/commands
+
+# Download specific commands
+curl -o .claude/commands/check-file.md \
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/commands/check-file.md
+
 curl -o .claude/commands/generate-tests.md \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/commands/generate-tests.md
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/commands/generate-tests.md
 ```
 
 #### Installing MCPs
-MCPs are installed as JSON configuration files:
+MCPs can now be installed using the `--mcp` parameter or manually:
 
 ```bash
-# Example: Install GitHub integration MCP
-curl -o ./github-integration.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/github-integration.json
+# Install specific MCPs using CLI parameter (recommended)
+npx claude-code-templates@latest --mcp=github-integration --yes
+npx claude-code-templates@latest --mcp=database-integration --yes
+npx claude-code-templates@latest --mcp=deepgraph-react --yes
 
-# Example: Install database integration MCP
+# Manual installation (alternative method)
+# Download specific MCPs
+curl -o ./github-integration.json \
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/github-integration.json
+
 curl -o ./database-integration.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/database-integration.json
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/database-integration.json
 ```
 
 ## When to Use Templates vs Components
@@ -137,13 +155,23 @@ The primary way to discover components is through the unified web interface:
 4. Use category filters to focus on specific types
 5. Hover over cards to see installation commands
 
+### Via CLI Parameters
+The quickest way to install components is using dedicated CLI parameters:
+
+```bash
+# Direct component installation
+npx claude-code-templates@latest --agent=react-performance --yes
+npx claude-code-templates@latest --command=check-file --yes
+npx claude-code-templates@latest --mcp=github-integration --yes
+```
+
 ### Via GitHub Repository
 You can also browse components directly in the repository:
 
 - **Templates**: `/templates/` directory
-- **Agents**: `/cli-tool/components/agents/` directory  
-- **Commands**: `/cli-tool/components/commands/` directory
-- **MCPs**: `/cli-tool/components/mcps/` directory
+- **Agents**: `/components/agents/` directory  
+- **Commands**: `/components/commands/` directory
+- **MCPs**: `/components/mcps/` directory
 
 ## Contributing Components
 

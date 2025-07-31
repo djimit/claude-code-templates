@@ -242,21 +242,33 @@ MCPs are standardized integrations that allow Claude Code to:
 
 ## Installation & Configuration
 
-### Direct Installation Method
-MCPs are installed as JSON configuration files:
+### CLI Parameter Installation (Recommended)
+Install MCPs using the `--mcp` parameter:
+
+```bash
+# Install specific MCPs directly
+npx claude-code-templates@latest --mcp=github-integration --yes
+npx claude-code-templates@latest --mcp=database-integration --yes
+npx claude-code-templates@latest --mcp=deepgraph-react --yes
+npx claude-code-templates@latest --mcp=aws-integration --yes
+npx claude-code-templates@latest --mcp=docker-integration --yes
+```
+
+### Direct Installation Method (Alternative)
+MCPs can also be installed as JSON configuration files via direct download:
 
 ```bash
 # Install GitHub integration MCP
 curl -o ./github-integration.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/github-integration.json
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/github-integration.json
 
 # Install database integration MCP
 curl -o ./database-integration.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/database-integration.json
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/database-integration.json
 
 # Install DeepGraph React MCP
 curl -o ./deepgraph-react.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/mcps/deepgraph-react.json
+  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/deepgraph-react.json
 ```
 
 ### Configuration Management

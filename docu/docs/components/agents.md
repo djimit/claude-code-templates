@@ -25,7 +25,13 @@ Agents extend Claude Code's capabilities by providing:
 - **Best For**: Teams experiencing React performance issues or building large-scale applications
 
 ```bash
-# Installed via template system
+# Install specific agent using new CLI parameter (recommended)
+npx claude-code-templates@latest --agent=react-performance --yes
+
+# Or install via complete template
+npx claude-code-templates@latest --template=react --yes
+
+# Legacy syntax (still supported)
 npx claude-code-templates@latest --language=javascript-typescript --framework=react
 ```
 
@@ -92,18 +98,33 @@ When you install templates or configure your project, relevant agents are automa
 
 ## Installation & Configuration
 
+### Individual Agent Installation (Recommended)
+Install specific agents using the `--agent` parameter:
+
+```bash
+# Install specific agents directly
+npx claude-code-templates@latest --agent=react-performance --yes
+npx claude-code-templates@latest --agent=api-security-audit --yes
+npx claude-code-templates@latest --agent=database-optimization --yes
+npx claude-code-templates@latest --agent=vue-development --yes
+npx claude-code-templates@latest --agent=docker-expert --yes
+```
+
 ### Via Template Installation
-The most common way to get agents is through template installation:
+Agents are also included in complete template installations:
 
 ```bash
 # React template includes performance optimization agent
-npx claude-code-templates@latest --language=javascript-typescript --framework=react
+npx claude-code-templates@latest --template=react --yes
 
-# Python FastAPI template includes API security agent
-npx claude-code-templates@latest --language=python --framework=fastapi
+# Python template includes API security agent
+npx claude-code-templates@latest --template=python --yes
 
 # Node.js template includes database optimization agent  
-npx claude-code-templates@latest --language=javascript-typescript --framework=nodejs
+npx claude-code-templates@latest --template=nodejs --yes
+
+# Legacy syntax (still supported but deprecated)
+npx claude-code-templates@latest --language=javascript-typescript --framework=react
 ```
 
 ### Manual Agent Configuration

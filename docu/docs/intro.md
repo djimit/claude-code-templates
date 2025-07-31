@@ -12,23 +12,27 @@ The core functionality of `claude-code-templates` revolves around these key area
 
 ```bash
 npx claude-code-templates@latest
+# Or use the new template-specific syntax:
+npx claude-code-templates@latest --template=react --yes
 ```
 
 ### 🚀 Project Setup & Configuration
-Automated project configuration and optimization:
+Automated project configuration and optimization with **real-time GitHub downloads**:
 - **Framework Detection**: Automatically identifies your project type (e.g., React, Vue, Angular, Django, FastAPI) and suggests optimal configurations.
 - **CLAUDE.md Generation**: Creates a customized `CLAUDE.md` file with project-specific instructions and best practices.
 - **Command Configuration**: Sets up pre-configured development, build, and test commands tailored to your stack.
 - **Agent Installation**: Installs specialized Claude Code agents for framework-specific assistance.
+- **GitHub Integration**: All templates and components are downloaded directly from GitHub, ensuring latest versions.
 - **Workflow Optimization**: Implements Claude Code-specific enhancements and best practices for an optimized development workflow.
 
 ### 🧩 Individual Components
-Granular control over Claude Code functionality:
-- **🤖 Agents**: AI specialists for specific development tasks (react-performance-optimization, api-security-audit, database-optimization)
-- **⚡ Commands**: Custom slash commands for Claude Code (check-file, generate-tests, optimize-imports)
-- **🔌 MCPs**: Model Context Protocol integrations for external services (github-integration, database-integration, deepgraph-react)
-- **Unified Interface**: Browse and install components individually through the web interface
-- **Flexible Installation**: Choose between complete templates or selective component installation
+Granular control over Claude Code functionality with **dedicated CLI parameters**:
+- **🤖 Agents**: AI specialists for specific development tasks (`--agent=react-performance`, `--agent=api-security-audit`)
+- **⚡ Commands**: Custom slash commands for Claude Code (`--command=check-file`, `--command=generate-tests`)
+- **🔌 MCPs**: Model Context Protocol integrations (`--mcp=github-integration`, `--mcp=database-integration`)
+- **Direct Installation**: Install components individually using specific CLI parameters
+- **GitHub Downloads**: All components download directly from GitHub's `components/` directory
+- **Flexible Installation**: Choose between complete templates (`--template`) or selective component installation
 
 ### 📊 Real-time Analytics Dashboard & Agent Chats Manager
 Complementary monitoring and analysis tools:
@@ -48,31 +52,46 @@ Environment and configuration validation:
 
 ## Quick Start
 
-### 1. Interactive Project Setup (Main Use Case)
+### 1. Modern Template Installation (Recommended)
 ```bash
+# Quick template installation with new syntax
+npx claude-code-templates@latest --template=react --yes
+npx claude-code-templates@latest --template=python --yes
+npx claude-code-templates@latest --template=nodejs --yes
+
+# Or use interactive setup for guidance
 cd your-project-directory
-npx claude-code-templates
-# This will guide you through an interactive setup for project configuration and template installation.
+npx claude-code-templates@latest
 ```
 
-### 2. Launch Real-time Analytics Dashboard
+### 2. Individual Component Installation
 ```bash
-npx claude-code-templates --chats
+# Install specific components using new CLI parameters
+npx claude-code-templates@latest --agent=react-performance --yes
+npx claude-code-templates@latest --command=check-file --yes
+npx claude-code-templates@latest --mcp=github-integration --yes
+```
+
+### 3. Launch Real-time Analytics Dashboard
+```bash
+npx claude-code-templates --analytics
 # This will launch the real-time monitoring dashboard, accessible at http://localhost:3333.
 ```
 
-### 3. Run Comprehensive Health Check
+### 4. Run Comprehensive Health Check
 ```bash
-npx claude-code-templates --health
+npx claude-code-templates --health-check
 # This command performs a comprehensive system validation and provides optimization recommendations.
 ```
 
 ## Technical Architecture
 
-Built with modern Node.js technologies:
+Built with modern Node.js technologies and **GitHub-first approach**:
 - **CLI Framework**: Commander.js for robust command-line interface management.
+- **GitHub Integration**: Direct downloads from GitHub repository ensuring latest versions.
 - **File Operations**: `fs-extra` for enhanced file system operations.
 - **Template Engine**: Custom template processing and generation for dynamic project setups.
+- **Download Caching**: Intelligent caching system for improved performance.
 - **Analytics Server**: Express.js with WebSocket support for real-time data streaming (optional).
 - **Monitoring**: Chokidar for efficient file system watching (primarily for analytics).
 

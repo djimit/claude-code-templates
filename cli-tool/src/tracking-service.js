@@ -83,37 +83,36 @@ class TrackingService {
     }
 
     /**
-     * Send tracking data to GitHub Issues (async, non-blocking)
+     * Send tracking data via GitHub Repository Dispatch (anonymous)
      */
     async sendTrackingData(trackingData) {
-        const title = `📊 ${trackingData.component_type}:${trackingData.component_name} - ${trackingData.timestamp.split('T')[0]}`;
-        
-        const body = `\`\`\`json
-${JSON.stringify(trackingData, null, 2)}
-\`\`\`
-
-<!-- ANALYTICS_DATA -->
-Component: **${trackingData.component_name}** (${trackingData.component_type})  
-Platform: ${trackingData.environment.platform} ${trackingData.environment.arch}  
-Node: ${trackingData.environment.node_version}  
-CLI: ${trackingData.environment.cli_version}  
-Session: \`${trackingData.session_id}\`
-`;
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
         try {
-            const response = await fetch(`https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues`, {
+            // Use GitHub Repository Dispatch API (public endpoint, no auth needed)
+            const response = await fetch(`https://api.github.com/repos/${this.repoOwner}/${this.repoName}/dispatches`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json',
                     'User-Agent': 'claude-code-templates-cli'
                 },
                 body: JSON.stringify({
-                    title: title,
-                    body: body,
-                    labels: ['📊 analytics', 'download-tracking', `type:${trackingData.component_type}`]
+                    event_type: 'component_download',
+                    client_payload: {
+                        component_type: trackingData.component_type,
+                        component_name: trackingData.component_name,
+                        timestamp: trackingData.timestamp,
+                        session_id: trackingData.session_id,
+                        environment: {
+                            platform: trackingData.environment.platform,
+                            arch: trackingData.environment.arch,
+                            node_version: trackingData.environment.node_version,
+                            cli_version: trackingData.environment.cli_version
+                        },
+                        metadata: trackingData.metadata || {}
+                    }
                 }),
                 signal: controller.signal
             });
@@ -121,12 +120,12 @@ Session: \`${trackingData.session_id}\`
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error(`GitHub API responded with ${response.status}`);
+                throw new Error(`GitHub Dispatch API responded with ${response.status}`);
             }
 
             // Only show success message when debugging
             if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Download tracked successfully');
+                console.debug('📊 Download tracked successfully via repository dispatch');
             }
             
         } catch (error) {

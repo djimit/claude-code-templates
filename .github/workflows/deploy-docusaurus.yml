@@ -35,6 +35,7 @@ jobs:
           mkdir -p _site/docu
           cp -r docs/* _site/
           cp -r docu/build/* _site/docu/
+          touch _site/.nojekyll
           echo "--- Contents of deployment directory ---"
           ls -R _site
 

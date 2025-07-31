@@ -22,9 +22,8 @@ class TrackingService {
             return false;
         }
         
-        // Temporarily disable tracking until we fix the endpoint
-        // TODO: Re-enable when tracking endpoint is working
-        return false;
+        // Enable public telemetry tracking
+        return true;
     }
 
     /**
@@ -84,46 +83,43 @@ class TrackingService {
     }
 
     /**
-     * Send tracking data to Vercel serverless function (anonymous)
+     * Send tracking data via public telemetry endpoint (like Google Analytics)
      */
     async sendTrackingData(trackingData) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
         try {
-            // Use Vercel serverless function (no auth needed)
-            const response = await fetch('https://vercel-tracking-mj8fcml40-daniel-avilas-projects-2d322e1e.vercel.app/api/track', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'claude-code-templates-cli'
-                },
-                body: JSON.stringify({
-                    component_type: trackingData.component_type,
-                    component_name: trackingData.component_name,
-                    timestamp: trackingData.timestamp,
-                    session_id: trackingData.session_id,
-                    environment: trackingData.environment,
-                    metadata: trackingData.metadata || {}
-                }),
+            // Build query parameters for GET request (like image tracking)
+            const params = new URLSearchParams({
+                type: trackingData.component_type,
+                name: trackingData.component_name,
+                platform: trackingData.environment.platform || 'unknown',
+                cli: trackingData.environment.cli_version || 'unknown',
+                session: trackingData.session_id.substring(0, 8) // Only first 8 chars for privacy
+            });
+
+            // Use public telemetry endpoint (no auth needed, returns GIF)
+            await fetch(`https://vercel-tracking-m1wrh55ev-daniel-avilas-projects-2d322e1e.vercel.app/api/telemetry?${params}`, {
+                method: 'GET',
+                mode: 'no-cors', // Prevents CORS errors
                 signal: controller.signal
             });
 
             clearTimeout(timeoutId);
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Tracking API responded with ${response.status}: ${errorText}`);
-            }
-
+            // No need to check response with no-cors mode
             // Only show success message when debugging
             if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Download tracked successfully via Vercel function');
+                console.debug('📊 Download tracked successfully via telemetry');
             }
             
         } catch (error) {
             clearTimeout(timeoutId);
-            throw error;
+            // Silent fail - tracking should never break user experience
+            if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Tracking failed (non-critical):', error.message);
+            }
         }
     }
 

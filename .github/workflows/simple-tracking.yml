@@ -115,7 +115,9 @@ jobs:
             }
           "
 
-      - name: Commit and push changes
+      - name: Create pull request with changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -123,6 +125,10 @@ jobs:
           if git diff --quiet docs/analytics/download-stats.json; then
             echo "📊 No changes to commit"
           else
+            # Create a new branch for the tracking update
+            BRANCH_NAME="tracking-update-$(date +%Y%m%d-%H%M%S)"
+            git checkout -b "$BRANCH_NAME"
+            
             git add docs/analytics/download-stats.json
             git commit -m "📊 Track: ${{ github.event.inputs.component_type }}/${{ github.event.inputs.component_name }}
 
@@ -130,8 +136,32 @@ jobs:
             
             🤖 Automated via workflow_dispatch"
             
-            git push origin main
-            echo "✅ Changes committed and pushed to main"
+            git push origin "$BRANCH_NAME"
+            
+            # Create pull request using GitHub CLI
+            gh pr create \
+              --title "📊 Download Tracking: ${{ github.event.inputs.component_type }}/${{ github.event.inputs.component_name }}" \
+              --body "## Automated Download Tracking Update
+
+            **Component:** ${{ github.event.inputs.component_name }}  
+            **Type:** ${{ github.event.inputs.component_type }}  
+            **Platform:** ${{ github.event.inputs.platform }}  
+            **CLI Version:** ${{ github.event.inputs.cli_version }}  
+
+            This PR automatically updates the download statistics based on component usage.
+
+            ### Changes
+            - 📊 Updated download counters in \`docs/analytics/download-stats.json\`
+            - 📈 Incremented total downloads and type-specific counters
+            - 🕒 Updated timestamp for real-time analytics
+
+            **Safe to merge** - This only updates analytics data.
+
+            🤖 Generated automatically by GitHub Actions" \
+              --head "$BRANCH_NAME" \
+              --base main
+            
+            echo "✅ Pull request created successfully"
           fi
 
       - name: Display updated stats

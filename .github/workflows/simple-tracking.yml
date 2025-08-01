@@ -1,0 +1,141 @@
+name: Simple Download Tracking
+
+# This is the FINAL solution - simple, elegant, and works!
+on:
+  # Trigger manually for testing
+  workflow_dispatch:
+    inputs:
+      component_type:
+        description: 'Component type'
+        required: true
+        default: 'agent'
+        type: choice
+        options:
+        - agent
+        - command
+        - mcp
+        - template
+        - health-check
+        - analytics
+      component_name:
+        description: 'Component name'
+        required: true
+        default: 'test-component'
+      platform:
+        description: 'Platform'
+        required: false
+        default: 'unknown'
+      cli_version:
+        description: 'CLI version'
+        required: false
+        default: 'unknown'
+
+permissions:
+  contents: write
+
+jobs:
+  track-download:
+    runs-on: ubuntu-latest
+    if: github.repository == 'davila7/claude-code-templates'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update download statistics
+        run: |
+          echo "📊 Tracking download: ${{ github.event.inputs.component_type }}/${{ github.event.inputs.component_name }}"
+          
+          # Create stats directory if it doesn't exist
+          mkdir -p docs/analytics
+          
+          # Initialize stats file if it doesn't exist
+          if [ ! -f "docs/analytics/download-stats.json" ]; then
+            echo "Creating initial stats file..."
+            cat > docs/analytics/download-stats.json << 'EOF'
+          {
+            "total_downloads": 0,
+            "downloads_by_type": {
+              "agent": 0,
+              "command": 0,
+              "mcp": 0,
+              "template": 0,
+              "health-check": 0,
+              "analytics": 0
+            },
+            "downloads_by_component": {},
+            "downloads_by_date": {},
+            "last_updated": "1970-01-01T00:00:00.000Z",
+            "data_points": 0,
+            "tracking_method": "workflow_dispatch"
+          }
+          EOF
+          fi
+          
+          # Update stats using the same logic that works locally
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          DATE=$(date -u +"%Y-%m-%d")
+          
+          node -e "
+            const fs = require('fs');
+            const statsPath = 'docs/analytics/download-stats.json';
+            
+            try {
+              const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+              
+              const type = '${{ github.event.inputs.component_type }}';
+              const name = '${{ github.event.inputs.component_name }}';
+              const timestamp = '$TIMESTAMP';
+              const date = '$DATE';
+              
+              console.log('📈 Processing:', { type, name, date });
+              console.log('📊 Before:', { total: stats.total_downloads, type_count: stats.downloads_by_type[type] });
+              
+              // Update counters
+              stats.total_downloads = (stats.total_downloads || 0) + 1;
+              stats.downloads_by_type[type] = (stats.downloads_by_type[type] || 0) + 1;
+              stats.downloads_by_component[name] = (stats.downloads_by_component[name] || 0) + 1;
+              stats.downloads_by_date[date] = (stats.downloads_by_date[date] || 0) + 1;
+              
+              // Update metadata
+              stats.last_updated = timestamp;
+              stats.data_points = (stats.data_points || 0) + 1;
+              stats.tracking_method = 'workflow_dispatch';
+              
+              console.log('📊 After:', { total: stats.total_downloads, type_count: stats.downloads_by_type[type] });
+              
+              // Write updated stats
+              fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
+              
+              console.log('✅ Stats updated successfully');
+              
+            } catch (error) {
+              console.error('❌ Error updating stats:', error);
+              process.exit(1);
+            }
+          "
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet docs/analytics/download-stats.json; then
+            echo "📊 No changes to commit"
+          else
+            git add docs/analytics/download-stats.json
+            git commit -m "📊 Track: ${{ github.event.inputs.component_type }}/${{ github.event.inputs.component_name }}
+
+            Auto-increment download counter
+            
+            🤖 Automated via workflow_dispatch"
+            
+            git push origin main
+            echo "✅ Changes committed and pushed to main"
+          fi
+
+      - name: Display updated stats
+        run: |
+          echo "📊 Updated Download Statistics"
+          echo "============================="
+          cat docs/analytics/download-stats.json | jq '.'

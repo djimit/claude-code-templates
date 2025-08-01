@@ -18,7 +18,7 @@ const config: Config = {
   url: 'https://aitmpl.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For custom domain deployment
-  baseUrl: '/docu/',
+  baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.

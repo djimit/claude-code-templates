@@ -1,4 +1,4 @@
-name: Deploy Website and Docusaurus
+name: Deploy Main Site
 
 on:
   push:
@@ -10,37 +10,18 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy Site
+  deploy-main-site:
+    name: Deploy Main Site to Root
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'docu/package-lock.json'
-
-      - name: Install and Build Docusaurus
-        run: |
-          cd docu
-          npm install
-          npm run build
-
       - name: Prepare deployment directory
         run: |
-          mkdir -p _site/docu
-          # Copy main site content
+          mkdir -p _site
           cp -a docs/. _site/
-          # Copy docusaurus build content (including dotfiles)
-          cp -a docu/build/. _site/docu/
-          # Ensure .nojekyll file exists at the root
           touch _site/.nojekyll
-          echo "--- Contents of deployment directory ---"
-          ls -laR _site
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

@@ -1,6 +1,8 @@
 name: Simple Download Tracking
 
-# This is the FINAL solution - simple, elegant, and works!
+# ✅ ACTIVE WORKFLOW - This is the official download tracking system
+# This workflow replaces all previous tracking attempts and is the only one that should be used
+# Previous workflows (analytics-processor.yml, process-tracking-logs.yml, tracking-dispatch.yml) are DEPRECATED
 on:
   # Trigger manually for testing
   workflow_dispatch:

@@ -1,16 +1,22 @@
-name: Process Download Analytics
+# DEPRECATED: This workflow has been replaced by simple-tracking.yml
+# This file is kept for reference only and should not be used
+# New workflow provides better PR-based tracking with manual triggers
+
+name: Process Download Analytics (DEPRECATED)
 
 on:
-  schedule:
-    # Run every 6 hours to process analytics data
-    - cron: '0 */6 * * *'
-  
-  # Also run when new analytics issues are created
-  issues:
-    types: [opened]
-  
-  # Allow manual trigger for testing
+  # Disabled all triggers - workflow is deprecated
+  # schedule:
+  #   - cron: '0 */6 * * *'
+  # issues:
+  #   types: [opened]
+  # workflow_dispatch:
   workflow_dispatch:
+    inputs:
+      deprecated_notice:
+        description: 'This workflow is DEPRECATED. Use simple-tracking.yml instead'
+        required: true
+        default: 'DEPRECATED'
 
 permissions:
   contents: write

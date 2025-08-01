@@ -1,11 +1,20 @@
-name: Process GitHub Pages Tracking Logs
+# DEPRECATED: This workflow has been replaced by simple-tracking.yml
+# This file is kept for reference only and should not be used
+# The new workflow uses manual triggers with PR creation instead of scheduled runs
 
-# Run every hour to process tracking data
+name: Process GitHub Pages Tracking Logs (DEPRECATED)
+
 on:
-  schedule:
-    - cron: '0 * * * *' # Every hour
-  # Allow manual trigger
+  # Disabled all triggers - workflow is deprecated
+  # schedule:
+  #   - cron: '0 * * * *'
+  # workflow_dispatch:
   workflow_dispatch:
+    inputs:
+      deprecated_notice:
+        description: 'This workflow is DEPRECATED. Use simple-tracking.yml instead'
+        required: true
+        default: 'DEPRECATED'
 
 permissions:
   contents: write

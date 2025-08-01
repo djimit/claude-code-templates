@@ -1,9 +1,19 @@
-name: Handle Download Tracking
+# DEPRECATED: This workflow has been replaced by simple-tracking.yml
+# This file is kept for reference only and should not be used
+# The new workflow uses manual workflow_dispatch instead of repository_dispatch
 
-# Trigger on repository dispatch events from CLI
+name: Handle Download Tracking (DEPRECATED)
+
 on:
-  repository_dispatch:
-    types: [component_download]
+  # Disabled all triggers - workflow is deprecated
+  # repository_dispatch:
+  #   types: [component_download]
+  workflow_dispatch:
+    inputs:
+      deprecated_notice:
+        description: 'This workflow is DEPRECATED. Use simple-tracking.yml instead'
+        required: true
+        default: 'DEPRECATED'
 
 permissions:
   contents: read

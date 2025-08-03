@@ -216,6 +216,9 @@ class IndexPageManager {
             grid.className = 'unified-grid components-mode';
         }
 
+        // Update filter button counts
+        this.updateFilterCounts();
+
         switch (this.currentFilter) {
             case 'templates':
                 this.displayTemplates(grid);
@@ -257,6 +260,9 @@ class IndexPageManager {
         
         const components = this.getFilteredComponents(type);
         let html = '';
+        
+        // Add "Add New" card first
+        html += this.createAddComponentCard(type);
         
         components.forEach(component => {
             html += this.generateComponentCard(component);
@@ -386,28 +392,106 @@ class IndexPageManager {
     }
 
     getComponentDescription(component) {
-        if (!component.content && !component.description) {
-            return `A ${component.type} component for Claude Code.`;
-        }
+        let description = '';
         
         if (component.description) {
-            return component.description;
+            description = component.description;
+        } else if (component.content) {
+            // Try to extract description from frontmatter
+            const descMatch = component.content.match(/description:\s*(.+?)(?:\n|$)/);
+            if (descMatch) {
+                description = descMatch[1].trim().replace(/^["']|["']$/g, '');
+            } else {
+                // Use first paragraph if no frontmatter description
+                const lines = component.content.split('\n');
+                const firstParagraph = lines.find(line => line.trim() && !line.startsWith('---') && !line.startsWith('#'));
+                if (firstParagraph) {
+                    description = firstParagraph.trim();
+                }
+            }
         }
         
-        // Try to extract description from frontmatter
-        const descMatch = component.content.match(/description:\s*(.+?)(?:\n|$)/);
-        if (descMatch) {
-            return descMatch[1].trim().replace(/^["']|["']$/g, '');
+        if (!description) {
+            description = `A ${component.type} component for Claude Code.`;
         }
         
-        // Use first paragraph if no frontmatter description
-        const lines = component.content.split('\n');
-        const firstParagraph = lines.find(line => line.trim() && !line.startsWith('---') && !line.startsWith('#'));
-        if (firstParagraph) {
-            return firstParagraph.trim();
+        // Truncate description to max 120 characters for proper card display
+        if (description.length > 120) {
+            description = description.substring(0, 117) + '...';
         }
         
-        return `A ${component.type} component for Claude Code.`;
+        return description;
+    }
+
+    // Update filter button counts
+    updateFilterCounts() {
+        if (!this.componentsData) return;
+        
+        const agentsCount = this.componentsData.agents ? this.componentsData.agents.length : 0;
+        const commandsCount = this.componentsData.commands ? this.componentsData.commands.length : 0;
+        const mcpsCount = this.componentsData.mcps ? this.componentsData.mcps.length : 0;
+        
+        // Update each filter button with count
+        const agentsBtn = document.querySelector('[data-filter="agents"]');
+        const commandsBtn = document.querySelector('[data-filter="commands"]');
+        const mcpsBtn = document.querySelector('[data-filter="mcps"]');
+        const templatesBtn = document.querySelector('[data-filter="templates"]');
+        
+        if (agentsBtn) {
+            agentsBtn.innerHTML = `🤖 Agents (${agentsCount})`;
+        }
+        if (commandsBtn) {
+            commandsBtn.innerHTML = `⚡ Commands (${commandsCount})`;
+        }
+        if (mcpsBtn) {
+            mcpsBtn.innerHTML = `🔌 MCPs (${mcpsCount})`;
+        }
+        if (templatesBtn) {
+            templatesBtn.innerHTML = `📦 Templates`; // Templates count is handled separately
+        }
+    }
+
+    // Create Add Component card
+    createAddComponentCard(type) {
+        const typeConfig = {
+            agents: { 
+                icon: '🤖', 
+                name: 'Agent', 
+                description: 'Create a new AI specialist agent',
+                color: '#ff6b6b'
+            },
+            commands: { 
+                icon: '⚡', 
+                name: 'Command', 
+                description: 'Add a custom slash command',
+                color: '#4ecdc4'
+            },
+            mcps: { 
+                icon: '🔌', 
+                name: 'MCP', 
+                description: 'Build a Model Context Protocol integration',
+                color: '#45b7d1'
+            }
+        };
+        
+        const config = typeConfig[type];
+        if (!config) return '';
+        
+        return `
+            <div class="template-card add-template-card add-component-card" onclick="showComponentContributeModal('${type}')">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="framework-logo" style="color: ${config.color}">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="template-title">Add New ${config.name}</h3>
+                        <p class="template-description">${config.description}</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     showError(message) {
@@ -421,6 +505,157 @@ class IndexPageManager {
                 </div>
             `;
         }
+    }
+
+    // Framework icons mapping
+    getFrameworkIcon(framework) {
+        const icons = {
+            'common': 'devicon-gear-plain',
+            'javascript-typescript': 'devicon-javascript-plain',
+            'python': 'devicon-python-plain',
+            'ruby': 'devicon-ruby-plain',
+            'rust': 'devicon-rust-plain',
+            'go': 'devicon-go-plain',
+            'react': 'devicon-react-original',
+            'vue': 'devicon-vuejs-plain',
+            'angular': 'devicon-angularjs-plain',
+            'node': 'devicon-nodejs-plain',
+            'django': 'devicon-django-plain',
+            'flask': 'devicon-flask-original',
+            'fastapi': 'devicon-fastapi-plain',
+            'rails': 'devicon-rails-plain',
+            'sinatra': 'devicon-ruby-plain',
+            'default': 'devicon-devicon-plain'
+        };
+        return icons[framework] || icons['default'];
+    }
+
+    // Create Add Template card
+    createAddTemplateCard() {
+        const card = document.createElement('div');
+        card.className = 'template-card add-template-card';
+        
+        card.innerHTML = `
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="framework-logo">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="template-title">Add New Template</h3>
+                    <p class="template-description">Contribute a new language or framework to the community</p>
+                </div>
+            </div>
+        `;
+        
+        // Add click handler
+        card.addEventListener('click', () => {
+            this.showContributeModal();
+        });
+        
+        return card;
+    }
+
+    // Create individual template card
+    createTemplateCard(languageKey, languageData, frameworkKey, frameworkData) {
+        const card = document.createElement('div');
+        card.className = `template-card ${languageData.comingSoon ? 'coming-soon' : ''}`;
+        
+        const displayName = frameworkKey === 'none' ? 
+            frameworkData.name : 
+            `${languageData.name.split('/')[0]}/${frameworkData.name}`;
+        
+        card.innerHTML = `
+            <div class="card-inner">
+                <div class="card-front">
+                    ${languageData.comingSoon ? '<div class="coming-soon-badge">Coming Soon</div>' : ''}
+                    <div class="framework-logo">
+                        <i class="${frameworkData.icon} colored"></i>
+                    </div>
+                    <h3 class="template-title">${displayName}</h3>
+                    <p class="template-description">${(languageData.description || '').substring(0, 120)}${(languageData.description || '').length > 120 ? '...' : ''}</p>
+                </div>
+                <div class="card-back">
+                    <div class="command-display">
+                        <h3>Installation Options</h3>
+                        <div class="command-code">${frameworkData.command}</div>
+                        <div class="action-buttons">
+                            <button class="view-files-btn" onclick="showInstallationFiles('${languageKey}', '${frameworkKey}', '${displayName}')">
+                                📁 View Files
+                            </button>
+                            <button class="copy-command-btn" onclick="copyToClipboard('${frameworkData.command}')">
+                                📋 Copy Command
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add click handler for card flip (only if not coming soon)
+        if (!languageData.comingSoon) {
+            card.addEventListener('click', (e) => {
+                // Don't flip if clicking on buttons
+                if (!e.target.closest('button')) {
+                    card.classList.toggle('flipped');
+                }
+            });
+        }
+        
+        return card;
+    }
+
+    // Fetch templates configuration from GitHub
+    async fetchTemplatesConfig() {
+        const GITHUB_CONFIG = {
+            owner: 'davila7',
+            repo: 'claude-code-templates',
+            branch: 'main',
+            templatesPath: 'cli-tool/src/templates.js'
+        };
+        
+        try {
+            const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.templatesPath}?t=${Date.now()}`;
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const templateFileContent = await response.text();
+            this.templatesData = this.parseTemplatesConfig(templateFileContent);
+            
+            return this.templatesData;
+        } catch (error) {
+            console.error('Error fetching templates:', error);
+            throw error;
+        }
+    }
+
+    // Parse templates configuration
+    parseTemplatesConfig(fileContent) {
+        try {
+            const configMatch = fileContent.match(/const TEMPLATES_CONFIG = ({[\s\S]*?});/);
+            if (!configMatch) {
+                throw new Error('TEMPLATES_CONFIG not found in file');
+            }
+            
+            let configString = configMatch[1];
+            configString = configString.replace(/'/g, '"');
+            configString = configString.replace(/(\w+):/g, '"$1":');
+            configString = configString.replace(/,(\s*[}\]])/g, '$1');
+            
+            return JSON.parse(configString);
+        } catch (error) {
+            console.error('Error parsing templates config:', error);
+            return null;
+        }
+    }
+
+    // Show contribute modal
+    showContributeModal() {
+        alert('Contribute modal would open here - this needs to be implemented with the full modal HTML from script.js');
     }
 }
 
@@ -438,7 +673,10 @@ function showComponentDetails(type, name, path, category) {
         }
     } else {
         // Find component in components data
-        component = window.dataLoader.findComponent(name, type);
+        if (window.indexManager && window.indexManager.componentsData) {
+            const components = window.indexManager.componentsData[type + 's'] || [];
+            component = components.find(c => c.name === name || c.path === path);
+        }
     }
     
     if (component) {
@@ -452,7 +690,7 @@ function showComponentDetails(type, name, path, category) {
             alert('Error: Modal function not available. Please refresh the page.');
         }
     } else {
-        console.warn('Component not found:', type, name);
+        console.warn('Component not found:', type, name, 'path:', path, 'category:', category);
     }
 }
 
@@ -475,6 +713,17 @@ function setCategoryFilter(category) {
     if (window.indexManager) {
         window.indexManager.setCategoryFilter(category);
     }
+}
+
+// Global function for component contribute modal
+function showComponentContributeModal(type) {
+    // Implementation for component contribute modal
+    alert(`Add new ${type} modal would open here - this needs full implementation`);
+}
+
+// Global functions for templates functionality
+function showInstallationFiles(languageKey, frameworkKey, displayName) {
+    alert(`Installation files for ${displayName} would be shown here`);
 }
 
 // Initialize when DOM is ready

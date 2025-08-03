@@ -106,6 +106,12 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
+  // Handle workflow installation
+  if (options.workflow) {
+    await installWorkflow(options.workflow, targetDir, options);
+    return;
+  }
+  
   // Handle command stats analysis (both singular and plural)
   if (options.commandStats || options.commandsStats) {
     await runCommandStats(options);
@@ -345,9 +351,11 @@ async function installIndividualAgent(agentName, targetDir, options) {
     const targetFile = path.join(agentsDir, `${fileName}.md`);
     await fs.writeFile(targetFile, agentContent, 'utf8');
     
-    console.log(chalk.green(`✅ Agent "${agentName}" installed successfully!`));
-    console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
-    console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    if (!options.silent) {
+      console.log(chalk.green(`✅ Agent "${agentName}" installed successfully!`));
+      console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    }
     
     // Track successful agent installation
     trackingService.trackDownload('agent', agentName, {
@@ -406,9 +414,11 @@ async function installIndividualCommand(commandName, targetDir, options) {
     
     await fs.writeFile(targetFile, commandContent, 'utf8');
     
-    console.log(chalk.green(`✅ Command "${commandName}" installed successfully!`));
-    console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
-    console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    if (!options.silent) {
+      console.log(chalk.green(`✅ Command "${commandName}" installed successfully!`));
+      console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    }
     
     // Track successful command installation
     trackingService.trackDownload('command', commandName, {
@@ -477,9 +487,11 @@ async function installIndividualMCP(mcpName, targetDir, options) {
     // Write the merged configuration
     await fs.writeJson(targetMcpFile, mergedConfig, { spaces: 2 });
     
-    console.log(chalk.green(`✅ MCP "${mcpName}" installed successfully!`));
-    console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetMcpFile)}`));
-    console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    if (!options.silent) {
+      console.log(chalk.green(`✅ MCP "${mcpName}" installed successfully!`));
+      console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetMcpFile)}`));
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    }
     
     // Track successful MCP installation
     trackingService.trackDownload('mcp', mcpName, {
@@ -607,6 +619,173 @@ async function showAvailableAgents() {
   console.log(chalk.gray('  cct --agent api-security-audit'));
   console.log(chalk.gray('  cct --agent deep-research-team/academic-researcher'));
   console.log('');
+}
+
+/**
+ * Install workflow from hash
+ */
+async function installWorkflow(workflowHash, targetDir, options) {
+  console.log(chalk.blue(`🔧 Installing workflow from hash: ${workflowHash}`));
+  
+  try {
+    // Extract hash from format #hash
+    const hash = workflowHash.startsWith('#') ? workflowHash.substring(1) : workflowHash;
+    
+    if (!hash || hash.length < 8) {
+      throw new Error('Invalid workflow hash format. Expected format: #hash');
+    }
+    
+    console.log(chalk.gray(`📥 Fetching workflow configuration...`));
+    
+    // Fetch workflow configuration from a remote service
+    // For now, we'll simulate this by using a local storage approach
+    // In production, this would fetch from a workflow registry
+    const workflowData = await fetchWorkflowData(hash);
+    
+    if (!workflowData) {
+      throw new Error(`Workflow with hash "${hash}" not found. Please check the hash and try again.`);
+    }
+    
+    console.log(chalk.green(`✅ Workflow found: ${workflowData.name}`));
+    console.log(chalk.cyan(`📝 Description: ${workflowData.description}`));
+    console.log(chalk.cyan(`🏷️  Tags: ${workflowData.tags.join(', ')}`));
+    console.log(chalk.cyan(`📊 Steps: ${workflowData.steps.length}`));
+    
+    // Install all required components
+    const installPromises = [];
+    
+    // Group components by type
+    const agents = workflowData.steps.filter(step => step.type === 'agent');
+    const commands = workflowData.steps.filter(step => step.type === 'command');
+    const mcps = workflowData.steps.filter(step => step.type === 'mcp');
+    
+    console.log(chalk.blue(`\n📦 Installing workflow components...`));
+    console.log(chalk.gray(`   Agents: ${agents.length}`));
+    console.log(chalk.gray(`   Commands: ${commands.length}`));
+    console.log(chalk.gray(`   MCPs: ${mcps.length}`));
+    
+    // Install agents
+    for (const agent of agents) {
+      console.log(chalk.gray(`   Installing agent: ${agent.name}`));
+      await installIndividualAgent(agent.path, targetDir, { ...options, silent: true });
+    }
+    
+    // Install commands
+    for (const command of commands) {
+      console.log(chalk.gray(`   Installing command: ${command.name}`));
+      await installIndividualCommand(command.path, targetDir, { ...options, silent: true });
+    }
+    
+    // Install MCPs
+    for (const mcp of mcps) {
+      console.log(chalk.gray(`   Installing MCP: ${mcp.name}`));
+      await installIndividualMCP(mcp.path, targetDir, { ...options, silent: true });
+    }
+    
+    // Generate and save workflow YAML
+    const yamlContent = generateWorkflowYAML(workflowData);
+    const workflowFile = path.join(targetDir, '.claude', `workflow_${workflowData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`);
+    
+    // Ensure .claude directory exists
+    await fs.ensureDir(path.dirname(workflowFile));
+    await fs.writeFile(workflowFile, yamlContent, 'utf8');
+    
+    console.log(chalk.green(`\n✅ Workflow "${workflowData.name}" installed successfully!`));
+    console.log(chalk.cyan(`📁 Components installed to: .claude/`));
+    console.log(chalk.cyan(`📄 Workflow file: ${path.relative(targetDir, workflowFile)}`));
+    console.log(chalk.cyan(`🚀 Use the workflow file with Claude Code to execute the complete workflow`));
+    
+    // Track successful workflow installation
+    trackingService.trackDownload('workflow', hash, {
+      installation_type: 'workflow',
+      workflow_name: workflowData.name,
+      components_count: workflowData.steps.length,
+      agents_count: agents.length,
+      commands_count: commands.length,
+      mcps_count: mcps.length,
+      target_directory: path.relative(process.cwd(), targetDir)
+    });
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing workflow: ${error.message}`));
+    
+    if (error.message.includes('not found')) {
+      console.log(chalk.yellow('\n💡 Possible solutions:'));
+      console.log(chalk.gray('   • Check that the workflow hash is correct'));
+      console.log(chalk.gray('   • Verify the workflow was generated successfully'));
+      console.log(chalk.gray('   • Try generating a new workflow from the builder'));
+    }
+  }
+}
+
+/**
+ * Fetch workflow data from hash
+ * In production, this would fetch from a remote workflow registry
+ * For now, we'll simulate this functionality
+ */
+async function fetchWorkflowData(hash) {
+  // Simulate fetching workflow data
+  // In production, this would make an API call to a workflow registry
+  // For demo purposes, we'll return a sample workflow
+  
+  // This is where we would integrate with a workflow registry API
+  // For now, return null to indicate workflow not found
+  // The frontend localStorage approach is just for demo purposes
+  
+  console.log(chalk.yellow('\n⚠️  Workflow registry not yet implemented.'));
+  console.log(chalk.gray('To test workflows:'));
+  console.log(chalk.gray('1. Create a workflow in the web interface'));
+  console.log(chalk.gray('2. The generated hash contains the workflow configuration'));
+  console.log(chalk.gray('3. We\'ll add a workflow registry service in a future update'));
+  
+  return null;
+}
+
+/**
+ * Generate workflow YAML from workflow data
+ */
+function generateWorkflowYAML(workflowData) {
+  const yaml = `# Workflow: ${workflowData.name}
+# Description: ${workflowData.description}
+# Generated: ${new Date().toISOString()}
+# Hash: ${workflowData.hash || 'generated'}
+
+name: "${workflowData.name}"
+description: "${workflowData.description}"
+tags: [${workflowData.tags.map(tag => `"${tag}"`).join(', ')}]
+version: "${workflowData.version || '1.0.0'}"
+
+steps:
+${workflowData.steps.map((step, index) => `  - step: ${index + 1}
+    type: ${step.type}
+    name: "${step.name}"
+    path: "${step.path}"
+    category: "${step.category}"
+    description: "${step.description}"
+    action: |
+      # ${step.description}
+      # Execute ${step.type}: ${step.name}
+      echo "Executing step ${index + 1}: ${step.name}"
+`).join('\n')}
+
+execution:
+  mode: "sequential"
+  on_error: "stop"
+  timeout: 300
+
+components:
+  agents: [${workflowData.steps.filter(s => s.type === 'agent').map(s => `"${s.path}"`).join(', ')}]
+  commands: [${workflowData.steps.filter(s => s.type === 'command').map(s => `"${s.path}"`).join(', ')}]
+  mcps: [${workflowData.steps.filter(s => s.type === 'mcp').map(s => `"${s.path}"`).join(', ')}]
+
+# Claude Code Integration
+claudecode:
+  workflow_mode: true
+  auto_execute: false
+  confirmation_required: true
+`;
+  
+  return yaml;
 }
 
 module.exports = { createClaudeConfig, showMainMenu };

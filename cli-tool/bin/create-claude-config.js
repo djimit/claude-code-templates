@@ -58,6 +58,7 @@ program
   .option('--agent <agent>', 'install specific agent component')
   .option('--command <command>', 'install specific command component')
   .option('--mcp <mcp>', 'install specific MCP component')
+  .option('--workflow <workflow>', 'install workflow from hash (format: #hash)')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

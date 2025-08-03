@@ -33,21 +33,23 @@
 }
 
 .logo-text h1 {
-    margin: 0;
-    font-size: 24px;
+    margin: 0 0 4px 0;
+    font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
     background: linear-gradient(45deg, var(--accent-color), #F97316);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    line-height: 1.2;
 }
 
-.logo-text p {
+.logo-text h2 {
     margin: 0;
-    font-size: 14px;
-    color: var(--text-accent);
-    font-weight: 500;
+    font-size: 18px;
+    color: var(--accent-color);
+    font-weight: 600;
+    line-height: 1.2;
 }
 
 .header-nav {
@@ -130,139 +132,196 @@
     box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
-/* Accordion Styles */
-.accordion-section {
-    margin-bottom: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
+/* Tree View Styles - VSCode inspired */
+.component-tree {
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
-.accordion-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--bg-primary);
-    cursor: pointer;
-    transition: all 0.2s ease;
+.tree-node {
     user-select: none;
 }
 
-.accordion-header:hover {
-    background: var(--bg-hover);
-}
-
-.accordion-header.active {
-    background: var(--bg-hover);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.accordion-icon {
-    font-size: 18px;
-    flex-shrink: 0;
-}
-
-.accordion-title {
-    flex: 1;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.accordion-count {
-    font-size: 12px;
-    background: var(--accent-color);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    min-width: 20px;
-    text-align: center;
-}
-
-.accordion-arrow {
-    font-size: 12px;
-    color: var(--text-accent);
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
-}
-
-.accordion-header.active .accordion-arrow {
-    transform: rotate(180deg);
-}
-
-.accordion-content {
-    display: none;
-    padding: 16px;
-    background: var(--bg-secondary);
-}
-
-.accordion-content.active {
-    display: block;
-}
-
-.subcategory-section {
-    margin-bottom: 16px;
-}
-
-.subcategory-header {
+.tree-node-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    padding: 4px 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 8px;
+    transition: background-color 0.1s ease;
+    border-radius: 4px;
+    margin: 1px 0;
 }
 
-.subcategory-header:hover {
+.tree-node-header:hover {
     background: var(--bg-hover);
 }
 
-.subcategory-title {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-transform: capitalize;
+.tree-node-header.active {
+    background: var(--bg-hover);
 }
 
-.subcategory-count {
+.tree-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.folder-icon {
+    color: #dcb67a;
+}
+
+.file-icon {
+    color: var(--text-secondary);
+}
+
+.tree-label {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tree-root .tree-label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.tree-count {
     font-size: 11px;
     background: var(--text-accent);
     color: white;
     padding: 1px 6px;
     border-radius: 8px;
+    margin-left: 8px;
     font-weight: 500;
+    min-width: 16px;
+    text-align: center;
 }
 
-.subcategory-arrow {
-    font-size: 10px;
+.tree-arrow {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
     color: var(--text-accent);
-    transition: transform 0.2s ease;
+    font-size: 10px;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
 }
 
-.subcategory-header.active .subcategory-arrow {
-    transform: rotate(180deg);
+.tree-node-header.expanded .tree-arrow {
+    transform: rotate(90deg);
 }
 
-.subcategory-content {
+.tree-node-header.expanded .folder-icon {
+    color: #dcb67a;
+}
+
+.tree-children {
     display: none;
-    padding-left: 16px;
+    margin-left: 16px;
+    border-left: 1px solid var(--border-color);
+    padding-left: 8px;
 }
 
-.subcategory-content.active {
+.tree-children.expanded {
     display: block;
 }
 
-.components-list {
+.tree-file {
+    padding: 2px 8px;
+    margin: 1px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    position: relative;
+}
+
+.tree-file:hover {
+    background: var(--bg-hover);
+}
+
+.tree-file.dragging {
+    opacity: 0.6;
+    transform: rotate(2deg);
+}
+
+.tree-file-header {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
+}
+
+.tree-file-name {
+    flex: 1;
+    color: var(--text-primary);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tree-file-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.tree-file:hover .tree-file-actions {
+    opacity: 1;
+}
+
+.tree-action-btn {
+    width: 18px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    color: var(--text-accent);
+    transition: all 0.15s ease;
+}
+
+.tree-action-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* File type icons */
+.tree-file[data-type="agent"] .file-icon {
+    color: #4CAF50;
+}
+
+.tree-file[data-type="command"] .file-icon {
+    color: #2196F3;
+}
+
+.tree-file[data-type="mcp"] .file-icon {
+    color: #FF9800;
+}
+
+/* Indentation levels */
+.tree-children .tree-children {
+    margin-left: 12px;
+}
+
+.tree-children .tree-children .tree-children {
+    margin-left: 10px;
 }
 
 .component-item {

@@ -146,9 +146,9 @@ function getComponentIcon(type) {
     return icons[type] || '📦';
 }
 
-// Render components list in the UI
+// Render components list in the UI as tree
 function renderComponentsList(type, components) {
-    const container = document.getElementById(`${type}-content`);
+    const container = document.getElementById(`${type}-tree`);
     const countElement = document.getElementById(`${type}-count`);
     
     if (!container) return;
@@ -162,78 +162,102 @@ function renderComponentsList(type, components) {
     
     // Group components by category
     const groupedComponents = components.reduce((acc, component) => {
-        const category = component.category === 'root' ? 'General' : component.category;
+        const category = component.category === 'root' ? 'general' : component.category;
         if (!acc[category]) acc[category] = [];
         acc[category].push(component);
         return acc;
     }, {});
     
-    // Render each category as a subcategory accordion
+    // Render each category as a tree folder
     Object.entries(groupedComponents).forEach(([category, categoryComponents]) => {
-        const subcategoryElement = createSubcategoryElement(category, categoryComponents, type);
-        container.appendChild(subcategoryElement);
+        const folderElement = createTreeFolder(category, categoryComponents, type);
+        container.appendChild(folderElement);
     });
 }
 
-// Create subcategory element
-function createSubcategoryElement(category, components, type) {
-    const subcategorySection = document.createElement('div');
-    subcategorySection.className = 'subcategory-section';
+// Create tree folder element
+function createTreeFolder(category, components, type) {
+    const folderElement = document.createElement('div');
+    folderElement.className = 'tree-node';
     
-    const subcategoryId = `${type}-${category.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+    const folderId = `${type}-${category.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
     
-    subcategorySection.innerHTML = `
-        <div class="subcategory-header" data-subcategory="${subcategoryId}">
-            <span class="subcategory-title">${category}</span>
-            <span class="subcategory-count">${components.length}</span>
-            <span class="subcategory-arrow">▼</span>
+    folderElement.innerHTML = `
+        <div class="tree-node-header" data-folder="${folderId}">
+            <span class="tree-icon folder-icon">📁</span>
+            <span class="tree-label">${category}</span>
+            <span class="tree-count">${components.length}</span>
+            <span class="tree-arrow">▶</span>
         </div>
-        <div class="subcategory-content" id="${subcategoryId}">
-            <div class="components-list"></div>
+        <div class="tree-children" id="${folderId}">
         </div>
     `;
     
-    // Add components to this subcategory
-    const componentsList = subcategorySection.querySelector('.components-list');
+    // Add components to this folder
+    const childrenContainer = folderElement.querySelector('.tree-children');
     components.forEach(component => {
-        const componentElement = createComponentElement(component);
-        componentsList.appendChild(componentElement);
+        const fileElement = createTreeFile(component);
+        childrenContainer.appendChild(fileElement);
     });
     
-    return subcategorySection;
+    return folderElement;
 }
 
-// Create component element
-function createComponentElement(component) {
+// Create tree file element
+function createTreeFile(component) {
     const element = document.createElement('div');
-    element.className = 'component-item';
+    element.className = 'tree-file';
     element.draggable = true;
     element.dataset.componentType = component.type;
     element.dataset.componentName = component.name;
     element.dataset.componentPath = component.path;
     element.dataset.componentCategory = component.category;
+    element.dataset.type = component.type;
+    
+    const fileExtension = component.type === 'mcp' ? 'json' : 'md';
+    const fileName = `${component.name}.${fileExtension}`;
     
     element.innerHTML = `
-        <span class="component-icon">${component.icon}</span>
-        <span class="component-name">${component.name}</span>
-        <div class="component-actions">
-            <button class="component-detail-btn" title="View Details" onclick="showComponentDetails('${component.type}', '${component.name}', '${component.path}', '${component.category}')">
-                ℹ️
-            </button>
+        <div class="tree-file-header">
+            <span class="tree-icon file-icon">${getFileIcon(component.type)}</span>
+            <span class="tree-file-name">${fileName}</span>
+            <div class="tree-file-actions">
+                <button class="tree-action-btn" title="View Details" onclick="showComponentDetails('${component.type}', '${component.name}', '${component.path}', '${component.category}')">
+                    ℹ️
+                </button>
+            </div>
         </div>
     `;
     
     return element;
 }
 
+// Get file icon based on type
+function getFileIcon(type) {
+    const icons = {
+        'agent': '📄',
+        'command': '⚡',
+        'mcp': '⚙️'
+    };
+    return icons[type] || '📄';
+}
+
 // Initialize drag and drop functionality
 function initializeDragAndDrop() {
     const workflowSteps = document.getElementById('workflowSteps');
-    const componentItems = document.querySelectorAll('.component-item');
     
-    // Add drag event listeners to component items
-    componentItems.forEach(item => {
-        item.addEventListener('dragstart', handleDragStart);
+    // Add drag event listeners to tree files
+    document.addEventListener('dragstart', function(event) {
+        if (event.target.closest('.tree-file')) {
+            handleDragStart(event);
+            event.target.closest('.tree-file').classList.add('dragging');
+        }
+    });
+    
+    document.addEventListener('dragend', function(event) {
+        if (event.target.closest('.tree-file')) {
+            event.target.closest('.tree-file').classList.remove('dragging');
+        }
     });
     
     // Add drop event listeners to workflow canvas
@@ -245,11 +269,14 @@ function initializeDragAndDrop() {
 
 // Handle drag start
 function handleDragStart(event) {
+    const treeFile = event.target.closest('.tree-file');
+    if (!treeFile) return;
+    
     const componentData = {
-        type: event.target.dataset.componentType,
-        name: event.target.dataset.componentName,
-        path: event.target.dataset.componentPath,
-        category: event.target.dataset.componentCategory
+        type: treeFile.dataset.componentType,
+        name: treeFile.dataset.componentName,
+        path: treeFile.dataset.componentPath,
+        category: treeFile.dataset.componentCategory
     };
     
     event.dataTransfer.setData('application/json', JSON.stringify(componentData));
@@ -434,8 +461,8 @@ function updateWorkflowStats() {
 
 // Initialize event listeners
 function initializeEventListeners() {
-    // Accordion event listeners
-    initializeAccordions();
+    // Tree view event listeners
+    initializeTreeView();
     
     // Component search
     const searchInput = document.getElementById('componentSearch');
@@ -481,18 +508,53 @@ function initializeEventListeners() {
 // Handle component search
 function handleComponentSearch(event) {
     const searchTerm = event.target.value.toLowerCase();
-    const componentItems = document.querySelectorAll('.component-item');
+    const treeFiles = document.querySelectorAll('.tree-file');
+    const treeFolders = document.querySelectorAll('.tree-node');
     
-    componentItems.forEach(item => {
-        const componentName = item.dataset.componentName.toLowerCase();
-        const componentCategory = item.dataset.componentCategory.toLowerCase();
+    // Show/hide files based on search
+    treeFiles.forEach(file => {
+        const componentName = file.dataset.componentName.toLowerCase();
+        const componentCategory = file.dataset.componentCategory.toLowerCase();
         
         if (componentName.includes(searchTerm) || componentCategory.includes(searchTerm)) {
-            item.style.display = 'flex';
+            file.style.display = 'block';
+            // Expand parent folders
+            expandParentFolders(file);
         } else {
-            item.style.display = 'none';
+            file.style.display = searchTerm ? 'none' : 'block';
         }
     });
+    
+    // Hide empty folders if searching
+    if (searchTerm) {
+        treeFolders.forEach(folder => {
+            const visibleFiles = folder.querySelectorAll('.tree-file[style="display: block"], .tree-file:not([style*="display: none"])');
+            const folderHeader = folder.querySelector('.tree-node-header[data-folder]');
+            if (folderHeader && visibleFiles.length === 0) {
+                folder.style.display = 'none';
+            } else {
+                folder.style.display = 'block';
+            }
+        });
+    } else {
+        // Show all folders when not searching
+        treeFolders.forEach(folder => {
+            folder.style.display = 'block';
+        });
+    }
+}
+
+// Expand parent folders for visible search results
+function expandParentFolders(file) {
+    let parent = file.closest('.tree-children');
+    while (parent) {
+        parent.classList.add('expanded');
+        const header = parent.previousElementSibling;
+        if (header && header.classList.contains('tree-node-header')) {
+            header.classList.add('expanded');
+        }
+        parent = parent.parentElement.closest('.tree-children');
+    }
 }
 
 // Clear workflow
@@ -725,46 +787,49 @@ function showSuccess(message) {
     alert('Success: ' + message); // Simple alert for now, could be enhanced with toast notifications
 }
 
-// Initialize accordion functionality
-function initializeAccordions() {
-    // Main accordion headers
+// Initialize tree functionality
+function initializeTreeView() {
+    // Tree node click handling
     document.addEventListener('click', function(event) {
-        if (event.target.classList.contains('accordion-header') || event.target.closest('.accordion-header')) {
-            const header = event.target.closest('.accordion-header') || event.target;
-            const category = header.dataset.category;
-            const content = document.getElementById(`${category}-content`);
-            const arrow = header.querySelector('.accordion-arrow');
+        // Main tree root headers
+        if (event.target.closest('.tree-root .tree-node-header')) {
+            const header = event.target.closest('.tree-node-header');
+            const category = header.closest('.tree-root').dataset.category;
+            const content = document.getElementById(`${category}-tree`);
+            const arrow = header.querySelector('.tree-arrow');
             
             if (content) {
-                const isActive = header.classList.contains('active');
+                const isExpanded = header.classList.contains('expanded');
                 
-                if (isActive) {
-                    header.classList.remove('active');
-                    content.classList.remove('active');
+                if (isExpanded) {
+                    header.classList.remove('expanded');
+                    content.classList.remove('expanded');
                 } else {
-                    header.classList.add('active');
-                    content.classList.add('active');
+                    header.classList.add('expanded');
+                    content.classList.add('expanded');
                 }
             }
+            return;
         }
         
-        // Subcategory accordion headers
-        if (event.target.classList.contains('subcategory-header') || event.target.closest('.subcategory-header')) {
-            const header = event.target.closest('.subcategory-header') || event.target;
-            const subcategoryId = header.dataset.subcategory;
-            const content = document.getElementById(subcategoryId);
+        // Folder headers within tree
+        if (event.target.closest('.tree-node-header[data-folder]')) {
+            const header = event.target.closest('.tree-node-header');
+            const folderId = header.dataset.folder;
+            const content = document.getElementById(folderId);
             
             if (content) {
-                const isActive = header.classList.contains('active');
+                const isExpanded = header.classList.contains('expanded');
                 
-                if (isActive) {
-                    header.classList.remove('active');
-                    content.classList.remove('active');
+                if (isExpanded) {
+                    header.classList.remove('expanded');
+                    content.classList.remove('expanded');
                 } else {
-                    header.classList.add('active');
-                    content.classList.add('active');
+                    header.classList.add('expanded');
+                    content.classList.add('expanded');
                 }
             }
+            return;
         }
     });
 }

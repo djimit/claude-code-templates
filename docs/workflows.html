@@ -17,7 +17,7 @@
                     <div class="logo-icon">🔮</div>
                     <div class="logo-text">
                         <h1>Claude Code Templates</h1>
-                        <p>Workflow Builder</p>
+                        <h2>Workflow Builder</h2>
                     </div>
                 </div>
                 <nav class="header-nav">
@@ -48,41 +48,41 @@
                 <input type="text" id="componentSearch" placeholder="Search components...">
             </div>
 
-            <!-- Component Categories -->
-            <div class="component-categories">
-                <div class="accordion-section">
-                    <div class="accordion-header" data-category="agents">
-                        <span class="accordion-icon">🤖</span>
-                        <span class="accordion-title">Agents</span>
-                        <span class="accordion-count" id="agents-count">0</span>
-                        <span class="accordion-arrow">▼</span>
+            <!-- Component Tree View -->
+            <div class="component-tree">
+                <div class="tree-node tree-root" data-category="agents">
+                    <div class="tree-node-header">
+                        <span class="tree-icon folder-icon">📁</span>
+                        <span class="tree-label">agents</span>
+                        <span class="tree-count" id="agents-count">0</span>
+                        <span class="tree-arrow">▶</span>
                     </div>
-                    <div class="accordion-content" id="agents-content">
-                        <!-- Agents will be loaded here -->
-                    </div>
-                </div>
-                
-                <div class="accordion-section">
-                    <div class="accordion-header" data-category="commands">
-                        <span class="accordion-icon">⚡</span>
-                        <span class="accordion-title">Commands</span>
-                        <span class="accordion-count" id="commands-count">0</span>
-                        <span class="accordion-arrow">▼</span>
-                    </div>
-                    <div class="accordion-content" id="commands-content">
-                        <!-- Commands will be loaded here -->
+                    <div class="tree-children" id="agents-tree">
+                        <!-- Agents tree will be loaded here -->
                     </div>
                 </div>
                 
-                <div class="accordion-section">
-                    <div class="accordion-header" data-category="mcps">
-                        <span class="accordion-icon">🔌</span>
-                        <span class="accordion-title">MCPs</span>
-                        <span class="accordion-count" id="mcps-count">0</span>
-                        <span class="accordion-arrow">▼</span>
+                <div class="tree-node tree-root" data-category="commands">
+                    <div class="tree-node-header">
+                        <span class="tree-icon folder-icon">📁</span>
+                        <span class="tree-label">commands</span>
+                        <span class="tree-count" id="commands-count">0</span>
+                        <span class="tree-arrow">▶</span>
                     </div>
-                    <div class="accordion-content" id="mcps-content">
-                        <!-- MCPs will be loaded here -->
+                    <div class="tree-children" id="commands-tree">
+                        <!-- Commands tree will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="tree-node tree-root" data-category="mcps">
+                    <div class="tree-node-header">
+                        <span class="tree-icon folder-icon">📁</span>
+                        <span class="tree-label">mcps</span>
+                        <span class="tree-count" id="mcps-count">0</span>
+                        <span class="tree-arrow">▶</span>
+                    </div>
+                    <div class="tree-children" id="mcps-tree">
+                        <!-- MCPs tree will be loaded here -->
                     </div>
                 </div>
             </div>

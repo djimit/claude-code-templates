@@ -631,7 +631,7 @@ async function installWorkflow(workflowHash, targetDir, options) {
     // Extract hash from format #hash
     const hash = workflowHash.startsWith('#') ? workflowHash.substring(1) : workflowHash;
     
-    if (!hash || hash.length < 8) {
+    if (!hash || hash.length < 3) {
       throw new Error('Invalid workflow hash format. Expected format: #hash');
     }
     
@@ -684,10 +684,11 @@ async function installWorkflow(workflowHash, targetDir, options) {
     
     // Generate and save workflow YAML
     const yamlContent = generateWorkflowYAML(workflowData);
-    const workflowFile = path.join(targetDir, '.claude', `workflow_${workflowData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`);
+    const workflowsDir = path.join(targetDir, '.claude', 'workflows');
+    const workflowFile = path.join(workflowsDir, `${workflowData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`);
     
-    // Ensure .claude directory exists
-    await fs.ensureDir(path.dirname(workflowFile));
+    // Ensure .claude/workflows directory exists
+    await fs.ensureDir(workflowsDir);
     await fs.writeFile(workflowFile, yamlContent, 'utf8');
     
     console.log(chalk.green(`\n✅ Workflow "${workflowData.name}" installed successfully!`));
@@ -726,17 +727,62 @@ async function installWorkflow(workflowHash, targetDir, options) {
 async function fetchWorkflowData(hash) {
   // Simulate fetching workflow data
   // In production, this would make an API call to a workflow registry
-  // For demo purposes, we'll return a sample workflow
+  // For demo purposes, we'll return a sample workflow if hash matches demo
+  
+  // Demo workflow for testing
+  if (hash === 'demo123' || hash === 'abc123test') {
+    console.log(chalk.green('🎯 Demo workflow found! Using sample configuration...'));
+    return {
+      name: 'Full Stack Development Workflow',
+      description: 'Complete workflow for setting up a full-stack development environment with React frontend, Node.js backend, and security auditing',
+      tags: ['development', 'fullstack', 'react', 'security'],
+      version: '1.0.0',
+      hash: hash,
+      steps: [
+        {
+          type: 'agent',
+          name: 'frontend-developer',
+          path: 'development-team/frontend-developer',
+          category: 'development-team',
+          description: 'Setup React frontend development environment'
+        },
+        {
+          type: 'agent',
+          name: 'backend-architect',
+          path: 'development-team/backend-architect',
+          category: 'development-team',
+          description: 'Configure Node.js backend architecture'
+        },
+        {
+          type: 'command',
+          name: 'generate-tests',
+          path: 'testing/generate-tests',
+          category: 'testing',
+          description: 'Generate comprehensive test suite'
+        },
+        {
+          type: 'agent',
+          name: 'api-security-audit',
+          path: 'security/api-security-audit',
+          category: 'security',
+          description: 'Perform security audit on APIs'
+        },
+        {
+          type: 'mcp',
+          name: 'github-integration',
+          path: 'integration/github-integration',
+          category: 'integration',
+          description: 'Setup GitHub integration for repository management'
+        }
+      ]
+    };
+  }
   
   // This is where we would integrate with a workflow registry API
-  // For now, return null to indicate workflow not found
-  // The frontend localStorage approach is just for demo purposes
-  
+  // For now, return null to indicate workflow not found for other hashes
   console.log(chalk.yellow('\n⚠️  Workflow registry not yet implemented.'));
-  console.log(chalk.gray('To test workflows:'));
-  console.log(chalk.gray('1. Create a workflow in the web interface'));
-  console.log(chalk.gray('2. The generated hash contains the workflow configuration'));
-  console.log(chalk.gray('3. We\'ll add a workflow registry service in a future update'));
+  console.log(chalk.gray('To test with demo workflow, use hash: demo123'));
+  console.log(chalk.gray('Example: --workflow "#demo123"'));
   
   return null;
 }

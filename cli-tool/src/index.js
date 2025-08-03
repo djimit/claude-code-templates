@@ -791,15 +791,54 @@ async function fetchWorkflowData(hash) {
  * Generate workflow YAML from workflow data
  */
 function generateWorkflowYAML(workflowData) {
-  const yaml = `# Workflow: ${workflowData.name}
-# Description: ${workflowData.description}
-# Generated: ${new Date().toISOString()}
-# Hash: ${workflowData.hash || 'generated'}
+  const yaml = `#═══════════════════════════════════════════════════════════════════════════════
+# 🤖 CLAUDE CODE WORKFLOW CONFIGURATION
+#═══════════════════════════════════════════════════════════════════════════════
+#
+# WORKFLOW: ${workflowData.name}
+# DESCRIPTION: ${workflowData.description}
+# GENERATED: ${new Date().toISOString()}
+# HASH: ${workflowData.hash || 'generated'}
+#
+#═══════════════════════════════════════════════════════════════════════════════
+# 📋 INSTRUCTIONS FOR CLAUDE CODE
+#═══════════════════════════════════════════════════════════════════════════════
+#
+# This is a WORKFLOW EXECUTION FILE for Claude Code. When you encounter this file,
+# you should execute it as a complete automated workflow. Here's how:
+#
+# 🎯 EXECUTION BEHAVIOR:
+# 1. READ this entire YAML file to understand the workflow structure
+# 2. EXECUTE each step in the exact order listed below (sequential mode)
+# 3. For AGENTS: Use the agent specified to perform the task described
+# 4. For COMMANDS: Execute the Claude Code command as specified
+# 5. For MCPs: Ensure the MCP server is available and use it as needed
+# 6. STOP if any step fails (on_error: stop)
+# 7. PROVIDE progress updates after each step completion
+#
+# 🔧 STEP EXECUTION PATTERN:
+# - Announce: "Executing Step X: [step.name]"
+# - Action: Perform the task using the specified component
+# - Confirm: "✅ Step X completed successfully"
+# - Continue to next step
+#
+# 💡 IMPORTANT NOTES:
+# - All components are already installed in .claude/ directories
+# - Each step builds upon the previous ones
+# - Follow the descriptions exactly as specified
+# - Use confirmation_required: true for user approval before starting
+# - Maintain context and outputs between steps for workflow continuity
+#
+#═══════════════════════════════════════════════════════════════════════════════
 
 name: "${workflowData.name}"
 description: "${workflowData.description}"
 tags: [${workflowData.tags.map(tag => `"${tag}"`).join(', ')}]
 version: "${workflowData.version || '1.0.0'}"
+
+#═══════════════════════════════════════════════════════════════════════════════
+# 🚀 WORKFLOW STEPS - EXECUTE IN ORDER
+#═══════════════════════════════════════════════════════════════════════════════
 
 steps:
 ${workflowData.steps.map((step, index) => `  - step: ${index + 1}
@@ -808,27 +847,92 @@ ${workflowData.steps.map((step, index) => `  - step: ${index + 1}
     path: "${step.path}"
     category: "${step.category}"
     description: "${step.description}"
-    action: |
-      # ${step.description}
-      # Execute ${step.type}: ${step.name}
-      echo "Executing step ${index + 1}: ${step.name}"
+    
+    # CLAUDE CODE INSTRUCTIONS FOR THIS STEP:
+    claude_instructions: |
+      Execute this step using the ${step.type} located at .claude/${step.type}s/${step.name}.${step.type === 'mcp' ? 'json' : 'md'}
+      Task: ${step.description}
+      ${step.type === 'agent' ? 'Use this agent to perform the specified task with full context from previous steps.' : ''}
+      ${step.type === 'command' ? 'Execute this command with appropriate parameters based on workflow context.' : ''}
+      ${step.type === 'mcp' ? 'Ensure MCP server is running and utilize its capabilities for the task.' : ''}
+      
+    action_template: |
+      echo "🔄 Executing Step ${index + 1}: ${step.name}"
+      echo "📝 Task: ${step.description}"
+      echo "🎯 Using ${step.type}: ${step.path}"
+      # [CLAUDE CODE WILL REPLACE THIS WITH ACTUAL EXECUTION]
+      echo "✅ Step ${index + 1} completed successfully"
 `).join('\n')}
 
+#═══════════════════════════════════════════════════════════════════════════════
+# ⚙️ EXECUTION CONFIGURATION
+#═══════════════════════════════════════════════════════════════════════════════
+
 execution:
-  mode: "sequential"
-  on_error: "stop"
-  timeout: 300
+  mode: "sequential"           # Execute steps one by one, in order
+  on_error: "stop"            # Stop workflow if any step fails
+  timeout: 300                # Maximum time per step (5 minutes)
+  continue_on_warning: true   # Continue if warnings occur
+  save_outputs: true          # Save outputs between steps for context
+
+#═══════════════════════════════════════════════════════════════════════════════
+# 📦 INSTALLED COMPONENTS REFERENCE
+#═══════════════════════════════════════════════════════════════════════════════
 
 components:
   agents: [${workflowData.steps.filter(s => s.type === 'agent').map(s => `"${s.path}"`).join(', ')}]
   commands: [${workflowData.steps.filter(s => s.type === 'command').map(s => `"${s.path}"`).join(', ')}]
   mcps: [${workflowData.steps.filter(s => s.type === 'mcp').map(s => `"${s.path}"`).join(', ')}]
 
-# Claude Code Integration
+#═══════════════════════════════════════════════════════════════════════════════
+# 🤖 CLAUDE CODE INTEGRATION SETTINGS
+#═══════════════════════════════════════════════════════════════════════════════
+
 claudecode:
-  workflow_mode: true
-  auto_execute: false
-  confirmation_required: true
+  workflow_mode: true         # Enable workflow execution mode
+  auto_execute: false         # Require user confirmation before starting
+  confirmation_required: true # Ask user before each step
+  show_progress: true         # Display progress indicators
+  save_context: true          # Maintain context between steps
+  
+  # WORKFLOW EXECUTION INSTRUCTIONS FOR CLAUDE:
+  execution_instructions: |
+    When executing this workflow:
+    
+    1. 🎯 PREPARATION PHASE:
+       - Confirm all components are installed in .claude/ directories
+       - Verify user wants to execute this workflow
+       - Explain what will happen in each step
+    
+    2. 🚀 EXECUTION PHASE:
+       - Execute each step sequentially
+       - Use the exact agent/command/mcp specified for each step
+       - Maintain outputs and context between steps
+       - Provide clear progress updates
+    
+    3. ✅ COMPLETION PHASE:
+       - Summarize what was accomplished
+       - Highlight any outputs or files created
+       - Suggest next steps if applicable
+    
+    4. ❌ ERROR HANDLING:
+       - If a step fails, stop execution immediately
+       - Provide clear error message and suggested fixes
+       - Offer to retry the failed step after fixes
+    
+    Remember: This workflow was designed to work as a complete automation.
+    Each step builds upon the previous ones. Execute with confidence!
+
+#═══════════════════════════════════════════════════════════════════════════════
+# 📋 WORKFLOW SUMMARY
+#═══════════════════════════════════════════════════════════════════════════════
+# 
+# This workflow will execute ${workflowData.steps.length} steps in sequence:
+${workflowData.steps.map((step, index) => `# ${index + 1}. ${step.description} (${step.type}: ${step.name})`).join('\n')}
+#
+# Total estimated time: ${Math.ceil(workflowData.steps.length * 2)} minutes
+# Components required: ${workflowData.steps.filter(s => s.type === 'agent').length} agents, ${workflowData.steps.filter(s => s.type === 'command').length} commands, ${workflowData.steps.filter(s => s.type === 'mcp').length} MCPs
+#═══════════════════════════════════════════════════════════════════════════════
 `;
   
   return yaml;

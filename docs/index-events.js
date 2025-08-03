@@ -717,13 +717,179 @@ function setCategoryFilter(category) {
 
 // Global function for component contribute modal
 function showComponentContributeModal(type) {
-    // Implementation for component contribute modal
-    alert(`Add new ${type} modal would open here - this needs full implementation`);
+    const typeConfig = {
+        agents: {
+            name: 'Agent',
+            icon: '🤖',
+            color: '#ff6b6b',
+            label: 'AGENT',
+            description: 'AI specialist that handles specific development tasks and provides expert guidance in particular domains.',
+            example: 'python-testing-specialist',
+            structure: `---
+name: python-testing-specialist
+description: Expert in Python testing frameworks and best practices
+color: blue
+---
+
+You are a Python testing specialist with deep expertise in:
+- pytest, unittest, and testing frameworks
+- Test-driven development (TDD)
+- Mocking and fixtures
+- Coverage analysis and reporting
+- Integration and end-to-end testing
+
+When helping with testing tasks, you:
+1. Recommend appropriate testing strategies
+2. Write comprehensive test cases
+3. Suggest testing patterns and best practices
+4. Help debug failing tests
+5. Optimize test performance and maintainability`
+        },
+        commands: {
+            name: 'Command',
+            icon: '⚡',
+            color: '#4ecdc4',
+            label: 'COMMAND',
+            description: 'Custom slash command that provides specific functionality and automation for development workflows.',
+            example: 'optimize-bundle',
+            structure: `---
+name: optimize-bundle
+description: Analyze and optimize JavaScript/TypeScript bundle size
+---
+
+# Bundle Optimization Command
+
+This command helps you analyze and optimize your application bundle size.
+
+## What it does:
+1. Analyzes current bundle composition
+2. Identifies large dependencies
+3. Suggests optimization strategies
+4. Implements tree-shaking improvements
+5. Generates optimization report
+
+## Usage:
+\`/optimize-bundle\`
+
+## Process:
+- Scans package.json and build configuration
+- Runs bundle analyzer
+- Identifies optimization opportunities
+- Provides actionable recommendations`
+        },
+        mcps: {
+            name: 'MCP',
+            icon: '🔌',
+            color: '#45b7d1',
+            label: 'MCP',
+            description: 'Model Context Protocol integration that connects Claude Code with external services and data sources.',
+            example: 'redis-integration',
+            structure: `{
+  "mcpServers": {
+    "redis": {
+      "command": "node",
+      "args": ["redis-mcp-server.js"],
+      "env": {
+        "REDIS_URL": "redis://localhost:6379"
+      }
+    }
+  }
+}
+
+// Configuration for Redis MCP integration
+// Provides caching, session management, and data persistence
+// Supports Redis commands and connection management`
+        }
+    };
+    
+    const config = typeConfig[type];
+    if (!config) return;
+    
+    const installCommand = `npx claude-code-templates@latest --${type.slice(0, -1)} "${config.example}"`;
+    
+    const modalHTML = `
+        <div class="modal-overlay" onclick="closeComponentModal()">
+            <div class="modal-content component-modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <div class="component-modal-title">
+                        <span class="component-icon" style="color: ${config.color}">${config.icon}</span>
+                        <h3>Add New ${config.name}</h3>
+                        <span class="component-type-badge" style="background: ${config.color}">${config.label}</span>
+                    </div>
+                    <button class="modal-close" onclick="closeComponentModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="component-details">
+                        <div class="component-description">
+                            ${config.description}
+                        </div>
+                        
+                        <div class="installation-section">
+                            <h4>📦 Installation</h4>
+                            <div class="command-line">
+                                <code>${installCommand}</code>
+                                <button class="copy-btn" onclick="copyToClipboard('${installCommand.replace(/'/g, "\\'")}')">Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div class="component-content">
+                            <h4>📋 Component Details</h4>
+                            <div class="component-preview">
+                                <div class="code-editor">
+                                    <div class="code-line-numbers">
+                                        ${config.structure.split('\n').map((_, i) => `<span>${i + 1}</span>`).join('')}
+                                    </div>
+                                    <div class="code-content">
+                                        <pre><code>${config.structure}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <a href="https://github.com/davila7/claude-code-templates/tree/main/cli-tool/components/${type}" target="_blank" class="github-folder-link">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.30.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.querySelector('.modal-overlay');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add event listener for ESC key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeComponentModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
 }
 
 // Global functions for templates functionality
 function showInstallationFiles(languageKey, frameworkKey, displayName) {
     alert(`Installation files for ${displayName} would be shown here`);
+}
+
+// Close component modal
+function closeComponentModal() {
+    const modalOverlay = document.querySelector('.modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.remove();
+    }
 }
 
 // Initialize when DOM is ready

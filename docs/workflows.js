@@ -85,7 +85,9 @@ async function loadComponentType(type) {
     try {
         const response = await fetch(`${GITHUB_CONFIG.baseUrl}/${type}`);
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // If API rate limit or 403, return empty array instead of failing
+            console.warn(`Could not load ${type}: ${response.status} ${response.statusText}`);
+            return [];
         }
         
         const contents = await response.json();
@@ -146,15 +148,59 @@ function getComponentIcon(type) {
 
 // Render components list in the UI
 function renderComponentsList(type, components) {
-    const container = document.getElementById(`${type}-list`);
+    const container = document.getElementById(`${type}-content`);
+    const countElement = document.getElementById(`${type}-count`);
+    
     if (!container) return;
+    
+    // Update count
+    if (countElement) {
+        countElement.textContent = components.length;
+    }
     
     container.innerHTML = '';
     
+    // Group components by category
+    const groupedComponents = components.reduce((acc, component) => {
+        const category = component.category === 'root' ? 'General' : component.category;
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(component);
+        return acc;
+    }, {});
+    
+    // Render each category as a subcategory accordion
+    Object.entries(groupedComponents).forEach(([category, categoryComponents]) => {
+        const subcategoryElement = createSubcategoryElement(category, categoryComponents, type);
+        container.appendChild(subcategoryElement);
+    });
+}
+
+// Create subcategory element
+function createSubcategoryElement(category, components, type) {
+    const subcategorySection = document.createElement('div');
+    subcategorySection.className = 'subcategory-section';
+    
+    const subcategoryId = `${type}-${category.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+    
+    subcategorySection.innerHTML = `
+        <div class="subcategory-header" data-subcategory="${subcategoryId}">
+            <span class="subcategory-title">${category}</span>
+            <span class="subcategory-count">${components.length}</span>
+            <span class="subcategory-arrow">▼</span>
+        </div>
+        <div class="subcategory-content" id="${subcategoryId}">
+            <div class="components-list"></div>
+        </div>
+    `;
+    
+    // Add components to this subcategory
+    const componentsList = subcategorySection.querySelector('.components-list');
     components.forEach(component => {
         const componentElement = createComponentElement(component);
-        container.appendChild(componentElement);
+        componentsList.appendChild(componentElement);
     });
+    
+    return subcategorySection;
 }
 
 // Create component element
@@ -170,7 +216,11 @@ function createComponentElement(component) {
     element.innerHTML = `
         <span class="component-icon">${component.icon}</span>
         <span class="component-name">${component.name}</span>
-        ${component.category !== 'root' ? `<span class="component-category">${component.category}</span>` : ''}
+        <div class="component-actions">
+            <button class="component-detail-btn" title="View Details" onclick="showComponentDetails('${component.type}', '${component.name}', '${component.path}', '${component.category}')">
+                ℹ️
+            </button>
+        </div>
     `;
     
     return element;
@@ -384,6 +434,9 @@ function updateWorkflowStats() {
 
 // Initialize event listeners
 function initializeEventListeners() {
+    // Accordion event listeners
+    initializeAccordions();
+    
     // Component search
     const searchInput = document.getElementById('componentSearch');
     searchInput.addEventListener('input', handleComponentSearch);
@@ -672,6 +725,180 @@ function showSuccess(message) {
     alert('Success: ' + message); // Simple alert for now, could be enhanced with toast notifications
 }
 
+// Initialize accordion functionality
+function initializeAccordions() {
+    // Main accordion headers
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('accordion-header') || event.target.closest('.accordion-header')) {
+            const header = event.target.closest('.accordion-header') || event.target;
+            const category = header.dataset.category;
+            const content = document.getElementById(`${category}-content`);
+            const arrow = header.querySelector('.accordion-arrow');
+            
+            if (content) {
+                const isActive = header.classList.contains('active');
+                
+                if (isActive) {
+                    header.classList.remove('active');
+                    content.classList.remove('active');
+                } else {
+                    header.classList.add('active');
+                    content.classList.add('active');
+                }
+            }
+        }
+        
+        // Subcategory accordion headers
+        if (event.target.classList.contains('subcategory-header') || event.target.closest('.subcategory-header')) {
+            const header = event.target.closest('.subcategory-header') || event.target;
+            const subcategoryId = header.dataset.subcategory;
+            const content = document.getElementById(subcategoryId);
+            
+            if (content) {
+                const isActive = header.classList.contains('active');
+                
+                if (isActive) {
+                    header.classList.remove('active');
+                    content.classList.remove('active');
+                } else {
+                    header.classList.add('active');
+                    content.classList.add('active');
+                }
+            }
+        }
+    });
+}
+
+// Show component details modal
+async function showComponentDetails(type, name, path, category) {
+    const modal = document.getElementById('componentModal');
+    const title = document.getElementById('componentModalTitle');
+    const typeElement = document.getElementById('componentModalType');
+    const categoryElement = document.getElementById('componentModalCategory');
+    const pathElement = document.getElementById('componentModalPath');
+    const descriptionElement = document.getElementById('componentModalDescription');
+    const usageElement = document.getElementById('componentModalUsage');
+    
+    // Set basic info
+    title.textContent = name;
+    typeElement.textContent = type;
+    categoryElement.textContent = category === 'root' ? 'General' : category;
+    pathElement.textContent = path;
+    usageElement.textContent = `cct --${type} "${path}"`;
+    
+    // Set description loading state
+    descriptionElement.innerHTML = '<div class="loading">Loading description...</div>';
+    
+    // Show modal
+    modal.style.display = 'block';
+    
+    // Try to fetch description from GitHub
+    try {
+        const fileExtension = type === 'mcp' ? 'json' : 'md';
+        const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/${type}s/${path}.${fileExtension}`;
+        
+        const response = await fetch(githubUrl);
+        if (response.ok) {
+            const content = await response.text();
+            
+            if (type === 'mcp') {
+                // For MCP files, show JSON structure
+                try {
+                    const jsonData = JSON.parse(content);
+                    descriptionElement.innerHTML = `<pre>${JSON.stringify(jsonData, null, 2)}</pre>`;
+                } catch (e) {
+                    descriptionElement.textContent = 'MCP configuration file';
+                }
+            } else {
+                // For markdown files, extract description from frontmatter or content
+                const lines = content.split('\n');
+                let description = 'No description available';
+                
+                // Try to extract description from frontmatter
+                if (lines[0] === '---') {
+                    for (let i = 1; i < lines.length; i++) {
+                        if (lines[i] === '---') break;
+                        if (lines[i].startsWith('description:')) {
+                            description = lines[i].replace('description:', '').trim();
+                            break;
+                        }
+                    }
+                }
+                
+                // If no frontmatter description, use first few lines of content
+                if (description === 'No description available') {
+                    const contentLines = lines.filter(line => 
+                        !line.startsWith('---') && 
+                        !line.startsWith('name:') && 
+                        !line.startsWith('description:') &&
+                        !line.startsWith('model:') &&
+                        line.trim().length > 0
+                    ).slice(0, 3);
+                    
+                    description = contentLines.join(' ').substring(0, 200) + '...';
+                }
+                
+                descriptionElement.textContent = description;
+            }
+        } else {
+            descriptionElement.textContent = 'Could not load description from GitHub';
+        }
+    } catch (error) {
+        descriptionElement.textContent = 'Error loading description';
+        console.warn('Error loading component description:', error);
+    }
+    
+    // Store current component for potential addition to workflow
+    modal.dataset.currentComponent = JSON.stringify({ type, name, path, category });
+}
+
+// Close component modal
+function closeComponentModal() {
+    const modal = document.getElementById('componentModal');
+    modal.style.display = 'none';
+}
+
+// Add component to workflow from modal
+function addComponentFromModal() {
+    const modal = document.getElementById('componentModal');
+    const componentData = JSON.parse(modal.dataset.currentComponent || '{}');
+    
+    if (componentData.type) {
+        addWorkflowStep(componentData);
+        closeComponentModal();
+    }
+}
+
+// Copy usage command
+function copyUsageCommand() {
+    const usageElement = document.getElementById('componentModalUsage');
+    const text = usageElement.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showSuccess('Usage command copied to clipboard!');
+    }).catch(() => {
+        showError('Failed to copy usage command');
+    });
+}
+
 // Export functions for global access
 window.removeStep = removeStep;
 window.editStep = editStep;
+window.showComponentDetails = showComponentDetails;
+
+// Initialize modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Component modal event listeners
+    document.getElementById('closeComponentModal').addEventListener('click', closeComponentModal);
+    document.getElementById('closeComponentModalBtn').addEventListener('click', closeComponentModal);
+    document.getElementById('addComponentToWorkflow').addEventListener('click', addComponentFromModal);
+    document.getElementById('copyUsageCommand').addEventListener('click', copyUsageCommand);
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        const componentModal = document.getElementById('componentModal');
+        if (event.target === componentModal) {
+            closeComponentModal();
+        }
+    });
+});

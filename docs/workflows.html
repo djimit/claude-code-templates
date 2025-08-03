@@ -10,16 +10,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div class="logo">
-                <h1>🔮 Claude Code Templates</h1>
-                <p>Workflow Builder</p>
+    <header class="workflow-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🔮</div>
+                    <div class="logo-text">
+                        <h1>Claude Code Templates</h1>
+                        <p>Workflow Builder</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="index.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                        </svg>
+                        Components
+                    </a>
+                    <a href="workflows.html" class="nav-link active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H16L12,22L8,18H4A2,2 0 0,1 2,16V4A2,2 0 0,1 4,2M4,4V16H8.83L12,19.17L15.17,16H20V4H4M6,6H18V8H6V6M6,10H16V12H6V10M6,14H14V16H6V14Z"/>
+                        </svg>
+                        Workflows
+                    </a>
+                </nav>
             </div>
-            <nav>
-                <a href="index.html">Components</a>
-                <a href="workflows.html" class="active">Workflows</a>
-            </nav>
         </div>
     </header>
 
@@ -35,23 +50,38 @@
 
             <!-- Component Categories -->
             <div class="component-categories">
-                <div class="category-section">
-                    <h4>🤖 Agents</h4>
-                    <div id="agents-list" class="components-list">
+                <div class="accordion-section">
+                    <div class="accordion-header" data-category="agents">
+                        <span class="accordion-icon">🤖</span>
+                        <span class="accordion-title">Agents</span>
+                        <span class="accordion-count" id="agents-count">0</span>
+                        <span class="accordion-arrow">▼</span>
+                    </div>
+                    <div class="accordion-content" id="agents-content">
                         <!-- Agents will be loaded here -->
                     </div>
                 </div>
                 
-                <div class="category-section">
-                    <h4>⚡ Commands</h4>
-                    <div id="commands-list" class="components-list">
+                <div class="accordion-section">
+                    <div class="accordion-header" data-category="commands">
+                        <span class="accordion-icon">⚡</span>
+                        <span class="accordion-title">Commands</span>
+                        <span class="accordion-count" id="commands-count">0</span>
+                        <span class="accordion-arrow">▼</span>
+                    </div>
+                    <div class="accordion-content" id="commands-content">
                         <!-- Commands will be loaded here -->
                     </div>
                 </div>
                 
-                <div class="category-section">
-                    <h4>🔌 MCPs</h4>
-                    <div id="mcps-list" class="components-list">
+                <div class="accordion-section">
+                    <div class="accordion-header" data-category="mcps">
+                        <span class="accordion-icon">🔌</span>
+                        <span class="accordion-title">MCPs</span>
+                        <span class="accordion-count" id="mcps-count">0</span>
+                        <span class="accordion-arrow">▼</span>
+                    </div>
+                    <div class="accordion-content" id="mcps-content">
                         <!-- MCPs will be loaded here -->
                     </div>
                 </div>
@@ -155,6 +185,47 @@
             <div class="modal-footer">
                 <button id="downloadYaml" class="btn-primary">Download YAML</button>
                 <button id="shareWorkflow" class="btn-secondary">Share Workflow</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Component Details Modal -->
+    <div id="componentModal" class="modal">
+        <div class="modal-content component-modal">
+            <div class="modal-header">
+                <h3 id="componentModalTitle">Component Details</h3>
+                <span class="close" id="closeComponentModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="component-detail-info">
+                    <div class="detail-item">
+                        <strong>Type:</strong>
+                        <span id="componentModalType"></span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Category:</strong>
+                        <span id="componentModalCategory"></span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Path:</strong>
+                        <span id="componentModalPath"></span>
+                    </div>
+                </div>
+                <div class="component-description">
+                    <h4>Description</h4>
+                    <div id="componentModalDescription">Loading description...</div>
+                </div>
+                <div class="component-usage">
+                    <h4>Usage</h4>
+                    <div class="usage-command">
+                        <code id="componentModalUsage"></code>
+                        <button id="copyUsageCommand" class="btn-copy">Copy</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="addComponentToWorkflow" class="btn-primary">Add to Workflow</button>
+                <button id="closeComponentModalBtn" class="btn-secondary">Close</button>
             </div>
         </div>
     </div>

@@ -1,5 +1,89 @@
 /* Workflow Builder Specific Styles */
 
+/* Header Styles */
+.workflow-header {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.workflow-header .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.workflow-header .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-icon {
+    font-size: 36px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo-text h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: linear-gradient(45deg, var(--accent-color), #F97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-text p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-accent);
+    font-weight: 500;
+}
+
+.header-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.nav-link:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.nav-link.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.nav-link svg {
+    opacity: 0.8;
+}
+
 .workflow-container {
     display: flex;
     height: calc(100vh - 100px);
@@ -46,17 +130,133 @@
     box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
-.category-section {
-    margin-bottom: 25px;
+/* Accordion Styles */
+.accordion-section {
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.category-section h4 {
-    margin: 0 0 12px 0;
-    color: var(--text-accent);
-    font-size: 14px;
+.accordion-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.accordion-header:hover {
+    background: var(--bg-hover);
+}
+
+.accordion-header.active {
+    background: var(--bg-hover);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.accordion-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.accordion-title {
+    flex: 1;
+    font-size: 16px;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.accordion-count {
+    font-size: 12px;
+    background: var(--accent-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.accordion-arrow {
+    font-size: 12px;
+    color: var(--text-accent);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.accordion-header.active .accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    display: none;
+    padding: 16px;
+    background: var(--bg-secondary);
+}
+
+.accordion-content.active {
+    display: block;
+}
+
+.subcategory-section {
+    margin-bottom: 16px;
+}
+
+.subcategory-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+}
+
+.subcategory-header:hover {
+    background: var(--bg-hover);
+}
+
+.subcategory-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-transform: capitalize;
+}
+
+.subcategory-count {
+    font-size: 11px;
+    background: var(--text-accent);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.subcategory-arrow {
+    font-size: 10px;
+    color: var(--text-accent);
+    transition: transform 0.2s ease;
+}
+
+.subcategory-header.active .subcategory-arrow {
+    transform: rotate(180deg);
+}
+
+.subcategory-content {
+    display: none;
+    padding-left: 16px;
+}
+
+.subcategory-content.active {
+    display: block;
 }
 
 .components-list {
@@ -101,13 +301,112 @@
     flex: 1;
 }
 
-.component-item .component-category {
-    font-size: 10px;
-    color: var(--text-accent);
-    background: var(--bg-secondary);
-    padding: 2px 6px;
-    border-radius: 4px;
+.component-item .component-actions {
+    display: flex;
+    gap: 4px;
     margin-left: 8px;
+}
+
+.component-detail-btn {
+    width: 24px;
+    height: 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-accent);
+    transition: all 0.2s ease;
+}
+
+.component-detail-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* Component Modal Styles */
+.component-modal {
+    max-width: 600px;
+}
+
+.component-detail-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-item strong {
+    font-size: 12px;
+    color: var(--text-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.component-description {
+    margin-bottom: 24px;
+}
+
+.component-description h4 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.component-description div {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.component-usage h4 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.usage-command {
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.usage-command code {
+    flex: 1;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 13px;
+    color: var(--accent-color);
+    background: none;
+    border: none;
 }
 
 /* Workflow Canvas */

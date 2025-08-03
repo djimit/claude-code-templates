@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workflow Builder - Claude Code Templates</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="workflows.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/workflows.css">
+    <link rel="stylesheet" href="css/workflows-modal.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script> -->
+    <script src="js/utils.js"></script>
+    <script src="js/data-loader.js"></script>
+    <script src="js/modal-helpers.js"></script>
+    <script src="js/workflows-events.js"></script>
 </head>
 <body>
     <header class="workflow-header">
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
-                    <div class="logo-icon">🔮</div>
                     <div class="logo-text">
-                        <h1>Claude Code Templates</h1>
-                        <h2>Workflow Builder</h2>
+                        <h2>🔮 Workflow Builder</h2>
                     </div>
                 </div>
                 <nav class="header-nav">
@@ -48,42 +51,34 @@
                 <input type="text" id="componentSearch" placeholder="Search components...">
             </div>
 
-            <!-- Component Tree View -->
-            <div class="component-tree">
-                <div class="tree-node tree-root" data-category="agents">
-                    <div class="tree-node-header">
-                        <span class="tree-icon folder-icon">📁</span>
-                        <span class="tree-label">agents</span>
-                        <span class="tree-count" id="agents-count">0</span>
-                        <span class="tree-arrow">▶</span>
+            <!-- Component Categories -->
+            <div class="component-categories">
+                <div class="category-card" data-category="agents">
+                    <div class="category-card-header">
+                        <span class="category-icon">🤖</span>
+                        <span class="category-title">Agents</span>
+                        <span class="category-count" id="agents-count">0</span>
+                        <span class="category-arrow">▶</span>
                     </div>
-                    <div class="tree-children" id="agents-tree">
-                        <!-- Agents tree will be loaded here -->
-                    </div>
+                    <div class="category-content" id="agents-tree"></div>
                 </div>
-                
-                <div class="tree-node tree-root" data-category="commands">
-                    <div class="tree-node-header">
-                        <span class="tree-icon folder-icon">📁</span>
-                        <span class="tree-label">commands</span>
-                        <span class="tree-count" id="commands-count">0</span>
-                        <span class="tree-arrow">▶</span>
+                <div class="category-card" data-category="commands">
+                    <div class="category-card-header">
+                        <span class="category-icon">⚡</span>
+                        <span class="category-title">Commands</span>
+                        <span class="category-count" id="commands-count">0</span>
+                        <span class="category-arrow">▶</span>
                     </div>
-                    <div class="tree-children" id="commands-tree">
-                        <!-- Commands tree will be loaded here -->
-                    </div>
+                    <div class="category-content" id="commands-tree"></div>
                 </div>
-                
-                <div class="tree-node tree-root" data-category="mcps">
-                    <div class="tree-node-header">
-                        <span class="tree-icon folder-icon">📁</span>
-                        <span class="tree-label">mcps</span>
-                        <span class="tree-count" id="mcps-count">0</span>
-                        <span class="tree-arrow">▶</span>
+                <div class="category-card" data-category="mcps">
+                    <div class="category-card-header">
+                        <span class="category-icon">🔌</span>
+                        <span class="category-title">MCPs</span>
+                        <span class="category-count" id="mcps-count">0</span>
+                        <span class="category-arrow">▶</span>
                     </div>
-                    <div class="tree-children" id="mcps-tree">
-                        <!-- MCPs tree will be loaded here -->
-                    </div>
+                    <div class="category-content" id="mcps-tree"></div>
                 </div>
             </div>
         </aside>
@@ -99,6 +94,26 @@
             </div>
             
             <div class="workflow-steps" id="workflowSteps">
+                <div class="drop-zone-header">
+                    <div class="workflow-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Agents:</span>
+                            <span id="agentCount" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Commands:</span>
+                            <span id="commandCount" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">MCPs:</span>
+                            <span id="mcpCount" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Steps:</span>
+                            <span id="totalSteps" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="drop-zone">
                     <div class="drop-zone-content">
                         <div class="drop-icon">📋</div>
@@ -108,47 +123,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Workflow Properties Panel -->
-        <aside class="properties-panel">
-            <h3>Workflow Properties</h3>
-            
-            <div class="property-section">
-                <label for="workflowName">Workflow Name</label>
-                <input type="text" id="workflowName" placeholder="My Awesome Workflow" value="">
-            </div>
-            
-            <div class="property-section">
-                <label for="workflowDescription">Description</label>
-                <textarea id="workflowDescription" placeholder="Describe what this workflow does..."></textarea>
-            </div>
-            
-            <div class="property-section">
-                <label for="workflowTags">Tags</label>
-                <input type="text" id="workflowTags" placeholder="development, automation, ai">
-                <small>Comma-separated tags</small>
-            </div>
-            
-            <div class="workflow-stats">
-                <h4>Workflow Stats</h4>
-                <div class="stat-item">
-                    <span class="stat-label">Agents:</span>
-                    <span id="agentCount" class="stat-value">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Commands:</span>
-                    <span id="commandCount" class="stat-value">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">MCPs:</span>
-                    <span id="mcpCount" class="stat-value">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Total Steps:</span>
-                    <span id="totalSteps" class="stat-value">0</span>
-                </div>
-            </div>
-        </aside>
     </main>
 
     <!-- Generate Workflow Modal -->
@@ -185,6 +159,36 @@
             <div class="modal-footer">
                 <button id="downloadYaml" class="btn-primary">Download YAML</button>
                 <button id="shareWorkflow" class="btn-secondary">Share Workflow</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Properties Modal -->
+    <div id="propertiesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Workflow Properties</h3>
+                <span class="close" id="closePropertiesModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="property-section">
+                    <label for="workflowName">Workflow Name</label>
+                    <input type="text" id="workflowName" placeholder="My Awesome Workflow" value="">
+                </div>
+                
+                <div class="property-section">
+                    <label for="workflowDescription">Description</label>
+                    <textarea id="workflowDescription" placeholder="Describe what this workflow does..."></textarea>
+                </div>
+                
+                <div class="property-section">
+                    <label for="workflowTags">Tags</label>
+                    <input type="text" id="workflowTags" placeholder="development, automation, ai">
+                    <small>Comma-separated tags</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveWorkflowProperties" class="btn-primary">Save and Generate</button>
             </div>
         </div>
     </div>
@@ -236,6 +240,5 @@
         <p>Loading components...</p>
     </div>
 
-    <script src="workflows.js"></script>
 </body>
 </html>

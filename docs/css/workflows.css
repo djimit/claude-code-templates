@@ -17,7 +17,7 @@
 .workflow-header .header-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
     height: 80px;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .logo-text h1 {
-    margin: 0 0 4px 0;
+    margin: 0;
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
@@ -97,7 +97,7 @@
 
 /* Components Panel */
 .components-panel {
-    width: 280px;
+    width: 400px;
     background: var(--bg-secondary);
     border-radius: 12px;
     padding: 20px;
@@ -132,7 +132,73 @@
     box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
-/* Tree View Styles - VSCode inspired */
+/* Category Card Styles */
+.component-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.category-card {
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+    transition: all 0.2s ease;
+}
+
+.category-card-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+.category-card-header:hover {
+    background: var(--bg-hover);
+}
+
+.category-icon {
+    font-size: 20px;
+    margin-right: 12px;
+}
+
+.category-title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.category-count {
+    font-size: 12px;
+    background: var(--accent-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.category-arrow {
+    margin-left: 12px;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+/* Category Content Styles */
+.category-content {
+    display: none;
+    padding: 0 16px 16px 16px;
+}
+
+.category-card.expanded .category-arrow {
+    transform: rotate(90deg);
+}
+
+.category-card.expanded .category-content {
+    display: block;
+}
+
+/* Tree View Styles (inside category cards) */
 .component-tree {
     font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
     font-size: 13px;
@@ -141,23 +207,20 @@
 
 .tree-node {
     user-select: none;
+    margin-bottom: 8px;
 }
 
 .tree-node-header {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
+    padding: 8px 12px;
     cursor: pointer;
     transition: background-color 0.1s ease;
-    border-radius: 4px;
-    margin: 1px 0;
+    border-radius: 6px;
+    margin: 4px 0;
 }
 
 .tree-node-header:hover {
-    background: var(--bg-hover);
-}
-
-.tree-node-header.active {
     background: var(--bg-hover);
 }
 
@@ -189,11 +252,6 @@
     text-overflow: ellipsis;
 }
 
-.tree-root .tree-label {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
 .tree-count {
     font-size: 11px;
     background: var(--text-accent);
@@ -223,15 +281,13 @@
     transform: rotate(90deg);
 }
 
-.tree-node-header.expanded .folder-icon {
-    color: #dcb67a;
-}
-
 .tree-children {
     display: none;
-    margin-left: 16px;
+    margin-left: 20px;
     border-left: 1px solid var(--border-color);
-    padding-left: 8px;
+    padding-left: 12px;
+    margin-top: 8px;
+    margin-bottom: 12px;
 }
 
 .tree-children.expanded {
@@ -239,8 +295,8 @@
 }
 
 .tree-file {
-    padding: 2px 8px;
-    margin: 1px 0;
+    padding: 8px 12px;
+    margin: 3px 0;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.1s ease;
@@ -283,8 +339,8 @@
 }
 
 .tree-action-btn {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     background: transparent;
     border: none;
     border-radius: 3px;
@@ -292,7 +348,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 10px;
+    font-size: 14px;
     color: var(--text-accent);
     transition: all 0.15s ease;
 }
@@ -300,172 +356,6 @@
 .tree-action-btn:hover {
     background: var(--accent-color);
     color: white;
-}
-
-/* File type icons */
-.tree-file[data-type="agent"] .file-icon {
-    color: #4CAF50;
-}
-
-.tree-file[data-type="command"] .file-icon {
-    color: #2196F3;
-}
-
-.tree-file[data-type="mcp"] .file-icon {
-    color: #FF9800;
-}
-
-/* Indentation levels */
-.tree-children .tree-children {
-    margin-left: 12px;
-}
-
-.tree-children .tree-children .tree-children {
-    margin-left: 10px;
-}
-
-.component-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    cursor: grab;
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-.component-item:hover {
-    background: var(--bg-hover);
-    border-color: var(--accent-color);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.component-item:active {
-    cursor: grabbing;
-    transform: scale(0.98);
-}
-
-.component-item .component-icon {
-    margin-right: 8px;
-    font-size: 16px;
-}
-
-.component-item .component-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    flex: 1;
-}
-
-.component-item .component-actions {
-    display: flex;
-    gap: 4px;
-    margin-left: 8px;
-}
-
-.component-detail-btn {
-    width: 24px;
-    height: 24px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--text-accent);
-    transition: all 0.2s ease;
-}
-
-.component-detail-btn:hover {
-    background: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
-}
-
-/* Component Modal Styles */
-.component-modal {
-    max-width: 600px;
-}
-
-.component-detail-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-    padding: 16px;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-}
-
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.detail-item strong {
-    font-size: 12px;
-    color: var(--text-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.detail-item span {
-    font-size: 14px;
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-.component-description {
-    margin-bottom: 24px;
-}
-
-.component-description h4 {
-    margin: 0 0 12px 0;
-    color: var(--text-primary);
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.component-description div {
-    background: var(--bg-secondary);
-    padding: 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    line-height: 1.5;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.component-usage h4 {
-    margin: 0 0 12px 0;
-    color: var(--text-primary);
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.usage-command {
-    display: flex;
-    align-items: center;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px;
-}
-
-.usage-command code {
-    flex: 1;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 13px;
-    color: var(--accent-color);
-    background: none;
-    border: none;
 }
 
 /* Workflow Canvas */
@@ -533,13 +423,44 @@
 
 .workflow-steps {
     flex: 1;
-    min-height: 400px;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.drop-zone-header {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.workflow-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent-color);
 }
 
 .drop-zone {
-    width: 100%;
-    height: 100%;
+    flex: 1;
     border: 2px dashed var(--border-color);
     border-radius: 12px;
     display: flex;
@@ -580,27 +501,33 @@
 .workflow-step {
     display: flex;
     align-items: center;
-    padding: 16px 20px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin-bottom: 12px;
+    padding: 12px 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin: 0 0 16px 30px;
     transition: all 0.2s ease;
     position: relative;
+}
+
+.workflow-step:before {
+    content: '';
+    position: absolute;
+    left: -15px;
+    top: -16px;
+    height: calc(100% + 16px);
+    border-left: 2px dashed var(--border-primary);
+}
+
+.workflow-step:first-child:before {
+    top: 0;
+    height: 100%;
 }
 
 .workflow-step:hover {
     border-color: var(--accent-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.workflow-step.sortable-chosen {
-    transform: rotate(5deg);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.workflow-step.sortable-ghost {
-    opacity: 0.5;
+    transform: translateX(5px);
 }
 
 .step-number {
@@ -616,6 +543,11 @@
     font-size: 14px;
     margin-right: 16px;
     flex-shrink: 0;
+    position: absolute;
+    left: -46px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 3px solid var(--bg-secondary);
 }
 
 .step-icon {
@@ -680,23 +612,7 @@
     color: #DC2626;
 }
 
-/* Properties Panel */
-.properties-panel {
-    width: 300px;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 20px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-}
-
-.properties-panel h3 {
-    margin: 0 0 20px 0;
-    color: var(--text-primary);
-    font-size: 18px;
-    font-weight: 600;
-}
-
+/* Properties Modal */
 .property-section {
     margin-bottom: 20px;
 }
@@ -733,39 +649,6 @@
     margin-top: 4px;
     color: var(--text-accent);
     font-size: 12px;
-}
-
-.workflow-stats {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 16px;
-    margin-top: 20px;
-}
-
-.workflow-stats h4 {
-    margin: 0 0 12px 0;
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.stat-label {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.stat-value {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent-color);
 }
 
 /* Modal Styles */
@@ -824,102 +707,6 @@
     padding: 24px;
 }
 
-.workflow-command {
-    margin-bottom: 24px;
-}
-
-.workflow-command label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.command-box {
-    display: flex;
-    align-items: center;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px;
-}
-
-.command-box code {
-    flex: 1;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 13px;
-    color: var(--accent-color);
-    background: none;
-    border: none;
-    word-break: break-all;
-}
-
-.btn-copy {
-    padding: 6px 12px;
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-left: 12px;
-    transition: all 0.2s ease;
-}
-
-.btn-copy:hover {
-    background: #D97706;
-}
-
-.workflow-preview,
-.workflow-yaml {
-    margin-bottom: 24px;
-}
-
-.workflow-preview h4,
-.workflow-yaml h4 {
-    margin: 0 0 12px 0;
-    color: var(--text-primary);
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.workflow-summary {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 16px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.yaml-preview {
-    position: relative;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.yaml-preview pre {
-    margin: 0;
-    padding: 16px;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 12px;
-    color: var(--text-primary);
-    background: none;
-    max-height: 300px;
-    overflow-y: auto;
-    line-height: 1.4;
-}
-
-.yaml-preview .btn-copy {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-}
-
 .modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -930,88 +717,315 @@
     border-radius: 0 0 12px 12px;
 }
 
-/* Loading Spinner */
-.loading-spinner {
+/* Component Modal Specific Styles */
+.component-modal {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    max-width: 700px;
+}
+
+.component-modal .modal-header {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.component-modal .modal-body {
+    padding: 0;
+}
+
+.component-detail-info {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-item strong {
+    color: var(--text-primary);
+    margin-right: 8px;
+    min-width: 80px;
+}
+
+.detail-item span {
+    color: var(--text-secondary);
+}
+
+.component-description {
+    padding: 20px 24px;
+}
+
+.component-description h4 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.component-description div {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.component-usage {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.component-usage h4 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.usage-command {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-tertiary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.usage-command code {
+    flex: 1;
+    color: var(--text-primary);
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    background: none;
+    padding: 0;
+}
+
+.btn-copy {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-copy:hover {
+    background: #d97706;
+}
+
+.btn-primary {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #d97706;
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-color);
+}
+
+/* Modal Styles */
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--bg-secondary);
-    border-top: 4px solid var(--accent-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+.modal-content {
+    background: #2c2c2c;
+    color: #f0f0f0;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid #444;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 16px;
     margin-bottom: 16px;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
 }
 
-.loading-spinner p {
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
+.modal-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .workflow-container {
-        flex-direction: column;
-        height: auto;
-    }
-    
-    .components-panel,
-    .properties-panel {
-        width: 100%;
-        max-height: 300px;
-    }
-    
-    .workflow-canvas {
-        min-height: 500px;
-    }
+.modal-close:hover {
+    color: #fff;
 }
 
-@media (max-width: 768px) {
-    .workflow-container {
-        padding: 10px;
-        gap: 10px;
-    }
-    
-    .canvas-header {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
-    }
-    
-    .canvas-actions {
-        justify-content: center;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 2% auto;
-    }
-    
-    .command-box {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .btn-copy {
-        margin-left: 0;
-        align-self: flex-end;
-    }
+.component-title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.component-icon {
+    font-size: 1.8rem;
+}
+
+.component-description {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.installation-command {
+    margin-bottom: 20px;
+}
+
+.installation-command h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #bbb;
+}
+
+.command-block {
+    display: flex;
+    align-items: center;
+    background: #1e1e1e;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.command-block code {
+    font-family: 'Fira Code', monospace;
+    flex-grow: 1;
+    color: #d4d4d4;
+}
+
+.command-block .copy-btn {
+    background: #444;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.component-preview h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #bbb;
+}
+
+.code-viewer {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #444;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #444;
+    display: flex;
+    justify-content: flex-end;
+    background: #2c2c2c;
+    border-radius: 0 0 12px 12px;
+}
+
+.btn-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #333;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid #555;
+    transition: background-color 0.2s ease;
+}
+
+.btn-github:hover {
+    background: #444;
+    border-color: #777;
+}
+
+.btn-github svg {
+    width: 16px;
+    height: 16px;
+}
+
+.code-viewer pre {
+    margin: 0;
+}
+
+.code-viewer code {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #d4d4d4;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }

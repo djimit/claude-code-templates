@@ -35,8 +35,8 @@ console.log(chalk.hex('#F97316')('═══════════════�
 console.log(
   chalk.hex('#D97706')('🚀 Setup Claude Code for any project language 🚀') +
   chalk.gray(`\n                             v${pkg.version}\n\n`) +
-  chalk.blue('🌐 Templates: ') + chalk.underline('https://davila7.github.io/claude-code-templates/') + '\n' +
-  chalk.blue('📖 Documentation: ') + chalk.underline('https://davila7.github.io/claude-code-templates/docu/')
+  chalk.blue('🌐 Templates: ') + chalk.underline('https://aitmpl.com') + '\n' +
+  chalk.blue('📖 Documentation: ') + chalk.underline('https://docs.aitmpl.com') + '\n'
 );
 
 program

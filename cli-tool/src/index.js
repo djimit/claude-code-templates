@@ -333,17 +333,16 @@ async function installIndividualAgent(agentName, targetDir, options) {
     const agentsDir = path.join(targetDir, '.claude', 'agents');
     await fs.ensureDir(agentsDir);
     
-    // Write the agent file - preserve folder structure if it exists
-    let targetFile;
+    // Write the agent file - always to flat .claude/agents directory
+    let fileName;
     if (agentName.includes('/')) {
       const [category, filename] = agentName.split('/');
-      const categoryDir = path.join(agentsDir, category);
-      await fs.ensureDir(categoryDir);
-      targetFile = path.join(categoryDir, `${filename}.md`);
+      fileName = filename; // Extract just the filename, ignore category for installation
     } else {
-      targetFile = path.join(agentsDir, `${agentName}.md`);
+      fileName = agentName;
     }
     
+    const targetFile = path.join(agentsDir, `${fileName}.md`);
     await fs.writeFile(targetFile, agentContent, 'utf8');
     
     console.log(chalk.green(`✅ Agent "${agentName}" installed successfully!`));
@@ -394,16 +393,16 @@ async function installIndividualCommand(commandName, targetDir, options) {
     const commandsDir = path.join(targetDir, '.claude', 'commands');
     await fs.ensureDir(commandsDir);
     
-    // Write the command file - preserve folder structure if it exists
-    let targetFile;
+    // Write the command file - always to flat .claude/commands directory
+    let fileName;
     if (commandName.includes('/')) {
       const [category, filename] = commandName.split('/');
-      const categoryDir = path.join(commandsDir, category);
-      await fs.ensureDir(categoryDir);
-      targetFile = path.join(categoryDir, `${filename}.md`);
+      fileName = filename; // Extract just the filename, ignore category for installation
     } else {
-      targetFile = path.join(commandsDir, `${commandName}.md`);
+      fileName = commandName;
     }
+    
+    const targetFile = path.join(commandsDir, `${fileName}.md`);
     
     await fs.writeFile(targetFile, commandContent, 'utf8');
     

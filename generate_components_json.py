@@ -58,12 +58,17 @@ def generate_components_json():
                             with open(file_path, 'r', encoding='utf-8') as f:
                                 content = f.read()
                                 
-                            # For MCP JSON files, extract description field if it exists
+                            # For MCP JSON files, extract description field from mcpServers
                             if file_name.endswith('.json') and component_type == 'mcps':
                                 try:
                                     import json
                                     json_data = json.loads(content)
-                                    description = json_data.get('description', '')
+                                    # Extract description from the first mcpServer entry
+                                    if 'mcpServers' in json_data:
+                                        for server_name, server_config in json_data['mcpServers'].items():
+                                            if isinstance(server_config, dict) and 'description' in server_config:
+                                                description = server_config['description']
+                                                break  # Use the first description found
                                 except json.JSONDecodeError:
                                     print(f"Warning: Invalid JSON in {file_path}")
                                     

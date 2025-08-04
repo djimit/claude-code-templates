@@ -223,9 +223,17 @@ async function mergeSettingsFileFromContent(settingsContent, destPath, templateC
 async function processMCPFileFromContent(mcpContent, destPath, templateConfig) {
   const mcpConfig = JSON.parse(mcpContent);
   
-  // Remove description field (only used for frontend display)
-  const cleanMcpConfig = { ...mcpConfig };
-  delete cleanMcpConfig.description;
+  // Clean and prepare MCP config (only keep mcpServers without descriptions)
+  const cleanMcpConfig = { mcpServers: {} };
+  if (mcpConfig.mcpServers) {
+    for (const serverName in mcpConfig.mcpServers) {
+      if (mcpConfig.mcpServers[serverName] && typeof mcpConfig.mcpServers[serverName] === 'object') {
+        const serverConfig = { ...mcpConfig.mcpServers[serverName] };
+        delete serverConfig.description; // Remove description field
+        cleanMcpConfig.mcpServers[serverName] = serverConfig;
+      }
+    }
+  }
   
   // Filter MCPs based on selection
   if (templateConfig.selectedMCPs && cleanMcpConfig.mcpServers) {
@@ -245,19 +253,25 @@ async function mergeMCPFileFromContent(mcpContent, destPath, templateConfig) {
     existingMcpConfig = await fs.readJson(destPath);
   }
   
-  // Remove description field from new config (only used for frontend display)
-  const cleanNewMcpConfig = { ...newMcpConfig };
-  delete cleanNewMcpConfig.description;
+  // Clean new MCP config (only keep mcpServers without descriptions)
+  const cleanNewMcpConfig = { mcpServers: {} };
+  if (newMcpConfig.mcpServers) {
+    for (const serverName in newMcpConfig.mcpServers) {
+      if (newMcpConfig.mcpServers[serverName] && typeof newMcpConfig.mcpServers[serverName] === 'object') {
+        const serverConfig = { ...newMcpConfig.mcpServers[serverName] };
+        delete serverConfig.description; // Remove description field
+        cleanNewMcpConfig.mcpServers[serverName] = serverConfig;
+      }
+    }
+  }
   
   // Filter MCPs based on selection
   if (templateConfig.selectedMCPs && cleanNewMcpConfig.mcpServers) {
     cleanNewMcpConfig.mcpServers = filterMCPsBySelection(cleanNewMcpConfig.mcpServers, templateConfig.selectedMCPs);
   }
   
-  // Merge MCP configurations
+  // Merge MCP configurations (only keep mcpServers)
   const mergedMcpConfig = {
-    ...existingMcpConfig,
-    ...cleanNewMcpConfig,
     mcpServers: {
       ...existingMcpConfig.mcpServers,
       ...cleanNewMcpConfig.mcpServers

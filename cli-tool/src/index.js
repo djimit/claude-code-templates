@@ -460,6 +460,15 @@ async function installIndividualMCP(mcpName, targetDir, options) {
     
     const mcpConfigText = await response.text();
     const mcpConfig = JSON.parse(mcpConfigText);
+
+    // Remove description field from each MCP server before merging
+    if (mcpConfig.mcpServers) {
+      for (const serverName in mcpConfig.mcpServers) {
+        if (mcpConfig.mcpServers[serverName] && typeof mcpConfig.mcpServers[serverName] === 'object') {
+          delete mcpConfig.mcpServers[serverName].description;
+        }
+      }
+    }
     
     // Check if .mcp.json exists in target directory
     const targetMcpFile = path.join(targetDir, '.mcp.json');

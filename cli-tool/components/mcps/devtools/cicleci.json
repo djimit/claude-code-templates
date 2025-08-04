@@ -1,4 +1,5 @@
 {
+  "description": "Integrate CircleCI build and deployment pipeline management with your Claude Code workflow. Monitor builds, trigger deployments, and access project insights.",
   "mcpServers": {
     "circleci-mcp-server": {
       "command": "npx",

@@ -53,9 +53,20 @@ def generate_components_json():
                         
                         # Read file content
                         content = ''
+                        description = ''
                         try:
                             with open(file_path, 'r', encoding='utf-8') as f:
                                 content = f.read()
+                                
+                            # For MCP JSON files, extract description field if it exists
+                            if file_name.endswith('.json') and component_type == 'mcps':
+                                try:
+                                    import json
+                                    json_data = json.loads(content)
+                                    description = json_data.get('description', '')
+                                except json.JSONDecodeError:
+                                    print(f"Warning: Invalid JSON in {file_path}")
+                                    
                         except Exception as e:
                             print(f"Warning: Could not read file {file_path}: {e}")
 
@@ -64,7 +75,8 @@ def generate_components_json():
                             'path': os.path.join(category, file_name).replace("\\", "/"),
                             'category': category,
                             'type': component_type[:-1],  # singular form
-                            'content': content  # Add file content
+                            'content': content,  # Add file content
+                            'description': description  # Add description for MCPs
                         }
                         components_data[component_type].append(component)
 

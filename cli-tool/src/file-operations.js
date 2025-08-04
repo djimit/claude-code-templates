@@ -223,14 +223,18 @@ async function mergeSettingsFileFromContent(settingsContent, destPath, templateC
 async function processMCPFileFromContent(mcpContent, destPath, templateConfig) {
   const mcpConfig = JSON.parse(mcpContent);
   
+  // Remove description field (only used for frontend display)
+  const cleanMcpConfig = { ...mcpConfig };
+  delete cleanMcpConfig.description;
+  
   // Filter MCPs based on selection
-  if (templateConfig.selectedMCPs && mcpConfig.mcpServers) {
-    mcpConfig.mcpServers = filterMCPsBySelection(mcpConfig.mcpServers, templateConfig.selectedMCPs);
+  if (templateConfig.selectedMCPs && cleanMcpConfig.mcpServers) {
+    cleanMcpConfig.mcpServers = filterMCPsBySelection(cleanMcpConfig.mcpServers, templateConfig.selectedMCPs);
   }
   
   const destDir = path.dirname(destPath);
   await fs.ensureDir(destDir);
-  await fs.writeJson(destPath, mcpConfig, { spaces: 2 });
+  await fs.writeJson(destPath, cleanMcpConfig, { spaces: 2 });
 }
 
 async function mergeMCPFileFromContent(mcpContent, destPath, templateConfig) {
@@ -241,18 +245,22 @@ async function mergeMCPFileFromContent(mcpContent, destPath, templateConfig) {
     existingMcpConfig = await fs.readJson(destPath);
   }
   
+  // Remove description field from new config (only used for frontend display)
+  const cleanNewMcpConfig = { ...newMcpConfig };
+  delete cleanNewMcpConfig.description;
+  
   // Filter MCPs based on selection
-  if (templateConfig.selectedMCPs && newMcpConfig.mcpServers) {
-    newMcpConfig.mcpServers = filterMCPsBySelection(newMcpConfig.mcpServers, templateConfig.selectedMCPs);
+  if (templateConfig.selectedMCPs && cleanNewMcpConfig.mcpServers) {
+    cleanNewMcpConfig.mcpServers = filterMCPsBySelection(cleanNewMcpConfig.mcpServers, templateConfig.selectedMCPs);
   }
   
   // Merge MCP configurations
   const mergedMcpConfig = {
     ...existingMcpConfig,
-    ...newMcpConfig,
+    ...cleanNewMcpConfig,
     mcpServers: {
       ...existingMcpConfig.mcpServers,
-      ...newMcpConfig.mcpServers
+      ...cleanNewMcpConfig.mcpServers
     }
   };
   

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "just-mcp": {
+      "command": "/path/to/just-mcp",
+      "args": ["--stdio"]
+    }
+  }
+}

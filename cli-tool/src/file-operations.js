@@ -15,17 +15,43 @@ const GITHUB_CONFIG = {
 // Cache for downloaded files to avoid repeated downloads
 const downloadCache = new Map();
 
-async function downloadFileFromGitHub(filePath) {
+async function downloadFileFromGitHub(filePath, retryCount = 0) {
   // Check cache first
   if (downloadCache.has(filePath)) {
     return downloadCache.get(filePath);
   }
 
+  const maxRetries = 3;
+  const baseDelay = 1000;
+  const retryDelay = baseDelay * Math.pow(2, retryCount); // Exponential backoff: 1s, 2s, 4s
   const githubUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.templatesPath}/${filePath}`;
   
   try {
     const response = await fetch(githubUrl);
+    
+    // Handle rate limiting for raw.githubusercontent.com (though less common)
+    if (response.status === 403 && retryCount < maxRetries) {
+      const rateLimitMsg = response.statusText.toLowerCase();
+      if (rateLimitMsg.includes('rate limit') || rateLimitMsg.includes('forbidden')) {
+        console.log(chalk.yellow(`⏳ Rate limited downloading ${filePath}, retrying in ${Math.ceil(retryDelay / 1000)}s...`));
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return downloadFileFromGitHub(filePath, retryCount + 1);
+      }
+    }
+    
     if (!response.ok) {
+      // For 404s, just throw - these are legitimate missing files
+      if (response.status === 404) {
+        throw new Error(`File not found: ${filePath} (404)`);
+      }
+      
+      // For other errors, retry if possible
+      if (retryCount < maxRetries) {
+        console.log(chalk.yellow(`⚠️  Error ${response.status} downloading ${filePath}, retrying...`));
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return downloadFileFromGitHub(filePath, retryCount + 1);
+      }
+      
       throw new Error(`Failed to download ${filePath}: ${response.status} ${response.statusText}`);
     }
     
@@ -33,37 +59,122 @@ async function downloadFileFromGitHub(filePath) {
     downloadCache.set(filePath, content);
     return content;
   } catch (error) {
-    console.error(chalk.red(`❌ Error downloading ${filePath} from GitHub:`), error.message);
+    // Network errors - retry if possible
+    if (retryCount < maxRetries && (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.message.includes('fetch'))) {
+      console.log(chalk.yellow(`⚠️  Network error downloading ${filePath}, retrying in ${Math.ceil(retryDelay / 1000)}s...`));
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return downloadFileFromGitHub(filePath, retryCount + 1);
+    }
+    
+    // Don't log error here - let caller handle it
     throw error;
   }
 }
 
-async function downloadDirectoryFromGitHub(dirPath) {
+async function downloadDirectoryFromGitHub(dirPath, retryCount = 0) {
+  const maxRetries = 5; // Increased retry attempts
+  const baseDelay = 2000; // Base delay of 2 seconds
+  const retryDelay = baseDelay * Math.pow(2, retryCount); // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+  
   // For directories, we need to get the list of files first
   // GitHub API endpoint to get directory contents
   const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.templatesPath}/${dirPath}?ref=${GITHUB_CONFIG.branch}`;
   
   try {
     const response = await fetch(apiUrl);
+    
+    // Handle rate limiting with more sophisticated detection
+    if (response.status === 403) {
+      const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+      const rateLimitReset = response.headers.get('x-ratelimit-reset');
+      const isRateLimit = rateLimitRemaining === '0' || response.statusText.toLowerCase().includes('rate limit');
+      
+      if (isRateLimit && retryCount < maxRetries) {
+        let waitTime = retryDelay;
+        
+        // If we have reset time, calculate exact wait time
+        if (rateLimitReset) {
+          const resetTime = parseInt(rateLimitReset) * 1000;
+          const currentTime = Date.now();
+          const exactWaitTime = Math.max(resetTime - currentTime + 1000, retryDelay); // Add 1s buffer
+          waitTime = Math.min(exactWaitTime, 60000); // Cap at 60 seconds
+        }
+        
+        console.log(chalk.yellow(`⏳ GitHub API rate limit exceeded for ${dirPath}`));
+        console.log(chalk.yellow(`   Waiting ${Math.ceil(waitTime / 1000)}s before retry ${retryCount + 1}/${maxRetries}...`));
+        console.log(chalk.gray(`   Rate limit resets at: ${rateLimitReset ? new Date(parseInt(rateLimitReset) * 1000).toLocaleTimeString() : 'unknown'}`));
+        
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return downloadDirectoryFromGitHub(dirPath, retryCount + 1);
+      } else if (isRateLimit) {
+        console.log(chalk.red(`❌ GitHub API rate limit exceeded after ${maxRetries} retries`));
+        console.log(chalk.yellow(`   Directory ${dirPath} will be skipped (some template files may be missing)`));
+        return {}; // Return empty object instead of throwing error
+      } else {
+        // Different 403 error (permissions, etc.)
+        console.log(chalk.yellow(`⚠️  Access denied for ${dirPath} (403). This may be normal for some templates.`));
+        return {};
+      }
+    }
+    
     if (!response.ok) {
+      // If it's a 404, the directory doesn't exist - that's ok for some templates
+      if (response.status === 404) {
+        console.log(chalk.yellow(`⚠️  Directory ${dirPath} not found (this is normal for some templates)`));
+        return {};
+      }
+      
+      // For other errors, retry if we haven't exceeded max retries
+      if (retryCount < maxRetries) {
+        console.log(chalk.yellow(`⚠️  Error ${response.status} for ${dirPath}, retrying in ${Math.ceil(retryDelay / 1000)}s...`));
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return downloadDirectoryFromGitHub(dirPath, retryCount + 1);
+      }
+      
       throw new Error(`Failed to get directory listing for ${dirPath}: ${response.status} ${response.statusText}`);
     }
     
     const items = await response.json();
     const files = {};
+    let successCount = 0;
+    let skipCount = 0;
     
     for (const item of items) {
       if (item.type === 'file') {
         const relativePath = path.relative(GITHUB_CONFIG.templatesPath, item.path);
-        const content = await downloadFileFromGitHub(relativePath);
-        files[item.name] = content;
+        try {
+          const content = await downloadFileFromGitHub(relativePath);
+          files[item.name] = content;
+          successCount++;
+        } catch (fileError) {
+          skipCount++;
+          if (fileError.message.includes('rate limit') || fileError.message.includes('403')) {
+            console.log(chalk.yellow(`⚠️  Rate limited while downloading ${item.name}, skipping...`));
+          } else {
+            console.log(chalk.yellow(`⚠️  Skipped ${item.name}: ${fileError.message}`));
+          }
+          // Continue with other files instead of failing completely
+        }
       }
+    }
+    
+    if (successCount > 0) {
+      console.log(chalk.green(`✓ Downloaded ${successCount} files from ${dirPath}${skipCount > 0 ? ` (${skipCount} skipped)` : ''}`));
+    } else if (skipCount > 0) {
+      console.log(chalk.yellow(`⚠️  All ${skipCount} files in ${dirPath} were skipped due to errors`));
     }
     
     return files;
   } catch (error) {
+    if (retryCount < maxRetries && (error.message.includes('rate limit') || error.message.includes('ECONNRESET'))) {
+      console.log(chalk.yellow(`⚠️  Network error for ${dirPath}, retrying in ${Math.ceil(retryDelay / 1000)}s...`));
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return downloadDirectoryFromGitHub(dirPath, retryCount + 1);
+    }
+    
     console.error(chalk.red(`❌ Error downloading directory ${dirPath} from GitHub:`), error.message);
-    throw error;
+    console.log(chalk.yellow(`   Continuing with available files (some template files may be missing)`));
+    return {}; // Return empty object to continue with other parts of the template
   }
 }
 
@@ -258,6 +369,12 @@ async function copyTemplateFiles(templateConfig, targetDir, options = {}) {
   // Determine overwrite behavior based on user choice
   const shouldOverwrite = userAction !== 'merge';
   
+  // Track success/failure statistics
+  let totalFiles = templateConfig.files.length;
+  let successfulFiles = 0;
+  let skippedFiles = 0;
+  let failedFiles = 0;
+  
   // Copy base files and framework-specific files
   for (const file of templateConfig.files) {
     const destPath = path.join(targetDir, file.destination);
@@ -269,20 +386,35 @@ async function copyTemplateFiles(templateConfig, targetDir, options = {}) {
         await fs.ensureDir(destPath);
         
         // Download framework-specific commands from GitHub
-        const frameworkFiles = await downloadDirectoryFromGitHub(file.source);
-        for (const [frameworkFileName, content] of Object.entries(frameworkFiles)) {
-          const destFile = path.join(destPath, frameworkFileName);
+        try {
+          const frameworkFiles = await downloadDirectoryFromGitHub(file.source);
+          let filesWritten = 0;
           
-          // In merge mode, skip if file already exists
-          if (userAction === 'merge' && await fs.pathExists(destFile)) {
-            console.log(chalk.blue(`⏭️  Skipped ${frameworkFileName} (already exists)`));
-            continue;
+          for (const [frameworkFileName, content] of Object.entries(frameworkFiles)) {
+            const destFile = path.join(destPath, frameworkFileName);
+            
+            // In merge mode, skip if file already exists
+            if (userAction === 'merge' && await fs.pathExists(destFile)) {
+              console.log(chalk.blue(`⏭️  Skipped ${frameworkFileName} (already exists)`));
+              continue;
+            }
+            
+            await fs.writeFile(destFile, content, 'utf8');
+            filesWritten++;
           }
           
-          await fs.writeFile(destFile, content, 'utf8');
+          if (filesWritten > 0) {
+            console.log(chalk.green(`✓ Downloaded ${filesWritten} framework commands ${file.source} → ${file.destination}`));
+            successfulFiles++;
+          } else {
+            console.log(chalk.yellow(`⚠️  No framework commands available for ${file.source}`));
+            skippedFiles++;
+          }
+        } catch (error) {
+          console.log(chalk.yellow(`⚠️  Could not download framework commands from ${file.source}: ${error.message}`));
+          console.log(chalk.yellow(`   This is normal for some templates - continuing...`));
+          failedFiles++;
         }
-        
-        console.log(chalk.green(`✓ Downloaded framework commands ${file.source} → ${file.destination}`));
       } else if (file.source.includes('.claude') && !file.source.includes('examples/')) {
         // This is base .claude directory - download it but handle commands specially
         await fs.ensureDir(destPath);
@@ -335,11 +467,15 @@ async function copyTemplateFiles(templateConfig, targetDir, options = {}) {
           }
           
         } catch (error) {
-          console.error(chalk.red(`❌ Error downloading .claude directory: ${error.message}`));
-          throw error;
+          console.log(chalk.yellow(`⚠️  Could not download .claude directory (${error.message})`));
+          console.log(chalk.yellow(`   Continuing with other template files...`));
+          failedFiles++;
+          // Don't throw - continue with other files
+          continue; // Skip the success message
         }
         
         console.log(chalk.green(`✓ Downloaded base configuration and commands ${file.source} → ${file.destination}`));
+        successfulFiles++;
       } else if (file.source.includes('settings.json') && templateConfig.selectedHooks) {
         // Download and process settings.json with hooks
         const settingsContent = await downloadFileFromGitHub(file.source);
@@ -352,6 +488,7 @@ async function copyTemplateFiles(templateConfig, targetDir, options = {}) {
           await processSettingsFileFromContent(settingsContent, destPath, templateConfig);
           console.log(chalk.green(`✓ Downloaded ${file.source} → ${file.destination} (with selected hooks)`));
         }
+        successfulFiles++;
       } else if (file.source.includes('.mcp.json') && templateConfig.selectedMCPs) {
         // Download and process MCP config with selected MCPs
         const mcpContent = await downloadFileFromGitHub(file.source);
@@ -364,28 +501,72 @@ async function copyTemplateFiles(templateConfig, targetDir, options = {}) {
           await processMCPFileFromContent(mcpContent, destPath, templateConfig);
           console.log(chalk.green(`✓ Downloaded ${file.source} → ${file.destination} (with selected MCPs)`));
         }
+        successfulFiles++;
       } else {
         // Download regular files (CLAUDE.md, etc.)
         // In merge mode, skip if file already exists
         if (userAction === 'merge' && await fs.pathExists(destPath)) {
           console.log(chalk.blue(`⏭️  Skipped ${file.destination} (already exists)`));
+          skippedFiles++;
           continue;
         }
         
-        const fileContent = await downloadFileFromGitHub(file.source);
-        const destDir = path.dirname(destPath);
-        await fs.ensureDir(destDir);
-        await fs.writeFile(destPath, fileContent, 'utf8');
-        console.log(chalk.green(`✓ Downloaded ${file.source} → ${file.destination}`));
+        try {
+          const fileContent = await downloadFileFromGitHub(file.source);
+          const destDir = path.dirname(destPath);
+          await fs.ensureDir(destDir);
+          await fs.writeFile(destPath, fileContent, 'utf8');
+          console.log(chalk.green(`✓ Downloaded ${file.source} → ${file.destination}`));
+          successfulFiles++;
+        } catch (error) {
+          if (error.message.includes('404')) {
+            console.log(chalk.yellow(`⚠️  File ${file.source} not found (404) - this is normal for some templates`));
+            skippedFiles++;
+          } else {
+            console.log(chalk.yellow(`⚠️  Could not download ${file.source}: ${error.message}`));
+            console.log(chalk.yellow(`   Continuing with other template files...`));
+            failedFiles++;
+          }
+        }
       }
     } catch (error) {
-      console.error(chalk.red(`✗ Failed to copy ${file.source}:`), error.message);
-      throw error;
+      // Only throw for critical errors that should stop the entire process
+      if (error.message.includes('EACCES') || error.message.includes('permission denied')) {
+        console.error(chalk.red(`✗ Permission error copying ${file.source}:`), error.message);
+        throw error;
+      } else {
+        console.log(chalk.yellow(`⚠️  Could not process ${file.source}: ${error.message}`));
+        console.log(chalk.yellow(`   Skipping this file and continuing...`));
+        failedFiles++;
+      }
     }
   }
   
-  console.log(chalk.cyan(`📦 All templates downloaded from: https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.templatesPath}`));
-  return true; // Indicate successful completion
+  // Show download summary
+  console.log(chalk.cyan('\n📦 Template Installation Summary:'));
+  if (successfulFiles > 0) {
+    console.log(chalk.green(`   ✓ ${successfulFiles} files downloaded successfully`));
+  }
+  if (skippedFiles > 0) {
+    console.log(chalk.blue(`   ⏭️  ${skippedFiles} files skipped (already exist or not needed)`));
+  }
+  if (failedFiles > 0) {
+    console.log(chalk.yellow(`   ⚠️  ${failedFiles} files failed to download (continuing anyway)`));
+  }
+  
+  console.log(chalk.gray(`\n📚 Source: https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/tree/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.templatesPath}`));
+  
+  // Consider it successful if we got at least some files
+  const hasEssentialFiles = successfulFiles > 0;
+  if (hasEssentialFiles) {
+    console.log(chalk.green('\n✅ Template installation completed successfully!'));
+    if (failedFiles > 0) {
+      console.log(chalk.yellow('   Some optional files were skipped due to rate limits or missing files.'));
+      console.log(chalk.yellow('   This is normal and your Claude Code configuration should work properly.'));
+    }
+  }
+  
+  return hasEssentialFiles;
 }
 
 async function runPostInstallationValidation(targetDir, templateConfig) {

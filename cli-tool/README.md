@@ -51,14 +51,14 @@ npx claude-code-templates@latest --health-check
 
 ## 📖 Documentation
 
-**[📚 Complete Documentation](https://aitmpl.com/docu/)** - Comprehensive guides, examples, and API reference
+**[📚 Complete Documentation](https://docs.aitmpl.com/)** - Comprehensive guides, examples, and API reference
 
 Quick links:
-- [Getting Started](https://aitmpl.com/docu/docs/intro) - Installation and first steps
-- [Project Setup](https://aitmpl.com/docu/docs/project-setup/interactive-setup) - Configure your projects
-- [Analytics Dashboard](https://aitmpl.com/docu/docs/analytics/overview) - Real-time monitoring
-- [Individual Components](https://aitmpl.com/docu/docs/components/overview) - Agents, Commands, MCPs
-- [CLI Options](https://aitmpl.com/docu/docs/cli-options) - All available commands
+- [Getting Started](https://docs.aitmpl.com/docs/intro) - Installation and first steps
+- [Project Setup](https://docs.aitmpl.com/docs/project-setup/interactive-setup) - Configure your projects
+- [Analytics Dashboard](https://docs.aitmpl.com/docs/analytics/overview) - Real-time monitoring
+- [Individual Components](https://docs.aitmpl.com/docs/components/overview) - Agents, Commands, MCPs
+- [CLI Options](https://docs.aitmpl.com/docs/cli-options) - All available commands
 
 ## 🤝 Contributing
 
@@ -71,7 +71,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 ## 🔗 Links
 
 - **🌐 Browse Components**: [aitmpl.com](https://aitmpl.com)
-- **📚 Documentation**: [aitmpl.com/docu](https://aitmpl.com/docu)
+- **📚 Documentation**: [docs.aitmpl.com](https://docs.aitmpl.com)
 - **🐛 Issues**: [GitHub Issues](https://github.com/davila7/claude-code-templates/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/davila7/claude-code-templates/discussions)
 

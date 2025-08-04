@@ -271,7 +271,7 @@ async function createClaudeConfig(options = {}) {
   console.log(chalk.white('  3. Start using Claude Code with: claude'));
   console.log('');
   console.log(chalk.blue('🌐 View all available templates at: https://aitmpl.com/'));
-  console.log(chalk.blue('📖 Read the complete documentation at: https://aitmpl.com/docu/'));
+  console.log(chalk.blue('📖 Read the complete documentation at: https://docs.aitmpl.com/'));
   
   if (config.language !== 'common') {
     console.log(chalk.yellow(`💡 Language-specific features for ${config.language} have been configured`));

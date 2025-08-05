@@ -55,10 +55,10 @@ program
   .option('--analytics', 'launch real-time Claude Code analytics dashboard')
   .option('--chats, --agents', 'launch Claude Code chats/agents dashboard (opens directly to conversations)')
   .option('--health-check, --health, --check, --verify', 'run comprehensive health check to verify Claude Code setup')
-  .option('--agent <agent>', 'install specific agent component')
-  .option('--command <command>', 'install specific command component')
-  .option('--mcp <mcp>', 'install specific MCP component')
-  .option('--workflow <workflow>', 'install workflow from hash (format: #hash)')
+  .option('--agent <agent>', 'install specific agent component (supports comma-separated values)')
+  .option('--command <command>', 'install specific command component (supports comma-separated values)')
+  .option('--mcp <mcp>', 'install specific MCP component (supports comma-separated values)')
+  .option('--workflow <workflow>', 'install workflow from hash (#hash) OR workflow YAML (base64 encoded) when used with --agent/--command/--mcp')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

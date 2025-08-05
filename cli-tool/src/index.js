@@ -90,23 +90,17 @@ async function showMainMenu() {
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
   
-  // Handle individual component installation
-  if (options.agent) {
-    await installIndividualAgent(options.agent, targetDir, options);
+  // Handle multiple components installation (new approach)
+  if (options.agent || options.command || options.mcp) {
+    // If --workflow is used with components, treat it as YAML
+    if (options.workflow) {
+      options.yaml = options.workflow;
+    }
+    await installMultipleComponents(options, targetDir);
     return;
   }
   
-  if (options.command) {
-    await installIndividualCommand(options.command, targetDir, options);
-    return;
-  }
-  
-  if (options.mcp) {
-    await installIndividualMCP(options.mcp, targetDir, options);
-    return;
-  }
-  
-  // Handle workflow installation
+  // Handle workflow installation (hash-based)
   if (options.workflow) {
     await installWorkflow(options.workflow, targetDir, options);
     return;
@@ -598,6 +592,117 @@ async function getAvailableAgentsFromGitHub() {
 }
 
 /**
+ * Install multiple components with optional YAML workflow
+ */
+async function installMultipleComponents(options, targetDir) {
+  console.log(chalk.blue('🔧 Installing multiple components...'));
+  
+  try {
+    const components = {
+      agents: [],
+      commands: [],
+      mcps: []
+    };
+    
+    // Parse comma-separated values for each component type
+    if (options.agent) {
+      const agentsInput = Array.isArray(options.agent) ? options.agent.join(',') : options.agent;
+      components.agents = agentsInput.split(',').map(a => a.trim()).filter(a => a);
+    }
+    
+    if (options.command) {
+      const commandsInput = Array.isArray(options.command) ? options.command.join(',') : options.command;
+      components.commands = commandsInput.split(',').map(c => c.trim()).filter(c => c);
+    }
+    
+    if (options.mcp) {
+      const mcpsInput = Array.isArray(options.mcp) ? options.mcp.join(',') : options.mcp;
+      components.mcps = mcpsInput.split(',').map(m => m.trim()).filter(m => m);
+    }
+    
+    const totalComponents = components.agents.length + components.commands.length + components.mcps.length;
+    
+    if (totalComponents === 0) {
+      console.log(chalk.yellow('⚠️  No components specified to install.'));
+      return;
+    }
+    
+    console.log(chalk.cyan(`📦 Installing ${totalComponents} components:`));
+    console.log(chalk.gray(`   Agents: ${components.agents.length}`));
+    console.log(chalk.gray(`   Commands: ${components.commands.length}`));
+    console.log(chalk.gray(`   MCPs: ${components.mcps.length}`));
+    
+    // Install agents
+    for (const agent of components.agents) {
+      console.log(chalk.gray(`   Installing agent: ${agent}`));
+      await installIndividualAgent(agent, targetDir, { ...options, silent: true });
+    }
+    
+    // Install commands
+    for (const command of components.commands) {
+      console.log(chalk.gray(`   Installing command: ${command}`));
+      await installIndividualCommand(command, targetDir, { ...options, silent: true });
+    }
+    
+    // Install MCPs
+    for (const mcp of components.mcps) {
+      console.log(chalk.gray(`   Installing MCP: ${mcp}`));
+      await installIndividualMCP(mcp, targetDir, { ...options, silent: true });
+    }
+    
+    // Handle YAML workflow if provided
+    if (options.yaml) {
+      console.log(chalk.blue('\n📄 Processing workflow YAML...'));
+      
+      try {
+        // Decode the YAML from base64
+        const yamlContent = Buffer.from(options.yaml, 'base64').toString('utf8');
+        
+        // Parse workflow name from YAML (try to extract from name: field)
+        let workflowName = 'custom-workflow';
+        const nameMatch = yamlContent.match(/name:\s*["']?([^"'\n]+)["']?/);
+        if (nameMatch) {
+          workflowName = nameMatch[1].trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        }
+        
+        // Save YAML to workflows directory
+        const workflowsDir = path.join(targetDir, '.claude', 'workflows');
+        const workflowFile = path.join(workflowsDir, `${workflowName}.yaml`);
+        
+        await fs.ensureDir(workflowsDir);
+        await fs.writeFile(workflowFile, yamlContent, 'utf8');
+        
+        console.log(chalk.green(`✅ Workflow YAML saved: ${path.relative(targetDir, workflowFile)}`));
+        
+      } catch (yamlError) {
+        console.log(chalk.red(`❌ Error processing YAML: ${yamlError.message}`));
+      }
+    }
+    
+    console.log(chalk.green(`\n✅ Successfully installed ${totalComponents} components!`));
+    console.log(chalk.cyan(`📁 Components installed to: .claude/`));
+    
+    if (options.yaml) {
+      console.log(chalk.cyan(`📄 Workflow file created in: .claude/workflows/`));
+      console.log(chalk.cyan(`🚀 Use the workflow file with Claude Code to execute the complete setup`));
+    }
+    
+    // Track installation
+    trackingService.trackDownload('multi-component', 'batch', {
+      installation_type: 'multi-component',
+      agents_count: components.agents.length,
+      commands_count: components.commands.length,
+      mcps_count: components.mcps.length,
+      has_yaml: !!options.yaml,
+      target_directory: path.relative(process.cwd(), targetDir)
+    });
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing components: ${error.message}`));
+  }
+}
+
+/**
  * Show available agents organized by category
  */
 async function showAvailableAgents() {
@@ -673,16 +778,48 @@ async function installWorkflow(workflowHash, targetDir, options) {
     console.log(chalk.gray(`   Commands: ${commands.length}`));
     console.log(chalk.gray(`   MCPs: ${mcps.length}`));
     
-    // Install agents
-    for (const agent of agents) {
-      console.log(chalk.gray(`   Installing agent: ${agent.name}`));
-      await installIndividualAgent(agent.path, targetDir, { ...options, silent: true });
-    }
-    
-    // Install commands
-    for (const command of commands) {
-      console.log(chalk.gray(`   Installing command: ${command.name}`));
-      await installIndividualCommand(command.path, targetDir, { ...options, silent: true });
+    // Install components from workflow data (not from GitHub)
+    if (workflowData.components) {
+      console.log(chalk.blue(`📦 Installing components from workflow package...`));
+      
+      // Install agents
+      if (workflowData.components.agent) {
+        for (const agent of workflowData.components.agent) {
+          console.log(chalk.gray(`   Installing agent: ${agent.name}`));
+          await installComponentFromWorkflow(agent, 'agent', targetDir, options);
+        }
+      }
+      
+      // Install commands  
+      if (workflowData.components.command) {
+        for (const command of workflowData.components.command) {
+          console.log(chalk.gray(`   Installing command: ${command.name}`));
+          await installComponentFromWorkflow(command, 'command', targetDir, options);
+        }
+      }
+      
+      // Install MCPs
+      if (workflowData.components.mcp) {
+        for (const mcp of workflowData.components.mcp) {
+          console.log(chalk.gray(`   Installing MCP: ${mcp.name}`));
+          await installComponentFromWorkflow(mcp, 'mcp', targetDir, options);
+        }
+      }
+    } else {
+      // Fallback to old method for legacy workflows
+      console.log(chalk.yellow(`⚠️  Using legacy component installation method...`));
+      
+      // Install agents
+      for (const agent of agents) {
+        console.log(chalk.gray(`   Installing agent: ${agent.name}`));
+        await installIndividualAgent(agent.path, targetDir, { ...options, silent: true });
+      }
+      
+      // Install commands
+      for (const command of commands) {
+        console.log(chalk.gray(`   Installing command: ${command.name}`));
+        await installIndividualCommand(command.path, targetDir, { ...options, silent: true });
+      }
     }
     
     // Install MCPs
@@ -692,7 +829,15 @@ async function installWorkflow(workflowHash, targetDir, options) {
     }
     
     // Generate and save workflow YAML
-    const yamlContent = generateWorkflowYAML(workflowData);
+    let yamlContent;
+    if (workflowData.yaml) {
+      // Use YAML from workflow package
+      yamlContent = workflowData.yaml;
+    } else {
+      // Generate YAML (legacy)
+      yamlContent = generateWorkflowYAML(workflowData);
+    }
+    
     const workflowsDir = path.join(targetDir, '.claude', 'workflows');
     const workflowFile = path.join(workflowsDir, `${workflowData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`);
     
@@ -729,41 +874,106 @@ async function installWorkflow(workflowHash, targetDir, options) {
 }
 
 /**
+ * Decompress string with Unicode support
+ */
+function decompressString(compressed) {
+  try {
+    // Simple Base64 decoding with Unicode support
+    const decoded = Buffer.from(compressed, 'base64').toString('utf8');
+    // Convert URI encoded characters back
+    return decodeURIComponent(decoded.replace(/(.)/g, function(m, p) {
+      let code = p.charCodeAt(0).toString(16).toUpperCase();
+      if (code.length < 2) code = '0' + code;
+      return '%' + code;
+    }));
+  } catch (error) {
+    throw new Error(`Decompression failed: ${error.message}`);
+  }
+}
+
+/**
  * Fetch workflow data from hash
  * In production, this would fetch from a remote workflow registry
  * For now, we'll simulate this functionality
  */
 async function fetchWorkflowData(hash) {
-  // Simulate fetching workflow data
-  // In production, this would make an API call to a workflow registry
-  // For demo purposes, we'll return a sample workflow if hash matches demo
-  
-  // Demo workflow for testing
-  if (hash === 'demo123' || hash === 'abc123test') {
-    console.log(chalk.green('🎯 Demo workflow found! Using sample configuration...'));
-    return {
-      name: 'Full Stack Development Workflow',
-      description: 'Complete workflow for setting up a full-stack development environment with React frontend, Node.js backend, and security auditing',
-      tags: ['development', 'fullstack', 'react', 'security'],
-      version: '1.0.0',
-      hash: hash,
-      steps: [
-        {
-          type: 'agent',
-          name: 'frontend-developer',
-          path: 'development-team/frontend-developer',
-          category: 'development-team',
-          description: 'Setup React frontend development environment'
-        },
-        {
-          type: 'agent',
-          name: 'backend-architect',
-          path: 'development-team/backend-architect',
-          category: 'development-team',
-          description: 'Configure Node.js backend architecture'
-        },
-        {
-          type: 'command',
+  try {
+    // Check if hash contains encoded data (new format: shortHash_encodedData)
+    if (hash.includes('_')) {
+      console.log(chalk.green('🔓 Decoding workflow from hash...'));
+      
+      const [shortHash, encodedData] = hash.split('_', 2);
+      
+      if (!encodedData) {
+        throw new Error('Invalid hash format: missing encoded data');
+      }
+      
+      // Decode compressed data
+      let decodedData;
+      try {
+        // First try to decompress the data (new compressed format)
+        const decompressedString = decompressString(encodedData);
+        decodedData = JSON.parse(decompressedString);
+      } catch (decompressError) {
+        // Fallback to old Base64 format for compatibility
+        try {
+          const decodedString = decodeURIComponent(escape(atob(encodedData)));
+          decodedData = JSON.parse(decodedString);
+        } catch (base64Error) {
+          throw new Error('Failed to decode workflow data from hash');
+        }
+      }
+      
+      // Validate decoded data structure
+      if (!decodedData.metadata || !decodedData.steps || !decodedData.components) {
+        throw new Error('Invalid workflow data structure in hash');
+      }
+      
+      console.log(chalk.green('✅ Workflow decoded successfully!'));
+      console.log(chalk.gray(`   Short hash: ${shortHash}`));
+      console.log(chalk.gray(`   Timestamp: ${decodedData.timestamp}`));
+      console.log(chalk.gray(`   Version: ${decodedData.version}`));
+      
+      // Convert to expected format
+      return {
+        name: decodedData.metadata.name,
+        description: decodedData.metadata.description,
+        tags: decodedData.metadata.tags || [],
+        version: decodedData.version,
+        hash: shortHash,
+        steps: decodedData.steps,
+        components: decodedData.components,
+        yaml: decodedData.yaml,
+        timestamp: decodedData.timestamp
+      };
+    }
+    
+    // Legacy demo workflows for testing
+    if (hash === 'demo123' || hash === 'abc123test') {
+      console.log(chalk.green('🎯 Demo workflow found! Using sample configuration...'));
+      return {
+        name: 'Full Stack Development Workflow',
+        description: 'Complete workflow for setting up a full-stack development environment with React frontend, Node.js backend, and security auditing',
+        tags: ['development', 'fullstack', 'react', 'security'],
+        version: '1.0.0',
+        hash: hash,
+        steps: [
+          {
+            type: 'agent',
+            name: 'frontend-developer',
+            path: 'development-team/frontend-developer',
+            category: 'development-team',
+            description: 'Setup React frontend development environment'
+          },
+          {
+            type: 'agent',
+            name: 'backend-architect',
+            path: 'development-team/backend-architect',
+            category: 'development-team',
+            description: 'Configure Node.js backend architecture'
+          },
+          {
+            type: 'command',
           name: 'generate-tests',
           path: 'testing/generate-tests',
           category: 'testing',
@@ -787,13 +997,101 @@ async function fetchWorkflowData(hash) {
     };
   }
   
-  // This is where we would integrate with a workflow registry API
-  // For now, return null to indicate workflow not found for other hashes
-  console.log(chalk.yellow('\n⚠️  Workflow registry not yet implemented.'));
-  console.log(chalk.gray('To test with demo workflow, use hash: demo123'));
-  console.log(chalk.gray('Example: --workflow "#demo123"'));
-  
-  return null;
+    // This is where we would integrate with a workflow registry API
+    // For now, return null to indicate workflow not found for other hashes
+    console.log(chalk.yellow('\n⚠️  Workflow registry not yet implemented.'));
+    console.log(chalk.gray('To test with demo workflow, use hash: demo123'));
+    console.log(chalk.gray('Example: --workflow "#demo123"'));
+    
+    return null;
+    
+  } catch (error) {
+    console.error(chalk.red(`❌ Error fetching workflow data: ${error.message}`));
+    return null;
+  }
+}
+
+/**
+ * Install component from workflow package data
+ */
+async function installComponentFromWorkflow(componentData, type, targetDir, options) {
+  try {
+    let targetPath;
+    let fileName = componentData.name;
+    
+    if (type === 'agent') {
+      // Create .claude/agents directory if it doesn't exist
+      const agentsDir = path.join(targetDir, '.claude', 'agents');
+      await fs.ensureDir(agentsDir);
+      
+      // For agents, handle category subdirectories
+      if (componentData.category && componentData.category !== 'general') {
+        const categoryDir = path.join(agentsDir, componentData.category);
+        await fs.ensureDir(categoryDir);
+        targetPath = path.join(categoryDir, `${fileName}.md`);
+      } else {
+        targetPath = path.join(agentsDir, `${fileName}.md`);
+      }
+      
+    } else if (type === 'command') {
+      // Create .claude/commands directory if it doesn't exist
+      const commandsDir = path.join(targetDir, '.claude', 'commands');
+      await fs.ensureDir(commandsDir);
+      targetPath = path.join(commandsDir, `${fileName}.md`);
+      
+    } else if (type === 'mcp') {
+      // For MCPs, merge with existing .mcp.json
+      const targetMcpFile = path.join(targetDir, '.mcp.json');
+      let existingConfig = {};
+      
+      if (await fs.pathExists(targetMcpFile)) {
+        existingConfig = await fs.readJson(targetMcpFile);
+      }
+      
+      // Parse MCP content and merge
+      let mcpConfig;
+      try {
+        mcpConfig = JSON.parse(componentData.content);
+      } catch (error) {
+        throw new Error(`Failed to parse MCP content for ${componentData.name}: ${error.message}`);
+      }
+      
+      // Remove description field before merging (CLI processing)
+      if (mcpConfig.mcpServers) {
+        for (const serverName in mcpConfig.mcpServers) {
+          if (mcpConfig.mcpServers[serverName] && typeof mcpConfig.mcpServers[serverName] === 'object') {
+            delete mcpConfig.mcpServers[serverName].description;
+          }
+        }
+      }
+      
+      // Merge configurations
+      const mergedConfig = {
+        ...existingConfig,
+        ...mcpConfig
+      };
+      
+      // Deep merge mcpServers
+      if (existingConfig.mcpServers && mcpConfig.mcpServers) {
+        mergedConfig.mcpServers = {
+          ...existingConfig.mcpServers,
+          ...mcpConfig.mcpServers
+        };
+      }
+      
+      await fs.writeJson(targetMcpFile, mergedConfig, { spaces: 2 });
+      return;
+    }
+    
+    // Write content for agents and commands
+    if (targetPath) {
+      await fs.writeFile(targetPath, componentData.content, 'utf8');
+    }
+    
+  } catch (error) {
+    console.error(chalk.red(`❌ Error installing ${type} "${componentData.name}": ${error.message}`));
+    throw error;
+  }
 }
 
 /**

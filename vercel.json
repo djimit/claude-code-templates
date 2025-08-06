@@ -1,31 +1,13 @@
 {
   "version": 2,
   "public": true,
-  "name": "claude-code-templates-cart",
-  "builds": [
+  "rewrites": [
     {
-      "src": "docs/**/*",
-      "use": "@vercel/static"
+      "source": "/(.*)",
+      "destination": "/docs/$1"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/docs/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/docs/index.html"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "status": 404,
-      "dest": "/docs/index.html"
-    }
-  ],
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",

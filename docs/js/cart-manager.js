@@ -15,11 +15,22 @@ class CartManager {
         this.updateCartUI();
         this.updateFloatingButton();
         
-        // Update buttons when page loads with a delay to ensure DOM is ready
-        setTimeout(() => this.updateAddToCartButtons(), 1000);
+        // Use requestAnimationFrame instead of setTimeout for better performance
+        this.scheduleButtonUpdate();
         
         // Listen for filter changes to update buttons
         this.setupFilterListeners();
+    }
+    
+    // Optimized button update scheduling
+    scheduleButtonUpdate() {
+        if (this.updatePending) return;
+        
+        this.updatePending = true;
+        requestAnimationFrame(() => {
+            this.updateAddToCartButtons();
+            this.updatePending = false;
+        });
     }
 
     // Add item to cart
@@ -234,24 +245,52 @@ class CartManager {
         }
     }
 
-    // Setup filter listeners to update buttons when content changes
+    // Optimized filter listeners with debouncing
     setupFilterListeners() {
-        // Create a MutationObserver to watch for changes in the grid
+        // Debounced update function
+        let updateTimeout;
+        const debouncedUpdate = () => {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => this.scheduleButtonUpdate(), 150);
+        };
+        
+        // Listen for filter button clicks (more efficient than MutationObserver)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn') || 
+                e.target.closest('.filter-btn')) {
+                debouncedUpdate();
+            }
+        });
+        
+        // Lightweight MutationObserver for critical changes only
         const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                    // Delay to ensure all DOM changes are complete
-                    setTimeout(() => this.updateAddToCartButtons(), 100);
+            let shouldUpdate = false;
+            
+            for (const mutation of mutations) {
+                // Only update for significant DOM changes
+                if (mutation.type === 'childList' && 
+                    mutation.addedNodes.length > 0 && 
+                    Array.from(mutation.addedNodes).some(node => 
+                        node.nodeType === 1 && 
+                        (node.classList?.contains('unified-card') || 
+                         node.querySelector?.('.unified-card'))
+                    )) {
+                    shouldUpdate = true;
+                    break;
                 }
-            });
+            }
+            
+            if (shouldUpdate) {
+                debouncedUpdate();
+            }
         });
 
-        // Start observing the unified grid
+        // Observe only the unified grid with specific options
         const unifiedGrid = document.getElementById('unifiedGrid');
         if (unifiedGrid) {
             observer.observe(unifiedGrid, {
                 childList: true,
-                subtree: true
+                subtree: false // Only direct children, not deep nesting
             });
         }
     }
@@ -271,8 +310,10 @@ class CartManager {
         // Add to page
         document.body.appendChild(notification);
 
-        // Show with animation
-        setTimeout(() => notification.classList.add('show'), 100);
+        // Show with animation using requestAnimationFrame
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => notification.classList.add('show'));
+        });
 
         // Remove after 3 seconds
         setTimeout(() => {

@@ -163,7 +163,20 @@
         </section>
 
         <section class="content-grid" id="contentGrid">
-            <div class="unified-grid" id="unifiedGrid">
+            <!-- Loading indicator -->
+            <div class="loading-indicator" id="components-loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">
+                    <h3>Loading Components...</h3>
+                    <p>Optimizing data for better performance on mobile devices</p>
+                    <div class="loading-progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content container -->
+            <div class="unified-grid" id="unifiedGrid" id="components-content">
                 <!-- All content will be loaded here by JavaScript -->
             </div>
         </section>

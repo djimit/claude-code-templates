@@ -50,17 +50,28 @@ class IndexPageManager {
 
     async init() {
         try {
-            // Load both templates and components data
-            await Promise.all([
-                this.loadTemplatesData(),
-                this.loadComponentsData()
-            ]);
-            
+            // Setup event listeners first (they don't depend on data)
             this.setupEventListeners();
+            
+            // Show loading state
+            this.showLoadingState(true);
+            
+            // Load components first (smaller, more important)
+            await this.loadComponentsData();
+            
+            // Display components immediately
             this.displayCurrentFilter();
+            
+            // Load templates in background (less critical)
+            this.loadTemplatesData().catch(error => {
+                console.warn('Templates failed to load, continuing without them:', error);
+            });
+            
         } catch (error) {
             console.error('Error initializing index page:', error);
             this.showError('Failed to load data. Please refresh the page.');
+        } finally {
+            this.showLoadingState(false);
         }
     }
 
@@ -74,8 +85,62 @@ class IndexPageManager {
     }
 
     async loadComponentsData() {
-        this.componentsData = await window.dataLoader.loadComponents();
-        this.collectAvailableCategories();
+        try {
+            // Load first page of components (50 items) for faster initial load
+            this.componentsData = await window.dataLoader.loadComponents(1, 50);
+            this.collectAvailableCategories();
+            
+            // Load remaining components in background
+            this.loadMoreComponentsInBackground();
+        } catch (error) {
+            console.error('Error loading components:', error);
+            // Use fallback data
+            this.componentsData = window.dataLoader.getFallbackComponentData();
+            this.collectAvailableCategories();
+        }
+    }
+    
+    // Load more components in background for better UX
+    async loadMoreComponentsInBackground() {
+        try {
+            let page = 2;
+            while (true) {
+                const moreData = await window.dataLoader.loadMoreComponents(page);
+                if (!moreData || this.isDataEmpty(moreData)) break;
+                
+                // Update display if user is still on the same filter
+                if (this.currentFilter) {
+                    this.displayCurrentFilter();
+                }
+                page++;
+                
+                // Add delay to not overwhelm the browser
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        } catch (error) {
+            console.warn('Background loading completed with errors:', error);
+        }
+    }
+    
+    // Check if data object is empty
+    isDataEmpty(data) {
+        return !data || ((!data.agents || data.agents.length === 0) &&
+                         (!data.commands || data.commands.length === 0) &&
+                         (!data.mcps || data.mcps.length === 0));
+    }
+    
+    // Show/hide loading state
+    showLoadingState(isLoading) {
+        const loadingElements = document.querySelectorAll('.loading-indicator, .loading-spinner');
+        const contentElements = document.querySelectorAll('#unifiedGrid, .filter-controls');
+        
+        loadingElements.forEach(el => {
+            el.style.display = isLoading ? 'flex' : 'none';
+        });
+        
+        contentElements.forEach(el => {
+            el.style.opacity = isLoading ? '0.7' : '1';
+        });
     }
 
     setupEventListeners() {

@@ -56,16 +56,12 @@ class IndexPageManager {
             // Show loading state
             this.showLoadingState(true);
             
-            // Load components first (smaller, more important)
+            // Load all components and templates at once
             await this.loadComponentsData();
+            await this.loadTemplatesData();
             
-            // Display components immediately
+            // Display components
             this.displayCurrentFilter();
-            
-            // Load templates from components.json (synchronous since data is already loaded)
-            this.loadTemplatesData().catch(error => {
-                console.warn('Templates not found in components.json, continuing without them:', error);
-            });
             
         } catch (error) {
             console.error('Error initializing index page:', error);
@@ -92,12 +88,10 @@ class IndexPageManager {
 
     async loadComponentsData() {
         try {
-            // Load first page of components (50 items) for faster initial load
-            this.componentsData = await window.dataLoader.loadComponents(1, 50);
+            // Load all components at once - the performance issue was mostly due to GitHub fetching
+            // Now that we only use components.json, we can load all data safely
+            this.componentsData = await window.dataLoader.loadAllComponents();
             this.collectAvailableCategories();
-            
-            // Load remaining components in background
-            this.loadMoreComponentsInBackground();
         } catch (error) {
             console.error('Error loading components:', error);
             // Use fallback data
@@ -106,30 +100,11 @@ class IndexPageManager {
         }
     }
     
-    // Load more components in background for better UX
+    // This method is no longer needed since we load all components at once
+    // Kept for backward compatibility but does nothing
     async loadMoreComponentsInBackground() {
-        try {
-            let page = 2;
-            while (true) {
-                const moreData = await window.dataLoader.loadMoreComponents(page);
-                if (!moreData || this.isDataEmpty(moreData)) break;
-                
-                // CRITICAL: Update our local reference to the merged data
-                this.componentsData = window.dataLoader.componentsData;
-                this.collectAvailableCategories(); // Recalculate categories
-                
-                // Update display if user is still on the same filter
-                if (this.currentFilter) {
-                    this.displayCurrentFilter();
-                }
-                page++;
-                
-                // Add delay to not overwhelm the browser
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        } catch (error) {
-            console.warn('Background loading completed with errors:', error);
-        }
+        // No-op: All components are now loaded in the initial request
+        console.log('All components loaded in initial request - background loading not needed');
     }
     
     // Check if data object is empty

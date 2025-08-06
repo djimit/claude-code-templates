@@ -12,7 +12,64 @@ class DataLoader {
         this.ITEMS_PER_PAGE = 50; // Lazy loading batch size
     }
 
-    // Load components with lazy loading and timeout
+    // Load all components at once (simplified approach)
+    async loadAllComponents() {
+        try {
+            this.loadingStates.components = true;
+            this.showLoadingState('components', true);
+            
+            const cacheKey = 'all_components';
+            if (this.cache.has(cacheKey)) {
+                this.showLoadingState('components', false);
+                this.loadingStates.components = false;
+                return this.cache.get(cacheKey);
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT_MS);
+            
+            const response = await fetch('components.json', {
+                signal: controller.signal,
+                headers: {
+                    'Cache-Control': 'max-age=300' // 5 minutes cache
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const allData = await response.json();
+            
+            // Store both full and component data
+            this.fullComponentsData = allData;
+            this.componentsData = allData;
+            
+            this.cache.set(cacheKey, allData);
+            
+            this.showLoadingState('components', false);
+            this.loadingStates.components = false;
+            
+            return this.componentsData;
+        } catch (error) {
+            this.showLoadingState('components', false);
+            this.loadingStates.components = false;
+            
+            if (error.name === 'AbortError') {
+                console.error('Components loading timed out after', this.TIMEOUT_MS + 'ms');
+                this.showError('Loading timed out. Using fallback data.');
+            } else {
+                console.error('Error loading components:', error);
+                this.showError('Failed to load components. Using fallback data.');
+            }
+            
+            return this.getFallbackComponentData();
+        }
+    }
+    
+    // Load components with lazy loading and timeout (kept for backward compatibility)
     async loadComponents(page = 1, itemsPerPage = this.ITEMS_PER_PAGE) {
         try {
             this.loadingStates.components = true;
@@ -285,40 +342,11 @@ class DataLoader {
         }
     }
     
-    // Load more components (infinite scroll support)
+    // Load more components (no longer needed but kept for compatibility)
     async loadMoreComponents(page) {
-        if (this.loadingStates.components) return;
-        
-        try {
-            // Load full data once for proper counting
-            if (!this.fullComponentsData) {
-                const fullResponse = await fetch('components.json');
-                if (fullResponse.ok) {
-                    this.fullComponentsData = await fullResponse.json();
-                }
-            }
-            
-            const moreData = await this.loadComponents(page, this.ITEMS_PER_PAGE);
-            
-            // Merge with existing paginated data
-            if (this.componentsData && moreData) {
-                ['agents', 'commands', 'mcps'].forEach(type => {
-                    if (moreData[type]) {
-                        this.componentsData[type] = [...(this.componentsData[type] || []), ...moreData[type]];
-                    }
-                });
-                
-                // Keep templates from full data
-                if (this.fullComponentsData && this.fullComponentsData.templates) {
-                    this.componentsData.templates = this.fullComponentsData.templates;
-                }
-            }
-            
-            return moreData;
-        } catch (error) {
-            console.error('Error loading more components:', error);
-            return null;
-        }
+        // All components are now loaded at once, so this method returns null
+        console.log('loadMoreComponents called but not needed - all data loaded initially');
+        return null;
     }
     
     // Get the total counts from full data for accurate filter counts

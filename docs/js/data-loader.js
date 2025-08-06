@@ -2,10 +2,10 @@
 class DataLoader {
     constructor() {
         this.componentsData = null;
-        this.templatesData = null;
+        this.fullComponentsData = null; // Store full data for accurate counts
+        this.templatesData = null; // Deprecated - templates now in components.json
         this.loadingStates = {
-            components: false,
-            templates: false
+            components: false
         };
         this.cache = new Map();
         this.TIMEOUT_MS = 8000; // 8 seconds timeout
@@ -43,8 +43,18 @@ class DataLoader {
             
             const fullData = await response.json();
             
+            // Store full data for accurate counts (only on first load)
+            if (page === 1) {
+                this.fullComponentsData = fullData;
+            }
+            
             // Apply pagination to reduce memory usage
             const paginatedData = this.paginateComponents(fullData, page, itemsPerPage);
+            
+            // Store full data for templates if it exists
+            if (fullData.templates && page === 1) {
+                paginatedData.templates = fullData.templates; // Templates don't need pagination
+            }
             
             this.cache.set(cacheKey, paginatedData);
             this.componentsData = paginatedData;
@@ -96,60 +106,33 @@ class DataLoader {
         };
     }
 
-    // Load templates data with timeout and fallback
+    // Load templates - now using components.json data (templates deprecated)
     async loadTemplates() {
         try {
-            this.loadingStates.templates = true;
-            this.showLoadingState('templates', true);
-            
-            const GITHUB_CONFIG = {
-                owner: 'davila7',
-                repo: 'claude-code-templates',
-                branch: 'main',
-                templatesPath: 'cli-tool/src/templates.js'
-            };
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT_MS);
-            
-            // Use cache-friendly timestamp (1 hour cache)
-            const cacheTimestamp = Math.floor(Date.now() / (1000 * 60 * 60));
-            const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.templatesPath}?t=${cacheTimestamp}`;
-            
-            const response = await fetch(url, {
-                signal: controller.signal,
-                headers: {
-                    'Cache-Control': 'max-age=3600' // 1 hour cache
-                }
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Templates are now included in components.json as 'templates' section
+            // This method is kept for backward compatibility
+            if (this.componentsData && this.componentsData.templates) {
+                this.templatesData = { templates: this.componentsData.templates };
+                return this.templatesData;
             }
             
-            const templateFileContent = await response.text();
-            this.templatesData = this.parseTemplatesConfig(templateFileContent);
+            // If components aren't loaded yet, try to load them
+            if (!this.componentsData) {
+                await this.loadComponents();
+                if (this.componentsData && this.componentsData.templates) {
+                    this.templatesData = { templates: this.componentsData.templates };
+                    return this.templatesData;
+                }
+            }
             
-            this.showLoadingState('templates', false);
-            this.loadingStates.templates = false;
-            
+            // Return empty if no templates in components.json
+            console.warn('No templates found in components.json');
+            this.templatesData = {};
             return this.templatesData;
         } catch (error) {
-            this.showLoadingState('templates', false);
-            this.loadingStates.templates = false;
-            
-            if (error.name === 'AbortError') {
-                console.error('Templates loading timed out after', this.TIMEOUT_MS + 'ms');
-                this.showError('GitHub templates loading timed out. Some features may be limited.');
-            } else {
-                console.error('Error loading templates:', error);
-                this.showError('Failed to load GitHub templates. Some features may be limited.');
-            }
-            
-            // Return empty templates instead of throwing
-            return {};
+            console.error('Error loading templates from components:', error);
+            this.templatesData = {};
+            return this.templatesData;
         }
     }
 
@@ -232,7 +215,8 @@ class DataLoader {
         const paginatedData = {
             agents: [],
             commands: [],
-            mcps: []
+            mcps: [],
+            templates: [] // Include templates in pagination structure
         };
         
         ['agents', 'commands', 'mcps'].forEach(type => {
@@ -242,6 +226,11 @@ class DataLoader {
                 paginatedData[type] = fullData[type].slice(startIndex, endIndex);
             }
         });
+        
+        // Templates don't need pagination - include all if available
+        if (fullData.templates) {
+            paginatedData.templates = fullData.templates;
+        }
         
         return paginatedData;
     }
@@ -301,15 +290,28 @@ class DataLoader {
         if (this.loadingStates.components) return;
         
         try {
+            // Load full data once for proper counting
+            if (!this.fullComponentsData) {
+                const fullResponse = await fetch('components.json');
+                if (fullResponse.ok) {
+                    this.fullComponentsData = await fullResponse.json();
+                }
+            }
+            
             const moreData = await this.loadComponents(page, this.ITEMS_PER_PAGE);
             
-            // Merge with existing data
+            // Merge with existing paginated data
             if (this.componentsData && moreData) {
                 ['agents', 'commands', 'mcps'].forEach(type => {
                     if (moreData[type]) {
                         this.componentsData[type] = [...(this.componentsData[type] || []), ...moreData[type]];
                     }
                 });
+                
+                // Keep templates from full data
+                if (this.fullComponentsData && this.fullComponentsData.templates) {
+                    this.componentsData.templates = this.fullComponentsData.templates;
+                }
             }
             
             return moreData;
@@ -317,6 +319,26 @@ class DataLoader {
             console.error('Error loading more components:', error);
             return null;
         }
+    }
+    
+    // Get the total counts from full data for accurate filter counts
+    getTotalCounts() {
+        if (this.fullComponentsData) {
+            return {
+                agents: this.fullComponentsData.agents ? this.fullComponentsData.agents.length : 0,
+                commands: this.fullComponentsData.commands ? this.fullComponentsData.commands.length : 0,
+                mcps: this.fullComponentsData.mcps ? this.fullComponentsData.mcps.length : 0,
+                templates: this.fullComponentsData.templates ? this.fullComponentsData.templates.length : 0
+            };
+        }
+        
+        // Fallback to current loaded data
+        return {
+            agents: this.componentsData?.agents?.length || 0,
+            commands: this.componentsData?.commands?.length || 0,
+            mcps: this.componentsData?.mcps?.length || 0,
+            templates: this.componentsData?.templates?.length || 0
+        };
     }
 }
 

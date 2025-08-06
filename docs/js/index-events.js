@@ -62,9 +62,9 @@ class IndexPageManager {
             // Display components immediately
             this.displayCurrentFilter();
             
-            // Load templates in background (less critical)
+            // Load templates from components.json (synchronous since data is already loaded)
             this.loadTemplatesData().catch(error => {
-                console.warn('Templates failed to load, continuing without them:', error);
+                console.warn('Templates not found in components.json, continuing without them:', error);
             });
             
         } catch (error) {
@@ -77,10 +77,16 @@ class IndexPageManager {
 
     async loadTemplatesData() {
         try {
+            // Templates are now loaded from components.json, not GitHub
             this.templatesData = await window.dataLoader.loadTemplates();
+            
+            // Update display if templates were found
+            if (this.templatesData && Object.keys(this.templatesData).length > 0) {
+                this.displayCurrentFilter();
+            }
         } catch (error) {
-            console.error('Error loading templates:', error);
-            // Continue without templates - show only components
+            console.warn('Templates not available in components.json:', error);
+            // Continue without templates - this is not critical
         }
     }
 
@@ -107,6 +113,10 @@ class IndexPageManager {
             while (true) {
                 const moreData = await window.dataLoader.loadMoreComponents(page);
                 if (!moreData || this.isDataEmpty(moreData)) break;
+                
+                // CRITICAL: Update our local reference to the merged data
+                this.componentsData = window.dataLoader.componentsData;
+                this.collectAvailableCategories(); // Recalculate categories
                 
                 // Update display if user is still on the same filter
                 if (this.currentFilter) {
@@ -593,30 +603,27 @@ class IndexPageManager {
 
     // Update filter button counts
     updateFilterCounts() {
-        if (!this.componentsData) return;
+        // Get accurate total counts from data loader (includes full data counts)
+        const totalCounts = window.dataLoader.getTotalCounts();
+        if (!totalCounts) return;
         
-        const agentsCount = this.componentsData.agents ? this.componentsData.agents.length : 0;
-        const commandsCount = this.componentsData.commands ? this.componentsData.commands.length : 0;
-        const mcpsCount = this.componentsData.mcps ? this.componentsData.mcps.length : 0;
-        const templatesCount = this.componentsData.templates ? this.componentsData.templates.length : 0;
-        
-        // Update each filter button with count
+        // Update each filter button with accurate total count
         const agentsBtn = document.querySelector('[data-filter="agents"]');
         const commandsBtn = document.querySelector('[data-filter="commands"]');
         const mcpsBtn = document.querySelector('[data-filter="mcps"]');
         const templatesBtn = document.querySelector('[data-filter="templates"]');
         
         if (agentsBtn) {
-            agentsBtn.innerHTML = `🤖 Agents (${agentsCount})`;
+            agentsBtn.innerHTML = `🤖 Agents (${totalCounts.agents})`;
         }
         if (commandsBtn) {
-            commandsBtn.innerHTML = `⚡ Commands (${commandsCount})`;
+            commandsBtn.innerHTML = `⚡ Commands (${totalCounts.commands})`;
         }
         if (mcpsBtn) {
-            mcpsBtn.innerHTML = `🔌 MCPs (${mcpsCount})`;
+            mcpsBtn.innerHTML = `🔌 MCPs (${totalCounts.mcps})`;
         }
         if (templatesBtn) {
-            templatesBtn.innerHTML = `📦 Templates (${templatesCount})`;
+            templatesBtn.innerHTML = `📦 Templates (${totalCounts.templates})`;
         }
     }
 

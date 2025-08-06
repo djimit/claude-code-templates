@@ -298,6 +298,11 @@ async function createClaudeConfig(options = {}) {
   if (!options.dryRun) {
     await runPostInstallationValidation(targetDir, templateConfig);
   }
+  
+  // Handle prompt execution if provided
+  if (options.prompt) {
+    await handlePromptExecution(options.prompt, targetDir);
+  }
 }
 
 // Individual component installation functions
@@ -697,6 +702,11 @@ async function installMultipleComponents(options, targetDir) {
       target_directory: path.relative(process.cwd(), targetDir)
     });
     
+    // Handle prompt execution if provided
+    if (options.prompt) {
+      await handlePromptExecution(options.prompt, targetDir);
+    }
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing components: ${error.message}`));
   }
@@ -860,6 +870,11 @@ async function installWorkflow(workflowHash, targetDir, options) {
       mcps_count: mcps.length,
       target_directory: path.relative(process.cwd(), targetDir)
     });
+    
+    // Handle prompt execution if provided
+    if (options.prompt) {
+      await handlePromptExecution(options.prompt, targetDir);
+    }
     
   } catch (error) {
     console.log(chalk.red(`❌ Error installing workflow: ${error.message}`));
@@ -1243,6 +1258,81 @@ ${workflowData.steps.map((step, index) => `# ${index + 1}. ${step.description} (
 `;
   
   return yaml;
+}
+
+/**
+ * Handle prompt execution in Claude Code
+ */
+async function handlePromptExecution(prompt, targetDir) {
+  console.log(chalk.blue('\n🎯 Prompt execution requested...'));
+  
+  // Ask user if they want to execute the prompt in Claude Code
+  const { shouldExecute } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'shouldExecute',
+    message: `Do you want to execute this prompt in Claude Code?\n${chalk.cyan(`"${prompt}"`)}`,
+    default: true
+  }]);
+  
+  if (!shouldExecute) {
+    console.log(chalk.yellow('⏹️  Prompt execution skipped by user.'));
+    return;
+  }
+  
+  console.log(chalk.blue('🚀 Preparing to launch Claude Code with your prompt...'));
+  
+  try {
+    // Check if claude command is available in PATH
+    const { spawn } = require('child_process');
+    const open = require('open');
+    
+    // First try to execute claude command directly
+    const claudeProcess = spawn('claude', [prompt], {
+      cwd: targetDir,
+      stdio: ['inherit', 'inherit', 'inherit'],
+      shell: true
+    });
+    
+    claudeProcess.on('error', async (error) => {
+      if (error.code === 'ENOENT') {
+        // Claude command not found, try alternative approaches
+        console.log(chalk.yellow('⚠️  Claude Code CLI not found in PATH.'));
+        console.log(chalk.blue('💡 Alternative ways to execute your prompt:'));
+        console.log(chalk.gray('   1. Install Claude Code CLI: https://claude.ai/code'));
+        console.log(chalk.gray('   2. Copy and paste this prompt in Claude Code interface:'));
+        console.log(chalk.cyan(`\n   "${prompt}"\n`));
+        
+        // Ask if user wants to open Claude Code web interface
+        const { openWeb } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'openWeb',
+          message: 'Would you like to open Claude Code in your browser?',
+          default: true
+        }]);
+        
+        if (openWeb) {
+          await open('https://claude.ai/code');
+          console.log(chalk.green('✅ Claude Code opened in your browser!'));
+          console.log(chalk.cyan(`Don't forget to paste your prompt: "${prompt}"`));
+        }
+      } else {
+        throw error;
+      }
+    });
+    
+    claudeProcess.on('close', (code) => {
+      if (code === 0) {
+        console.log(chalk.green('✅ Claude Code executed successfully!'));
+      } else if (code !== null) {
+        console.log(chalk.yellow(`⚠️  Claude Code exited with code ${code}`));
+      }
+    });
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error executing prompt: ${error.message}`));
+    console.log(chalk.blue('💡 You can manually execute this prompt in Claude Code:'));
+    console.log(chalk.cyan(`"${prompt}"`));
+  }
 }
 
 module.exports = { createClaudeConfig, showMainMenu };

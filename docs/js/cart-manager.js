@@ -95,15 +95,30 @@ class CartManager {
         const cartEmpty = document.getElementById('cartEmpty');
         const cartItems = document.getElementById('cartItems');
         const cartFooter = document.getElementById('cartFooter');
+        const cartClearProminent = document.getElementById('cartClearProminent');
+        const clearCount = document.getElementById('clearCount');
+        
+        const totalItems = this.getTotalItems();
 
-        if (this.getTotalItems() === 0) {
+        if (totalItems === 0) {
             cartEmpty.style.display = 'block';
             cartItems.style.display = 'none';
             cartFooter.style.display = 'none';
+            // Hide prominent clear button when cart is empty
+            if (cartClearProminent) cartClearProminent.style.display = 'none';
         } else {
             cartEmpty.style.display = 'none';
             cartItems.style.display = 'block';
             cartFooter.style.display = 'block';
+            
+            // Show and update prominent clear button
+            if (cartClearProminent) {
+                cartClearProminent.style.display = 'block';
+                if (clearCount) {
+                    clearCount.textContent = `(${totalItems})`;
+                }
+            }
+            
             this.renderCartItems();
             this.updateCommand();
         }
@@ -340,9 +355,18 @@ const cartManager = new CartManager();
 // Global functions for cart operations
 function openCart() {
     const sidebar = document.getElementById('shoppingCart');
+    const floatingButton = document.getElementById('cartFloatingBtn');
+    
     sidebar.classList.add('active');
     
-    // Create overlay for desktop only
+    // Hide floating cart button when sidebar is open
+    if (floatingButton) {
+        floatingButton.style.transform = 'translateX(100px)';
+        floatingButton.style.opacity = '0';
+        floatingButton.style.pointerEvents = 'none';
+    }
+    
+    // Create subtle overlay that doesn't block content visibility
     if (window.innerWidth > 768) {
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
@@ -352,11 +376,11 @@ function openCart() {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(3px);
+            background: rgba(0, 0, 0, 0.15);
             z-index: 999;
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: auto;
         `;
         document.body.appendChild(overlay);
         
@@ -370,7 +394,16 @@ function openCart() {
 
 function closeCart() {
     const sidebar = document.getElementById('shoppingCart');
+    const floatingButton = document.getElementById('cartFloatingBtn');
+    
     sidebar.classList.remove('active');
+    
+    // Show floating cart button again when sidebar is closed
+    if (floatingButton) {
+        floatingButton.style.transform = 'translateX(0)';
+        floatingButton.style.opacity = '1';
+        floatingButton.style.pointerEvents = 'auto';
+    }
     
     // Remove dynamic overlay
     const overlay = document.getElementById('cartOverlay');

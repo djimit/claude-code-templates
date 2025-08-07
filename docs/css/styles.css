@@ -2095,6 +2095,63 @@ body {
     background: rgba(248, 81, 73, 0.1);
 }
 
+/* Subtle Clear All Button */
+.cart-clear-section-prominent {
+    margin: 0.5rem 1.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.clear-all-btn-prominent {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.clear-all-btn-prominent:hover {
+    border-color: var(--text-error);
+    color: var(--text-error);
+    background: rgba(248, 81, 73, 0.05);
+    transform: none;
+}
+
+.clear-all-btn-prominent:active {
+    transform: none;
+    background: rgba(248, 81, 73, 0.1);
+}
+
+.clear-count {
+    background: var(--bg-tertiary);
+    padding: 0.1rem 0.3rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 0.2rem;
+    color: var(--text-secondary);
+}
+
+/* Cart Header Improvements */
+.cart-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
 /* Share Stack Button */
 .share-stack-btn {
     background: var(--bg-tertiary);
@@ -2736,29 +2793,13 @@ body {
     pointer-events: all;
 }
 
-/* Overlay for sidebar */
+/* Overlay for sidebar - DISABLED to allow background visibility */
 .cart-sidebar::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(3px);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
-    display: none;
+    display: none !important;
 }
 
 .cart-sidebar.active::before {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: all;
-    display: block;
+    display: none !important;
 }
 
 .cart-content {
@@ -2771,9 +2812,6 @@ body {
 
 /* Cart Header */
 .cart-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 1.5rem;
     border-bottom: 1px solid var(--border-primary);
     background: var(--bg-tertiary);
@@ -3074,11 +3112,14 @@ body {
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .cart-floating-btn:hover {

@@ -249,17 +249,18 @@ body {
 
 /* Stats section - Compact Badges */
 .stats-section {
-    margin: 1rem 0;
+    margin: 0.5rem 0 1rem 0;
     text-align: center;
+    margin-top: -0.5rem;
 }
 
 .stats-badges {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    padding: 1rem 0;
+    padding: 0.5rem 0;
 }
 
 .stat-badge-link {
@@ -352,6 +353,32 @@ body {
     padding: 12px;
     text-align: center;
     margin-top: auto;
+}
+
+.step-examples {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.step-example {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.step-example:hover {
+    border-color: var(--text-accent);
+    background: var(--bg-tertiary);
+}
+
+.step-example strong {
+    color: var(--text-accent);
+    font-weight: 600;
 }
 
 .command-line {
@@ -752,21 +779,64 @@ body {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-primary);
     color: var(--text-secondary);
-    padding: 2rem 0;
+    padding: 2rem 0 3rem 0;
     margin-top: 2rem;
 }
 
 .footer-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.footer-left {
+    flex: 1;
+    min-width: 300px;
+}
+
+.footer-right {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
+    margin-right: 4rem; /* Space to avoid cart button overlap */
+}
+
+.footer-ascii {
+    margin-bottom: 0.5rem;
+}
+
+.footer-ascii-art {
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--text-accent);
+    margin: 0;
+    white-space: pre;
+    overflow: hidden;
+}
+
+.footer-tagline {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
+}
+
+.footer-copyright {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
 }
 
 .footer-links {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
+    justify-content: center;
 }
 
 .footer-link {
@@ -922,12 +992,12 @@ body {
     }
 
     .stats-badges {
-        gap: 0.75rem;
-        padding: 0.5rem 0;
+        gap: 0.5rem;
+        padding: 0.3rem 0;
     }
     
     .stat-badge {
-        height: 18px;
+        height: 16px;
     }
 
     .steps-grid {
@@ -962,6 +1032,21 @@ body {
     .footer-content {
         flex-direction: column;
         text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .footer-left {
+        min-width: unset;
+        text-align: center;
+    }
+    
+    .footer-right {
+        text-align: center;
+        align-items: center;
+    }
+    
+    .footer-ascii-art {
+        font-size: 6px;
     }
 
     .step-card {

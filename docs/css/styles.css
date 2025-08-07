@@ -1172,7 +1172,9 @@ body {
 .modal-actions {
     display: flex;
     justify-content: center;
-    margin-top: 15px;
+    gap: 1rem;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .github-folder-link {
@@ -1183,10 +1185,13 @@ body {
     text-decoration: none;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 500;
     transition: all 0.2s ease;
+    min-width: 140px;
+    justify-content: center;
 }
 
 .github-folder-link:hover {
@@ -3198,6 +3203,15 @@ body {
     width: 100%;
     position: relative;
     overflow: hidden;
+}
+
+/* Add to Cart Button in Modal - Smaller balanced size */
+.modal-actions .add-to-cart-btn {
+    width: auto;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    min-width: 140px;
 }
 
 .add-to-cart-btn::before {

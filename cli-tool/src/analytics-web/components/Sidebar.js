@@ -151,7 +151,7 @@ class Sidebar {
   navigateToPage(page) {
     if (page === this.currentPage) return;
     
-    console.log(`🖱️ Sidebar navigation clicked: ${page}`);
+    // Handle navigation to the specified page
     
     // Notify parent component for actual navigation
     if (this.onNavigate) {
@@ -220,12 +220,20 @@ class Sidebar {
    */
   toggleMobileChatSubmenu() {
     const submenu = this.container.querySelector('#mobile-chat-submenu');
+    
     if (submenu) {
+      const isOpening = !submenu.classList.contains('active');
+      
       submenu.classList.toggle('active');
       
-      // Load conversations if opening
-      if (submenu.classList.contains('active')) {
+      if (isOpening) {
+        // Opening submenu - close main mobile menu and hide menu button
+        this.closeMobileMenu();
+        this.hideMobileMenuButton();
         this.loadMobileChatConversations();
+      } else {
+        // Closing submenu - show menu button again
+        this.showMobileMenuButton();
       }
     }
   }
@@ -237,6 +245,8 @@ class Sidebar {
     const submenu = this.container.querySelector('#mobile-chat-submenu');
     if (submenu) {
       submenu.classList.remove('active');
+      // Show mobile menu button again when closing
+      this.showMobileMenuButton();
     }
   }
   
@@ -245,23 +255,50 @@ class Sidebar {
    */
   async loadMobileChatConversations() {
     const conversationsList = this.container.querySelector('#mobile-conversations-list');
-    if (!conversationsList) return;
+    
+    if (!conversationsList) {
+      return;
+    }
+    
+    // Show loading state
+    conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-warning);"><div class="loading-spinner small"></div><br>Loading conversations...</div>';
     
     try {
-      // Get conversations from the main app (if available)
-      if (window.agentsPageInstance && window.agentsPageInstance.stateService) {
-        const conversations = window.agentsPageInstance.stateService.getStateProperty('conversations') || [];
-        const states = window.agentsPageInstance.stateService.getStateProperty('conversationStates') || {};
-        
-        if (conversations.length > 0) {
-          this.renderMobileConversations(conversations, states);
-        } else {
-          conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No conversations found</div>';
-        }
+      // Fetch conversations directly from API instead of relying on global instance
+      const response = await fetch('/api/conversations');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
+      const data = await response.json();
+      const conversations = data.conversations || [];
+      
+      // Also get conversation states
+      let states = {};
+      try {
+        const statesResponse = await fetch('/api/conversation-states');
+        if (statesResponse.ok) {
+          const statesData = await statesResponse.json();
+          states = statesData.activeStates || statesData || {};
+        }
+      } catch (statesError) {
+        // States are optional, continue without them
+      }
+      
+      if (conversations.length > 0) {
+        this.renderMobileConversations(conversations, states);
+      } else {
+        conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No conversations found</div>';
+      }
+      
     } catch (error) {
-      console.error('Error loading mobile conversations:', error);
-      conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-error);">Error loading conversations</div>';
+      conversationsList.innerHTML = `
+        <div style="padding: 20px; text-align: center; color: var(--text-error);">
+          Error loading conversations<br>
+          <small style="opacity: 0.7;">${error.message}</small><br>
+          <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: var(--text-accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
+        </div>
+      `;
     }
   }
   
@@ -360,6 +397,41 @@ class Sidebar {
       'waiting': 'Waiting'
     };
     return labelMap[state] || 'Unknown';
+  }
+
+  /**
+   * Close the main mobile menu (hamburger menu)
+   */
+  closeMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    
+    if (sidebar) {
+      sidebar.classList.remove('mobile-active');
+    }
+    if (overlay) {
+      overlay.classList.remove('active');
+    }
+  }
+  
+  /**
+   * Hide mobile menu button
+   */
+  hideMobileMenuButton() {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    if (mobileMenuBtn) {
+      mobileMenuBtn.style.display = 'none';
+    }
+  }
+  
+  /**
+   * Show mobile menu button
+   */
+  showMobileMenuButton() {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    if (mobileMenuBtn) {
+      mobileMenuBtn.style.display = 'flex';
+    }
   }
 
   /**

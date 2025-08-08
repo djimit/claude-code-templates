@@ -594,6 +594,15 @@ class AgentsPage {
   async render() {
     this.container.innerHTML = `
       <div class="agents-page">
+        <!-- Mobile Chat Header (only visible on mobile) -->
+        <div class="mobile-chat-header-bar" id="mobile-chat-header" style="display: none;">
+          <button class="mobile-back-btn" id="mobile-back-btn">←</button>
+          <div class="mobile-chat-info">
+            <div class="mobile-chat-title" id="mobile-chat-title">Select a conversation</div>
+            <div class="mobile-chat-subtitle" id="mobile-chat-subtitle"></div>
+          </div>
+        </div>
+        
         <!-- Page Header (will be replaced by HeaderComponent) -->
         <div id="agents-header-container"></div>
 
@@ -888,6 +897,12 @@ class AgentsPage {
           this.sendMessage();
         }
       });
+    }
+    
+    // Mobile back button
+    const mobileBackBtn = this.container.querySelector('#mobile-back-btn');
+    if (mobileBackBtn) {
+      mobileBackBtn.addEventListener('click', () => this.handleMobileBack());
     }
   }
   
@@ -3275,6 +3290,9 @@ class AgentsPage {
       }
     }
     
+    // Update mobile header if on mobile
+    this.updateMobileHeader(conversation);
+    
     // Show and update the state banner
     this.showStateBanner(this.selectedConversationId);
   }
@@ -5062,6 +5080,72 @@ class AgentsPage {
     }
     
     this.isInitialized = false;
+  }
+  
+  /**
+   * Handle mobile back button click
+   */
+  handleMobileBack() {
+    if (this.isMobile()) {
+      // Hide mobile header
+      const mobileHeader = this.container.querySelector('#mobile-chat-header');
+      if (mobileHeader) {
+        mobileHeader.style.display = 'none';
+      }
+      
+      // Clear selected conversation
+      this.selectedConversationId = null;
+      
+      // Hide conversation details
+      const conversationDetails = this.container.querySelector('.conversation-details');
+      if (conversationDetails) {
+        conversationDetails.style.display = 'none';
+      }
+      
+      // Update selected conversation UI
+      const previousSelected = this.container.querySelector('.sidebar-conversation-item.selected');
+      if (previousSelected) {
+        previousSelected.classList.remove('selected');
+      }
+      
+      // Show the mobile chat submenu to return to conversation list
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar && window.sidebarInstance) {
+        window.sidebarInstance.toggleMobileChatSubmenu();
+      }
+    }
+  }
+  
+  /**
+   * Update mobile header with conversation info
+   * @param {Object} conversation - Conversation object
+   */
+  updateMobileHeader(conversation) {
+    if (!this.isMobile()) return;
+    
+    const mobileHeader = this.container.querySelector('#mobile-chat-header');
+    const titleElement = this.container.querySelector('#mobile-chat-title');
+    const subtitleElement = this.container.querySelector('#mobile-chat-subtitle');
+    
+    if (mobileHeader && titleElement && subtitleElement && conversation) {
+      // Show mobile header
+      mobileHeader.style.display = 'flex';
+      
+      // Update title and subtitle
+      const projectName = conversation.project || 'Unknown Project';
+      const conversationId = conversation.id.slice(-8);
+      
+      titleElement.textContent = projectName;
+      subtitleElement.textContent = `Conversation ${conversationId}`;
+    }
+  }
+  
+  /**
+   * Check if device is mobile
+   * @returns {boolean}
+   */
+  isMobile() {
+    return window.innerWidth <= 768;
   }
 }
 

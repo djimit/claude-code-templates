@@ -2597,6 +2597,129 @@
                 font-size: 0.8rem;
             }
             
+            /* Mobile-first Agents page layout */
+            .agents-page {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: var(--bg-primary);
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                max-width: none;
+                margin: 0;
+                overflow: hidden;
+            }
+            
+            /* Hide sidebar and other elements on mobile Agents page */
+            body:has(.agents-page) .sidebar,
+            .agents-page .terminal-header,
+            .agents-page .conversations-filters,
+            .agents-page .agents-section,
+            .agents-page .conversations-sidebar,
+            .agents-page .conversations-loading,
+            .agents-page .conversations-error {
+                display: none !important;
+            }
+            
+            /* Hide mobile menu button when viewing chat */
+            body:has(.mobile-chat-header-bar[style*="flex"]) .mobile-menu-btn {
+                display: none !important;
+            }
+            
+            /* Mobile header for chat */
+            .mobile-chat-header-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: var(--bg-secondary);
+                border-bottom: 1px solid var(--border-primary);
+                z-index: 1100;
+                display: flex;
+                align-items: center;
+                padding: 0 16px;
+                gap: 12px;
+            }
+            
+            .mobile-back-btn {
+                background: none;
+                border: none;
+                color: var(--text-accent);
+                font-size: 20px;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 40px;
+                height: 40px;
+            }
+            
+            .mobile-back-btn:hover {
+                background: var(--bg-tertiary);
+            }
+            
+            .mobile-chat-title {
+                flex: 1;
+                font-size: 1rem;
+                color: var(--text-primary);
+                font-weight: 600;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+            
+            .mobile-chat-subtitle {
+                font-size: 0.8rem;
+                color: var(--text-secondary);
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+            
+            /* Full-screen chat panel on mobile */
+            .conversation-details {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: var(--bg-primary);
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .conversation-header {
+                display: none !important;
+            }
+            
+            .messages-panel {
+                flex: 1;
+                padding: 16px;
+                overflow-y: auto;
+                background: var(--bg-primary);
+            }
+            
+            /* Ensure mobile menu button is visible */
+            .mobile-menu-btn {
+                display: flex !important;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 1200;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-primary);
+            }
+            
             .sessions-table th,
             .sessions-table td {
                 padding: 6px 8px;
@@ -2666,16 +2789,15 @@
             }
             
             .mobile-chat-submenu {
-                display: none;
-                position: absolute;
+                position: fixed;
                 top: 0;
-                left: 56px;
-                width: 280px;
+                left: 0;
+                width: 100vw;
                 height: 100vh;
                 background: var(--bg-secondary);
-                border-right: 1px solid var(--border-primary);
-                z-index: 1010;
+                z-index: 2000;
                 overflow-y: auto;
+                display: none;
             }
             
             .mobile-chat-submenu.active {
@@ -2706,6 +2828,20 @@
                 cursor: pointer;
                 padding: 4px;
                 margin-left: auto;
+                transition: color 0.2s ease;
+            }
+            
+            .mobile-chat-close:hover {
+                color: var(--text-primary);
+            }
+            
+            .mobile-chat-item {
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+            }
+            
+            .mobile-chat-item:hover {
+                background: rgba(33, 38, 45, 0.6);
             }
         }
         

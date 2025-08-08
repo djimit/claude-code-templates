@@ -16,6 +16,9 @@ class AgentsPage {
     };
     this.isInitialized = false;
     
+    // Make available globally for mobile sidebar integration
+    window.agentsPageInstance = this;
+    
     // Initialize header component
     this.headerComponent = null;
     
@@ -43,6 +46,8 @@ class AgentsPage {
     // Agent data
     this.agents = [];
     this.selectedAgentId = null;
+    this.selectedConversationId = null;
+    this.selectedConversationContext = null;
     
     // State transition tracking for enhanced user experience
     this.lastMessageTime = new Map(); // Track when last message was received per conversation
@@ -624,33 +629,12 @@ class AgentsPage {
           </div>
         </div>
 
-        <!-- Agents Section -->
-        <div class="agents-section">
-          <div class="agents-header">
-            <h4>Available Agents</h4>
-            <div class="agents-info">
-              <span class="agents-count" id="agents-count">0 agents</span>
-              <button class="refresh-agents-btn" id="refresh-agents" title="Refresh agents">
-                <span class="btn-icon">🔄</span>
-              </button>
+        <!-- Agents Section - Instagram Stories Style -->
+        <div class="agents-section" id="agents-section" style="display: none;">
+          <div class="agents-stories-container">
+            <div class="agents-stories" id="agents-list">
+              <!-- Agent circles will be rendered here -->
             </div>
-          </div>
-          
-          <div class="agents-list" id="agents-list">
-            <!-- Agent items will be rendered here -->
-          </div>
-          
-          <!-- Loading state for agents -->
-          <div class="agents-loading" id="agents-loading" style="display: none;">
-            <div class="loading-spinner"></div>
-            <span class="loading-text">Loading agents...</span>
-          </div>
-          
-          <!-- Empty state for agents -->
-          <div class="agents-empty" id="agents-empty" style="display: none;">
-            <div class="empty-icon">🤖</div>
-            <p>No agents found</p>
-            <small>Create agents in your .claude/agents directory to see them here</small>
           </div>
         </div>
 
@@ -745,6 +729,23 @@ class AgentsPage {
                 <div class="no-selection-icon">💬</div>
                 <h4>No conversation selected</h4>
                 <p>Choose a conversation from the sidebar to view its messages</p>
+              </div>
+            </div>
+            
+            <!-- Message Input Area -->
+            <div class="message-input-area" id="message-input-area" style="display: none;">
+              <div class="input-container">
+                <div class="input-row">
+                  <textarea 
+                    class="message-input" 
+                    id="message-input" 
+                    placeholder="Send a message to Claude Code..." 
+                    rows="1"
+                    maxlength="5000"></textarea>
+                  <button class="send-btn" id="send-message-btn" disabled>
+                    📤
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -858,6 +859,36 @@ class AgentsPage {
     if (refreshAgentsBtn) {
       refreshAgentsBtn.addEventListener('click', () => this.refreshAgents());
     }
+    
+    // Message input handling
+    const messageInput = this.container.querySelector('#message-input');
+    const sendBtn = this.container.querySelector('#send-message-btn');
+    
+    if (messageInput && sendBtn) {
+      // Auto-resize textarea
+      const autoResize = (textarea) => {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      };
+      
+      // Enable/disable send button based on input content
+      messageInput.addEventListener('input', (e) => {
+        const hasContent = e.target.value.trim().length > 0;
+        sendBtn.disabled = !hasContent || !this.selectedConversationId;
+        autoResize(e.target);
+      });
+      
+      // Send message on button click
+      sendBtn.addEventListener('click', () => this.sendMessage());
+      
+      // Send message on Enter (Shift+Enter for new line)
+      messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          this.sendMessage();
+        }
+      });
+    }
   }
   
   /**
@@ -893,22 +924,20 @@ class AgentsPage {
    */
   async loadAgentsData() {
     try {
-      this.showAgentsLoading(true);
-      
       const agentsData = await this.dataService.cachedFetch('/api/agents');
       
       if (agentsData && agentsData.agents) {
         this.agents = agentsData.agents;
         this.renderAgents();
       } else {
-        this.showAgentsEmpty();
+        this.agents = [];
+        this.renderAgents(); // This will hide the section if no agents
       }
       
     } catch (error) {
       console.error('Error loading agents data:', error);
-      this.showAgentsEmpty();
-    } finally {
-      this.showAgentsLoading(false);
+      this.agents = [];
+      this.renderAgents(); // This will hide the section if no agents
     }
   }
 
@@ -917,39 +946,39 @@ class AgentsPage {
    */
   renderAgents() {
     const agentsList = this.container.querySelector('#agents-list');
-    const agentsCount = this.container.querySelector('#agents-count');
+    const agentsSection = this.container.querySelector('#agents-section');
     
-    if (!agentsList || !agentsCount) return;
+    if (!agentsList || !agentsSection) return;
     
-    // Filter only global/user agents for main section
-    const globalAgents = this.agents.filter(agent => agent.level === 'user');
+    // Filter available agents for the current conversation
+    const availableAgents = this.agents.filter(agent => agent.level === 'user' || agent.level === 'project');
     
-    if (globalAgents.length === 0) {
-      this.showAgentsEmpty();
+    if (availableAgents.length === 0) {
+      // Hide entire agents section when no agents
+      agentsSection.style.display = 'none';
       return;
     }
     
-    // Update count for global agents only
-    agentsCount.textContent = `${globalAgents.length} global agent${globalAgents.length !== 1 ? 's' : ''}`;
+    // Show agents section
+    agentsSection.style.display = 'block';
     
-    // Render global agent items (compact rectangles)
-    const agentsHTML = globalAgents.map(agent => {
-      const levelBadge = agent.level === 'project' ? 'P' : 'U';
+    // Render agent story items (Instagram-style circles)
+    const agentsHTML = availableAgents.map(agent => {
+      const avatarText = this.getAvatarText(agent.name);
+      const isActive = this.selectedAgentId === agent.name;
       
       return `
-        <div class="agent-item" data-agent-id="${agent.name}">
-          <div class="agent-dot" style="background-color: ${agent.color}"></div>
-          <span class="agent-name">${agent.name}</span>
-          <span class="agent-level-badge ${agent.level}" title="${agent.level === 'project' ? 'Project Agent' : 'User Agent'}">${levelBadge}</span>
+        <div class="agent-story-item" data-agent-id="${agent.name}" title="${agent.name} - ${agent.level === 'project' ? 'Project Agent' : 'Global Agent'}">
+          <div class="agent-story-avatar ${isActive ? 'active' : ''}" style="background: linear-gradient(135deg, ${agent.color}, #f97316)">
+            ${avatarText}
+            <div class="agent-story-status"></div>
+          </div>
+          <span class="agent-story-name">${agent.name}</span>
         </div>
       `;
     }).join('');
     
     agentsList.innerHTML = agentsHTML;
-    
-    // Hide empty state and show list
-    this.hideAgentsEmpty();
-    agentsList.style.display = 'block';
     
     // Bind agent events
     this.bindAgentEvents();
@@ -959,7 +988,7 @@ class AgentsPage {
    * Bind events for agent items
    */
   bindAgentEvents() {
-    const agentItems = this.container.querySelectorAll('.agent-item');
+    const agentItems = this.container.querySelectorAll('.agent-story-item');
     
     agentItems.forEach(item => {
       item.addEventListener('click', () => {
@@ -3078,33 +3107,35 @@ class AgentsPage {
       const titleColor = agentColor ? `style="color: ${agentColor}; border-left: 3px solid ${agentColor}; padding-left: 8px;"` : '';
       const agentIndicator = agentName ? `<span class="agent-indicator-small" style="background-color: ${agentColor}" title="Using ${agentName} agent">🤖</span>` : '';
       
+      const lastMessageTime = conv.lastActivity ? this.formatTimeForChat(new Date(conv.lastActivity)) : '';
+      const hasUnread = this.hasUnreadMessages(conv.id);
+      const unreadCount = hasUnread ? this.getUnreadCount(conv.id) : 0;
+      const projectName = conv.project || 'Unknown Project';
+      const avatarText = this.getAvatarText(projectName);
+      
       return `
         <div class="sidebar-conversation-item" data-id="${conv.id}" ${agentColor ? `data-agent-color="${agentColor}"` : ''}>
           <div class="sidebar-conversation-header">
-            <div class="sidebar-conversation-title" ${titleColor}>
-              <span class="status-dot ${stateClass}"></span>
-              <h4 class="sidebar-conversation-name">${conv.title || `Chat ${conv.id.slice(-8)}`}</h4>
-              ${agentIndicator}
+            <div class="sidebar-conversation-title">
+              <div class="chat-avatar">${avatarText}</div>
+              <div class="sidebar-conversation-info">
+                <h4 class="sidebar-conversation-name">${projectName}</h4>
+                <div class="sidebar-conversation-meta">
+                  <span class="sidebar-meta-item">
+                    <span class="status-dot ${stateClass}"></span>
+                    ${this.getStateLabel(state)}
+                  </span>
+                </div>
+              </div>
             </div>
-            <span class="sidebar-conversation-badge ${stateClass}">${this.getStateLabel(state)}</span>
-          </div>
-          
-          <div class="sidebar-conversation-meta">
-            <span class="sidebar-meta-item">
-              <span class="sidebar-meta-icon">📁</span>
-              ${this.truncateText(conv.project || 'Unknown', 12)}
-            </span>
           </div>
           
           <div class="sidebar-conversation-preview">
             <p class="sidebar-preview-text">${this.getSimpleConversationPreview(conv)}</p>
-          </div>
-          
-          <div class="sidebar-conversation-actions">
-            <button class="conversation-agents-btn" data-conversation-id="${conv.id}" title="View available agents for this project">
-              <span class="agents-icon">🤖</span>
-              <span class="agents-text">Agents</span>
-            </button>
+            <div class="sidebar-conversation-time">
+              ${lastMessageTime}
+              ${hasUnread ? `<span class="unread-indicator">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+            </div>
           </div>
         </div>
       `;
@@ -3169,8 +3200,14 @@ class AgentsPage {
     // Update UI to show selection
     this.updateSelectedConversation();
     
+    // Show message input area
+    this.showMessageInput();
+    
     // Load and display conversation messages
     await this.loadConversationMessages(conversationId);
+    
+    // Update conversation context for sending messages
+    await this.updateConversationContext(conversationId);
   }
   
   /**
@@ -3198,7 +3235,9 @@ class AgentsPage {
       const metaElement = this.container.querySelector('#selected-conversation-meta');
       
       if (titleElement) {
-        const baseTitle = conversation.title || `Chat ${conversation.id.slice(-8)}`;
+        const projectName = conversation.project || 'Unknown Project';
+        const conversationId = conversation.id.slice(-8);
+        const baseTitle = `${projectName} • ${conversationId}`;
         const agentName = this.getAgentNameForConversation(conversation.id);
         const agentColor = this.getAgentColorForConversation(conversation.id);
         
@@ -3744,42 +3783,26 @@ class AgentsPage {
     // Compact summaries should be displayed as assistant messages even if marked as 'user'
     const isUser = message.role === 'user' && !message.isCompactSummary;
     
-    
     // Detect if message contains tools
     const hasTools = Array.isArray(message.content) && 
                     message.content.some(block => block.type === 'tool_use');
     const toolCount = hasTools ? 
                      message.content.filter(block => block.type === 'tool_use').length : 0;
     
-    // Terminal-style prompt
-    const prompt = isUser ? '>' : '#';
-    const roleLabel = isUser ? 'user' : 'claude';
-    
-    // Get message ID (short version for display)
-    const messageId = message.id ? message.id.slice(-8) : 'unknown';
-    
     return `
-      <div class="terminal-message ${isUser ? 'user' : 'assistant'}" data-message-id="${message.id || ''}">
-        <div class="message-container">
-          <div class="message-prompt">
-            <span class="prompt-char">${prompt}</span>
-            <div class="message-metadata">
-              <span class="timestamp" title="${fullTimestamp}">${timestamp}</span>
-              <span class="role-label">${roleLabel}</span>
-              <span class="message-id" title="Message ID: ${message.id || 'unknown'}">[${messageId}]</span>
-              ${message.usage ? `
-                <span class="tokens">
-                  ${message.usage.input_tokens > 0 ? `i:${message.usage.input_tokens}` : ''}
-                  ${message.usage.output_tokens > 0 ? `o:${message.usage.output_tokens}` : ''}
-                  ${message.usage.cache_read_input_tokens > 0 ? `c:${message.usage.cache_read_input_tokens}` : ''}
-                </span>
-              ` : ''}
-              ${hasTools ? `<span class="tool-count">[${toolCount}t]</span>` : ''}
-              ${message.model ? `<span class="model">[${message.model.replace('claude-', '').replace('-20250514', '')}]</span>` : ''}
-            </div>
-          </div>
-          <div class="message-body">
+      <div class="message message-${isUser ? 'user' : 'assistant'}" data-message-id="${message.id || ''}">
+        <div class="message-bubble">
+          <div class="message-content">
             ${this.formatMessageContent(message.content, message)}
+          </div>
+          <div class="message-meta">
+            <span class="message-time" title="${fullTimestamp}">${timestamp}</span>
+            ${hasTools ? `<span class="tool-indicator">🔧 ${toolCount}</span>` : ''}
+            ${message.usage && (message.usage.input_tokens > 0 || message.usage.output_tokens > 0) ? `
+              <span class="token-indicator">
+                Input: ${message.usage.input_tokens} • Output: ${message.usage.output_tokens}
+              </span>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -4724,6 +4747,287 @@ class AgentsPage {
   }
 
   /**
+   * Show message input area when conversation is selected
+   */
+  showMessageInput() {
+    const inputArea = this.container.querySelector('#message-input-area');
+    if (inputArea) {
+      inputArea.style.display = 'block';
+    }
+  }
+  
+  /**
+   * Hide message input area
+   */
+  hideMessageInput() {
+    const inputArea = this.container.querySelector('#message-input-area');
+    if (inputArea) {
+      inputArea.style.display = 'none';
+    }
+  }
+  
+  /**
+   * Update conversation context for sending messages
+   */
+  async updateConversationContext(conversationId) {
+    const conversations = this.stateService.getStateProperty('conversations') || [];
+    const conversation = conversations.find(conv => conv.id === conversationId);
+    
+    if (conversation) {
+      this.selectedConversationContext = {
+        sessionId: conversationId,
+        projectPath: conversation.projectPath || null,
+        lastActivity: conversation.lastModified
+      };
+      
+      // Session info removed from UI for cleaner design
+      
+      // Enable send button if there's text in input
+      const messageInput = this.container.querySelector('#message-input');
+      const sendBtn = this.container.querySelector('#send-message-btn');
+      if (messageInput && sendBtn) {
+        sendBtn.disabled = messageInput.value.trim().length === 0;
+      }
+    }
+  }
+  
+  /**
+   * Send message to Claude Code via API proxy
+   */
+  async sendMessage() {
+    const messageInput = this.container.querySelector('#message-input');
+    const sendBtn = this.container.querySelector('#send-message-btn');
+    
+    if (!messageInput || !sendBtn || !this.selectedConversationContext) {
+      console.error('Missing required elements or context for sending message');
+      return;
+    }
+    
+    const messageContent = messageInput.value.trim();
+    if (!messageContent) {
+      return;
+    }
+    
+    // Disable UI while sending
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '⏳';
+    messageInput.disabled = true;
+    
+    try {
+      // Send message via Claude API Proxy
+      const response = await fetch('http://localhost:3335/api/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId: this.selectedConversationContext.sessionId,
+          message: messageContent,
+          projectPath: this.selectedConversationContext.projectPath
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        // Clear input
+        messageInput.value = '';
+        
+        // Show success feedback with instructions
+        this.showMessageFeedback(
+          'Message sent to Claude Code! Switch to your Claude Code terminal to see the response.', 
+          'success'
+        );
+        
+        // Show additional instruction
+        setTimeout(() => {
+          this.showMessageFeedback(
+            '💡 Tip: Make sure Claude Code is active and waiting for input in your terminal.', 
+            'info'
+          );
+        }, 2000);
+        
+        // Monitor for Claude Code response
+        this.startResponseMonitor();
+        
+        // Optionally reload messages after a delay to show the new message
+        setTimeout(() => {
+          this.loadConversationMessages(this.selectedConversationId);
+        }, 1000);
+        
+      } else {
+        throw new Error(result.error || 'Failed to send message');
+      }
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      this.showMessageFeedback(`Error: ${error.message}`, 'error');
+    } finally {
+      // Re-enable UI
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = '📤';
+      messageInput.disabled = false;
+      messageInput.focus();
+    }
+  }
+  
+  /**
+   * Show feedback message for message sending
+   */
+  showMessageFeedback(message, type = 'info') {
+    const inputArea = this.container.querySelector('#message-input-area');
+    if (!inputArea) return;
+    
+    // Remove existing feedback
+    const existingFeedback = inputArea.querySelector('.message-feedback');
+    if (existingFeedback) {
+      existingFeedback.remove();
+    }
+    
+    // Create feedback element
+    const feedback = document.createElement('div');
+    feedback.className = `message-feedback message-feedback-${type}`;
+    feedback.textContent = message;
+    
+    // Add styles
+    feedback.style.cssText = `
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      animation: fadeIn 0.3s ease;
+      ${type === 'success' ? 'background: rgba(63, 185, 80, 0.1); color: var(--text-success); border: 1px solid rgba(63, 185, 80, 0.3);' : ''}
+      ${type === 'error' ? 'background: rgba(248, 81, 73, 0.1); color: var(--text-error); border: 1px solid rgba(248, 81, 73, 0.3);' : ''}
+      ${type === 'info' ? 'background: rgba(165, 214, 255, 0.1); color: var(--text-info); border: 1px solid rgba(165, 214, 255, 0.3);' : ''}
+    `;
+    
+    inputArea.appendChild(feedback);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (feedback.parentNode) {
+        feedback.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => feedback.remove(), 300);
+      }
+    }, 3000);
+  }
+  
+  /**
+   * Start monitoring for Claude Code response to sent message
+   */
+  startResponseMonitor() {
+    if (this.responseMonitorInterval) {
+      clearInterval(this.responseMonitorInterval);
+    }
+    
+    const sessionId = this.selectedConversationId;
+    let lastMessageCount = 0;
+    let checkCount = 0;
+    const maxChecks = 20; // Check for 60 seconds (20 checks * 3 seconds)
+    
+    // Get current message count
+    const currentMessages = this.loadedMessages.get(sessionId) || [];
+    lastMessageCount = currentMessages.length;
+    
+    console.log(`🔍 Starting response monitor for session ${sessionId} (current: ${lastMessageCount} messages)`);
+    
+    this.responseMonitorInterval = setInterval(async () => {
+      checkCount++;
+      
+      try {
+        // Reload conversation to check for new messages
+        await this.loadConversationMessages(sessionId, false); // Don't reset pagination
+        
+        const updatedMessages = this.loadedMessages.get(sessionId) || [];
+        
+        if (updatedMessages.length > lastMessageCount) {
+          console.log(`✅ Response detected! Messages: ${lastMessageCount} -> ${updatedMessages.length}`);
+          
+          // New message detected - show success notification
+          this.showMessageFeedback('🎉 Claude Code responded!', 'success');
+          
+          // Stop monitoring
+          clearInterval(this.responseMonitorInterval);
+          this.responseMonitorInterval = null;
+          return;
+        }
+        
+        // Stop after max checks
+        if (checkCount >= maxChecks) {
+          console.log(`⏰ Response monitor timeout for session ${sessionId}`);
+          this.showMessageFeedback(
+            'No response yet. Check your Claude Code terminal or try sending the message again.', 
+            'info'
+          );
+          
+          clearInterval(this.responseMonitorInterval);
+          this.responseMonitorInterval = null;
+        }
+        
+      } catch (error) {
+        console.error('Error in response monitor:', error);
+        clearInterval(this.responseMonitorInterval);
+        this.responseMonitorInterval = null;
+      }
+    }, 3000); // Check every 3 seconds instead of 1
+  }
+  
+  /**
+   * Format time for chat display (relative time)
+   */
+  formatTimeForChat(date) {
+    if (!date) return '';
+    
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (minutes < 1) return 'now';
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    if (days < 30) return `${Math.floor(days/7)}w`;
+    
+    // For older messages, show date
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  
+  /**
+   * Get avatar text from name (first letter or initials)
+   */
+  getAvatarText(name) {
+    if (!name) return 'C';
+    
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    
+    // Take first letter of first and second word
+    return (words[0].charAt(0) + (words[1] ? words[1].charAt(0) : '')).toUpperCase();
+  }
+  
+  /**
+   * Check if conversation has unread messages (placeholder)
+   */
+  hasUnreadMessages(conversationId) {
+    // For now, we'll assume no unread messages
+    // In a real implementation, this would check against local storage or server state
+    return false;
+  }
+  
+  /**
+   * Get unread message count (placeholder)
+   */
+  getUnreadCount(conversationId) {
+    // For now, return 0
+    // In a real implementation, this would return actual unread count
+    return 0;
+  }
+
+  /**
    * Destroy agents page
    */
   destroy() {
@@ -4744,6 +5048,12 @@ class AgentsPage {
     const messagesContent = this.container.querySelector('#messages-content');
     if (messagesContent && this.messagesScrollListener) {
       messagesContent.removeEventListener('scroll', this.messagesScrollListener);
+    }
+    
+    // Cleanup response monitor
+    if (this.responseMonitorInterval) {
+      clearInterval(this.responseMonitorInterval);
+      this.responseMonitorInterval = null;
     }
     
     // Unsubscribe from state changes

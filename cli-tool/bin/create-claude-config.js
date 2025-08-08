@@ -54,6 +54,7 @@ program
   .option('--mcp-stats, --mcps-stats', 'analyze existing MCP server configurations and offer optimization')
   .option('--analytics', 'launch real-time Claude Code analytics dashboard')
   .option('--chats, --agents', 'launch Claude Code chats/agents dashboard (opens directly to conversations)')
+  .option('--tunnel', 'enable Cloudflare Tunnel for remote access (use with --analytics or --chats)')
   .option('--health-check, --health, --check, --verify', 'run comprehensive health check to verify Claude Code setup')
   .option('--agent <agent>', 'install specific agent component (supports comma-separated values)')
   .option('--command <command>', 'install specific command component (supports comma-separated values)')

@@ -90,6 +90,15 @@ async function showMainMenu() {
 async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
   
+  // Validate --tunnel usage
+  if (options.tunnel && !options.analytics && !options.chats && !options.agents) {
+    console.log(chalk.red('❌ Error: --tunnel can only be used with --analytics or --chats'));
+    console.log(chalk.yellow('💡 Examples:'));
+    console.log(chalk.gray('  cct --analytics --tunnel'));
+    console.log(chalk.gray('  cct --chats --tunnel'));
+    return;
+  }
+  
   // Handle multiple components installation (new approach)
   if (options.agent || options.command || options.mcp) {
     // If --workflow is used with components, treat it as YAML

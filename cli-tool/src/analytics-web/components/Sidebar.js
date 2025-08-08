@@ -51,7 +51,7 @@ class Sidebar {
               </a>
             </li>
             <li class="nav-item ${this.currentPage === 'agents' ? 'active' : ''}" data-page="agents" title="Agent Chats">
-              <a href="#" class="nav-link">
+              <a href="#" class="nav-link" id="chats-nav-link">
                 <div class="nav-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
@@ -61,6 +61,17 @@ class Sidebar {
               </a>
             </li>
           </ul>
+        </div>
+        
+        <!-- Mobile Chat Submenu -->
+        <div class="mobile-chat-submenu" id="mobile-chat-submenu">
+          <div class="mobile-chat-header">
+            <h3>Chats</h3>
+            <button class="mobile-chat-close" id="mobile-chat-close">&times;</button>
+          </div>
+          <div class="conversations-list" id="mobile-conversations-list">
+            <!-- Chat conversations will be rendered here -->
+          </div>
         </div>
         
         <div class="sidebar-footer">
@@ -87,9 +98,23 @@ class Sidebar {
       item.addEventListener('click', (e) => {
         e.preventDefault();
         const page = item.getAttribute('data-page');
-        this.navigateToPage(page);
+        
+        // Handle mobile chat submenu
+        if (page === 'agents' && this.isMobile()) {
+          this.toggleMobileChatSubmenu();
+        } else {
+          this.navigateToPage(page);
+        }
       });
     });
+    
+    // Mobile chat submenu events
+    const mobileChatClose = this.container.querySelector('#mobile-chat-close');
+    if (mobileChatClose) {
+      mobileChatClose.addEventListener('click', () => {
+        this.closeMobileChatSubmenu();
+      });
+    }
 
     // Hover to expand when collapsed
     sidebar.addEventListener('mouseenter', () => {
@@ -180,6 +205,161 @@ class Sidebar {
     if (statusText) {
       statusText.textContent = status === 'connected' ? 'Live' : 'Offline';
     }
+  }
+  
+  /**
+   * Check if device is mobile
+   * @returns {boolean}
+   */
+  isMobile() {
+    return window.innerWidth <= 768;
+  }
+  
+  /**
+   * Toggle mobile chat submenu
+   */
+  toggleMobileChatSubmenu() {
+    const submenu = this.container.querySelector('#mobile-chat-submenu');
+    if (submenu) {
+      submenu.classList.toggle('active');
+      
+      // Load conversations if opening
+      if (submenu.classList.contains('active')) {
+        this.loadMobileChatConversations();
+      }
+    }
+  }
+  
+  /**
+   * Close mobile chat submenu
+   */
+  closeMobileChatSubmenu() {
+    const submenu = this.container.querySelector('#mobile-chat-submenu');
+    if (submenu) {
+      submenu.classList.remove('active');
+    }
+  }
+  
+  /**
+   * Load chat conversations for mobile submenu
+   */
+  async loadMobileChatConversations() {
+    const conversationsList = this.container.querySelector('#mobile-conversations-list');
+    if (!conversationsList) return;
+    
+    try {
+      // Get conversations from the main app (if available)
+      if (window.agentsPageInstance && window.agentsPageInstance.stateService) {
+        const conversations = window.agentsPageInstance.stateService.getStateProperty('conversations') || [];
+        const states = window.agentsPageInstance.stateService.getStateProperty('conversationStates') || {};
+        
+        if (conversations.length > 0) {
+          this.renderMobileConversations(conversations, states);
+        } else {
+          conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No conversations found</div>';
+        }
+      }
+    } catch (error) {
+      console.error('Error loading mobile conversations:', error);
+      conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-error);">Error loading conversations</div>';
+    }
+  }
+  
+  /**
+   * Render conversations in mobile submenu
+   */
+  renderMobileConversations(conversations, states) {
+    const conversationsList = this.container.querySelector('#mobile-conversations-list');
+    if (!conversationsList) return;
+    
+    const conversationsHTML = conversations.slice(0, 20).map(conv => {
+      const projectName = conv.project || 'Unknown Project';
+      const avatarText = projectName.charAt(0).toUpperCase();
+      const state = states[conv.id] || 'unknown';
+      const stateClass = this.getStateClass(state);
+      
+      return `
+        <div class="sidebar-conversation-item mobile-chat-item" data-id="${conv.id}">
+          <div class="sidebar-conversation-header">
+            <div class="sidebar-conversation-title">
+              <div class="chat-avatar">${avatarText}</div>
+              <div class="sidebar-conversation-info">
+                <h4 class="sidebar-conversation-name">${projectName}</h4>
+                <div class="sidebar-conversation-meta">
+                  <span class="sidebar-meta-item">
+                    <span class="status-dot ${stateClass}"></span>
+                    ${this.getStateLabel(state)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    conversationsList.innerHTML = conversationsHTML;
+    
+    // Bind click events for mobile conversations
+    const mobileItems = conversationsList.querySelectorAll('.mobile-chat-item');
+    mobileItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const conversationId = item.dataset.id;
+        this.selectMobileConversation(conversationId);
+      });
+    });
+  }
+  
+  /**
+   * Select conversation from mobile submenu
+   */
+  selectMobileConversation(conversationId) {
+    // Close submenu
+    this.closeMobileChatSubmenu();
+    
+    // Navigate to agents page and select conversation
+    this.navigateToPage('agents');
+    
+    // Wait for page to load then select conversation
+    setTimeout(() => {
+      if (window.agentsPageInstance && window.agentsPageInstance.selectConversation) {
+        window.agentsPageInstance.selectConversation(conversationId);
+      }
+    }, 100);
+  }
+  
+  /**
+   * Get state class for conversation state
+   */
+  getStateClass(state) {
+    const stateMap = {
+      'active': 'status-active',
+      'typing': 'status-typing', 
+      'pending': 'status-pending',
+      'recent': 'status-recent',
+      'inactive': 'status-inactive',
+      'old': 'status-old',
+      'completed': 'status-completed',
+      'waiting': 'status-waiting'
+    };
+    return stateMap[state] || 'status-unknown';
+  }
+  
+  /**
+   * Get state label for conversation state
+   */
+  getStateLabel(state) {
+    const labelMap = {
+      'active': 'Active',
+      'typing': 'Typing',
+      'pending': 'Pending', 
+      'recent': 'Recent',
+      'inactive': 'Inactive',
+      'old': 'Old',
+      'completed': 'Done',
+      'waiting': 'Waiting'
+    };
+    return labelMap[state] || 'Unknown';
   }
 
   /**

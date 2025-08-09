@@ -10,7 +10,7 @@ class SessionTimer {
     this.sessionData = null;
     this.updateInterval = null;
     this.isInitialized = false;
-    this.refreshInterval = 1000; // 1 second for real-time updates
+    this.refreshInterval = 5000; // 5 seconds to reduce server load
     this.SESSION_DURATION = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
     this.isTooltipVisible = false; // Track tooltip state globally
   }

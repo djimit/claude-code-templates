@@ -2613,8 +2613,8 @@
                 overflow: hidden;
             }
             
-            /* Hide sidebar and other elements on mobile Agents page */
-            body:has(.agents-page) .sidebar,
+            /* Hide main page sidebar and other elements on mobile Agents page */
+            body:has(.agents-page) .sidebar:not(.mobile-chat-submenu),
             .agents-page .terminal-header,
             .agents-page .conversations-filters,
             .agents-page .agents-section,
@@ -2624,8 +2624,24 @@
                 display: none !important;
             }
             
+            /* Show mobile menu button initially */
+            .agents-page .mobile-menu-btn {
+                display: flex !important;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 1200;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-primary);
+            }
+            
             /* Hide mobile menu button when viewing chat */
             body:has(.mobile-chat-header-bar[style*="flex"]) .mobile-menu-btn {
+                display: none !important;
+            }
+            
+            /* Hide page header on mobile Agents page */
+            .agents-page #agents-header-container {
                 display: none !important;
             }
             
@@ -2789,19 +2805,12 @@
             }
             
             .mobile-chat-submenu {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: var(--bg-secondary);
-                z-index: 2000;
-                overflow-y: auto;
-                display: none;
+                /* This submenu is no longer used - navigation goes to separate page */
+                display: none !important;
             }
             
             .mobile-chat-submenu.active {
-                display: block;
+                display: none !important;
             }
             
             .mobile-chat-header {
@@ -4559,11 +4568,6 @@
             font-weight: 700;
         }
 
-        .selected-conversation-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
 
         .messages-actions {
             display: flex;

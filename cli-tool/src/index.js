@@ -13,6 +13,7 @@ const { runCommandStats } = require('./command-stats');
 const { runHookStats } = require('./hook-stats');
 const { runMCPStats } = require('./mcp-stats');
 const { runAnalytics } = require('./analytics');
+const { startChatsMobile } = require('./chats-mobile');
 const { runHealthCheck } = require('./health-check');
 const { trackingService } = require('./tracking-service');
 
@@ -30,9 +31,14 @@ async function showMainMenu() {
         short: 'Analytics Dashboard'
       },
       {
-        name: '💬 Chats Dashboard - View and analyze your Claude conversations',
+        name: '💬 Chats Mobile - AI-first mobile interface for conversations',
         value: 'chats',
-        short: 'Chats Dashboard'
+        short: 'Chats Mobile'
+      },
+      {
+        name: '🤖 Agents Dashboard - View and analyze Claude conversations with agent tools',
+        value: 'agents',
+        short: 'Agents Dashboard'
       },
       {
         name: '⚙️ Project Setup - Configure Claude Code for your project',
@@ -56,11 +62,19 @@ async function showMainMenu() {
   }
   
   if (initialChoice.action === 'chats') {
-    console.log(chalk.blue('💬 Launching Claude Code Chats Dashboard...'));
+    console.log(chalk.blue('💬 Launching Claude Code Mobile Chats...'));
+    trackingService.trackAnalyticsDashboard({ page: 'chats-mobile', source: 'interactive_menu' });
+    await startChatsMobile({});
+    return;
+  }
+  
+  if (initialChoice.action === 'agents') {
+    console.log(chalk.blue('🤖 Launching Claude Code Agents Dashboard...'));
     trackingService.trackAnalyticsDashboard({ page: 'agents', source: 'interactive_menu' });
     await runAnalytics({ openTo: 'agents' });
     return;
   }
+  
   
   if (initialChoice.action === 'health') {
     console.log(chalk.blue('🔍 Running Health Check...'));
@@ -91,11 +105,12 @@ async function createClaudeConfig(options = {}) {
   const targetDir = options.directory || process.cwd();
   
   // Validate --tunnel usage
-  if (options.tunnel && !options.analytics && !options.chats && !options.agents) {
-    console.log(chalk.red('❌ Error: --tunnel can only be used with --analytics or --chats'));
+  if (options.tunnel && !options.analytics && !options.chats && !options.agents && !options.chatsMobile) {
+    console.log(chalk.red('❌ Error: --tunnel can only be used with --analytics, --chats, or --chats-mobile'));
     console.log(chalk.yellow('💡 Examples:'));
     console.log(chalk.gray('  cct --analytics --tunnel'));
     console.log(chalk.gray('  cct --chats --tunnel'));
+    console.log(chalk.gray('  cct --chats-mobile'));
     return;
   }
   
@@ -140,10 +155,24 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
-  // Handle chats/agents dashboard
-  if (options.chats || options.agents) {
+  // Handle chats dashboard (now points to mobile chats interface)
+  if (options.chats) {
+    trackingService.trackAnalyticsDashboard({ page: 'chats-mobile', source: 'command_line' });
+    await startChatsMobile(options);
+    return;
+  }
+  
+  // Handle agents dashboard (separate from chats)
+  if (options.agents) {
     trackingService.trackAnalyticsDashboard({ page: 'agents', source: 'command_line' });
     await runAnalytics({ ...options, openTo: 'agents' });
+    return;
+  }
+  
+  // Handle mobile chats interface
+  if (options.chatsMobile) {
+    trackingService.trackAnalyticsDashboard({ page: 'chats-mobile', source: 'command_line' });
+    await startChatsMobile(options);
     return;
   }
   

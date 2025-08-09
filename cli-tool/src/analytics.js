@@ -22,7 +22,9 @@ const ConsoleBridge = require('./console-bridge');
 const ClaudeAPIProxy = require('./claude-api-proxy');
 
 class ClaudeAnalytics {
-  constructor() {
+  constructor(options = {}) {
+    this.options = options;
+    this.verbose = options.verbose || false;
     this.app = express();
     this.port = 3333;
     this.stateCalculator = new StateCalculator();
@@ -54,6 +56,29 @@ class ClaudeAnalytics {
         lastActivity: null,
       },
     };
+  }
+
+  /**
+   * Log messages only if verbose mode is enabled
+   * @param {string} level - Log level ('info', 'warn', 'error')
+   * @param {string} message - Message to log
+   * @param {...any} args - Additional arguments
+   */
+  log(level, message, ...args) {
+    if (!this.verbose) return;
+    
+    switch (level) {
+      case 'error':
+        console.error(message, ...args);
+        break;
+      case 'warn':
+        console.warn(message, ...args);
+        break;
+      case 'info':
+      default:
+        console.log(message, ...args);
+        break;
+    }
   }
 
   async initialize() {
@@ -2063,7 +2088,7 @@ async function runAnalytics(options = {}) {
     console.log(chalk.blue('📊 Starting Claude Code Analytics Dashboard...'));
   }
 
-  const analytics = new ClaudeAnalytics();
+  const analytics = new ClaudeAnalytics(options);
 
   try {
     // Handle Cloudflare Tunnel prompt BEFORE initializing anything

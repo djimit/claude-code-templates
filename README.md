@@ -8,7 +8,7 @@
 
 # Claude Code Templates
 
-**CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands and real-time monitoring dashboard.
+**CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands, mobile-first chats interface, and real-time monitoring dashboard.
 
 ## 🚀 Quick Start
 
@@ -16,15 +16,30 @@
 # Interactive setup (recommended)
 npx claude-code-templates@latest
 
+# Mobile-first chats interface ⭐ NEW!
+npx claude-code-templates@latest --chats
+
+# With secure remote access via Cloudflare Tunnel
+npx claude-code-templates@latest --chats --tunnel
+
 # Real-time analytics dashboard  
 npx claude-code-templates@latest --analytics
-
-# Real-time Chat Web UI
-npx claude-code-templates@latest --chats
 
 # System health check
 npx claude-code-templates@latest --health-check
 ```
+
+> **📌 Note**: For `--tunnel` option, you need [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/) installed:
+> ```bash
+> # macOS
+> brew install cloudflared
+> 
+> # Windows  
+> winget install --id Cloudflare.cloudflared
+> 
+> # Linux
+> apt-get install cloudflared
+> ```
 
 <img width="1279" height="827" alt="Claude Code Analytics Dashboard" src="https://github.com/user-attachments/assets/02cbe18b-21ed-4b8f-83e9-da86b4fcd95b" />
 
@@ -32,6 +47,8 @@ npx claude-code-templates@latest --health-check
 
 ## ✨ Core Features
 
+- **📱 Mobile Chats Interface** - AI-optimized mobile-first interface with intelligent auto-scroll and real-time WebSocket updates
+- **🌐 Cloudflare Tunnel Support** - Secure remote access with automatic tunnel setup and URL detection
 - **📋 Smart Project Setup** - Auto-detect and configure any project with framework-specific commands
 - **📊 Real-time Analytics** - Monitor Claude Code sessions with live state detection and performance metrics  
 - **🔍 Health Check** - Comprehensive system validation with actionable recommendations

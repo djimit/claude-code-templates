@@ -35,6 +35,8 @@ const sidebars: SidebarsConfig = {
         'components/agents',
         'components/commands',
         'components/mcps',
+        'components/settings',
+        'components/hooks',
       ],
     },
     {

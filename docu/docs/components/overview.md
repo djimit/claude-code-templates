@@ -8,7 +8,7 @@ In addition to complete project templates, **Claude Code Templates** now offers 
 
 ## Component Types
 
-The system provides three distinct types of components:
+The system provides five distinct types of components:
 
 ### 🤖 Agents
 **AI specialists for specific development tasks**
@@ -46,6 +46,30 @@ MCPs enable Claude Code to interact with external services and tools, expanding 
 
 [Learn more about MCPs →](./mcps)
 
+### ⚙️ Settings
+**Configuration options to customize Claude Code behavior**
+
+Settings are JSON-based configuration components that customize how Claude Code operates. They allow you to configure environment variables, permissions, model preferences, and cleanup policies to match your development workflow.
+
+**Examples:**
+- `allow-npm-commands` - Enable npm-related operations
+- `use-sonnet` - Configure Claude 3.5 Sonnet model
+- `enable-telemetry` - Enable usage analytics and improvements
+
+[Learn more about Settings →](./settings)
+
+### 🪝 Hooks
+**Event-driven automation for Claude Code workflows**
+
+Hooks are powerful automation components that execute shell commands in response to specific Claude Code events. They enable automated workflows, notifications, and integrations that react to your development activities.
+
+**Examples:**
+- `auto-git-add` - Automatically stage modified files with git
+- `telegram-notifications` - Send Telegram messages when work completes
+- `smart-formatting` - Auto-format code using appropriate tools
+
+[Learn more about Hooks →](./hooks)
+
 ## Web Interface
 
 The **unified web interface** provides an intuitive way to browse and install individual components:
@@ -53,7 +77,7 @@ The **unified web interface** provides an intuitive way to browse and install in
 To access the web interface, simply go to https://aitmpl.com
 
 **Interface Features:**
-- **Unified Filter System**: Browse all component types (Templates, Agents, Commands, MCPs) in a single view
+- **Unified Filter System**: Browse all component types (Templates, Agents, Commands, MCPs, Settings, Hooks) in a single view
 - **Category Filtering**: Filter by specific component types using the navigation bar
 - **Card Flip Functionality**: Hover over component cards to reveal installation commands
 - **Individual Browsing**: Each component shows detailed information and usage examples
@@ -125,6 +149,52 @@ curl -o ./database-integration.json \
   https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/database-integration.json
 ```
 
+#### Installing Settings
+Settings can be installed using the `--setting` parameter with interactive location selection:
+
+```bash
+# Install specific settings with location prompt
+npx claude-code-templates@latest --setting=permissions/allow-npm-commands
+npx claude-code-templates@latest --setting=model/use-sonnet
+npx claude-code-templates@latest --setting=telemetry/enable-telemetry
+
+# Install to default location (local settings)
+npx claude-code-templates@latest --setting=cleanup/retention-7-days --yes
+
+# Install multiple settings
+npx claude-code-templates@latest --setting=model/use-sonnet,telemetry/enable-telemetry --yes
+```
+
+**Installation Location Options:**
+- **🏠 User settings** (`~/.claude/settings.json`) - Global for all projects
+- **📁 Project settings** (`.claude/settings.json`) - Shared with team  
+- **⚙️ Local settings** (`.claude/settings.local.json`) - Personal, not committed
+- **🏢 Enterprise settings** - System-wide policy (requires admin)
+
+#### Installing Hooks
+Hooks can be installed using the `--hook` parameter with location selection:
+
+```bash
+# Install specific hooks with location prompt
+npx claude-code-templates@latest --hook=git-workflow/auto-git-add
+npx claude-code-templates@latest --hook=automation/telegram-notifications
+npx claude-code-templates@latest --hook=development-tools/smart-formatting
+
+# Install to default location (local settings)
+npx claude-code-templates@latest --hook=testing/test-runner --yes
+
+# Install multiple hooks
+npx claude-code-templates@latest --hook=development-tools/file-backup,security/file-protection --yes
+```
+
+**Hook Categories:**
+- **🔧 development-tools** - Essential development workflow automation
+- **🔄 git-workflow** - Git integration and version control
+- **🧪 testing** - Automated testing integration
+- **⚡ automation** - General purpose automation and notifications
+- **🔒 security** - Security monitoring and file protection
+- **📊 performance** - Performance monitoring and optimization
+
 ## When to Use Templates vs Components
 
 ### Use Complete Templates When:
@@ -159,6 +229,8 @@ The quickest way to install components is using dedicated CLI parameters:
 npx claude-code-templates@latest --agent=react-performance --yes
 npx claude-code-templates@latest --command=check-file --yes
 npx claude-code-templates@latest --mcp=github-integration --yes
+npx claude-code-templates@latest --setting=model/use-sonnet --yes
+npx claude-code-templates@latest --hook=git-workflow/auto-git-add --yes
 ```
 
 ### Via GitHub Repository
@@ -168,6 +240,8 @@ You can also browse components directly in the repository:
 - **Agents**: `/components/agents/` directory  
 - **Commands**: `/components/commands/` directory
 - **MCPs**: `/components/mcps/` directory
+- **Settings**: `/components/settings/` directory
+- **Hooks**: `/components/hooks/` directory
 
 ## Contributing Components
 
@@ -208,4 +282,6 @@ The system welcomes community contributions! Each component type has "Add New" c
 - [Explore Agents →](./agents) - Learn about AI specialists for development tasks
 - [Discover Commands →](./commands) - Find slash commands to enhance your workflow  
 - [Understand MCPs →](./mcps) - Integrate external services with Claude Code
-- [Browse All Components](https://davila7.github.io/claude-code-templates/) - Visit the web interface
+- [Configure Settings →](./settings) - Customize Claude Code behavior and preferences
+- [Automate with Hooks →](./hooks) - Set up event-driven automation workflows
+- [Browse All Components](https://aitmpl.com) - Visit the web interface

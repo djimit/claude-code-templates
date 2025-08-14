@@ -115,7 +115,7 @@ async function createClaudeConfig(options = {}) {
   }
   
   // Handle multiple components installation (new approach)
-  if (options.agent || options.command || options.mcp) {
+  if (options.agent || options.command || options.mcp || options.setting || options.hook) {
     // If --workflow is used with components, treat it as YAML
     if (options.workflow) {
       options.yaml = options.workflow;
@@ -552,6 +552,286 @@ async function installIndividualMCP(mcpName, targetDir, options) {
   }
 }
 
+async function installIndividualSetting(settingName, targetDir, options) {
+  console.log(chalk.blue(`⚙️ Installing setting: ${settingName}`));
+  
+  try {
+    // Support both category/setting-name and direct setting-name formats
+    let githubUrl;
+    if (settingName.includes('/')) {
+      // Category/setting format: permissions/allow-npm-commands
+      githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/${settingName}.json`;
+    } else {
+      // Direct setting format: allow-npm-commands
+      githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/${settingName}.json`;
+    }
+    
+    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
+    
+    const response = await fetch(githubUrl);
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(chalk.red(`❌ Setting "${settingName}" not found`));
+        console.log(chalk.yellow('Available settings: enable-telemetry, disable-telemetry, allow-npm-commands, deny-sensitive-files, use-sonnet, use-haiku, retention-7-days, retention-90-days'));
+        return;
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const settingConfigText = await response.text();
+    const settingConfig = JSON.parse(settingConfigText);
+
+    // Remove description field before merging
+    if (settingConfig && typeof settingConfig === 'object') {
+      delete settingConfig.description;
+    }
+    
+    // Check if .claude/settings.json exists in target directory
+    const claudeDir = path.join(targetDir, '.claude');
+    const targetSettingsFile = path.join(claudeDir, 'settings.json');
+    let existingConfig = {};
+    
+    // Ensure .claude directory exists
+    await fs.ensureDir(claudeDir);
+    
+    if (await fs.pathExists(targetSettingsFile)) {
+      existingConfig = await fs.readJson(targetSettingsFile);
+      console.log(chalk.yellow('📝 Existing .claude/settings.json found, merging configurations...'));
+    }
+    
+    // Check for conflicts before merging
+    const conflicts = [];
+    
+    // Check for conflicting environment variables
+    if (existingConfig.env && settingConfig.env) {
+      Object.keys(settingConfig.env).forEach(key => {
+        if (existingConfig.env[key] && existingConfig.env[key] !== settingConfig.env[key]) {
+          conflicts.push(`Environment variable "${key}" (current: "${existingConfig.env[key]}", new: "${settingConfig.env[key]}")`);
+        }
+      });
+    }
+    
+    // Check for conflicting top-level settings
+    Object.keys(settingConfig).forEach(key => {
+      if (key !== 'permissions' && key !== 'env' && key !== 'hooks' && 
+          existingConfig[key] !== undefined && existingConfig[key] !== settingConfig[key]) {
+        conflicts.push(`Setting "${key}" (current: "${existingConfig[key]}", new: "${settingConfig[key]}")`);
+      }
+    });
+    
+    // Ask user about conflicts if any exist and not in silent mode
+    if (conflicts.length > 0 && !options.silent) {
+      console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing setting "${settingName}":`));
+      conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
+      
+      const inquirer = require('inquirer');
+      const { shouldOverwrite } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'shouldOverwrite',
+        message: 'Do you want to overwrite the existing configuration?',
+        default: false
+      }]);
+      
+      if (!shouldOverwrite) {
+        console.log(chalk.yellow(`⏹️  Installation of setting "${settingName}" cancelled by user.`));
+        return;
+      }
+    } else if (conflicts.length > 0 && options.silent) {
+      // In silent mode (batch installation), skip conflicting settings and warn
+      console.log(chalk.yellow(`⚠️  Skipping setting "${settingName}" due to conflicts (use individual installation to resolve)`));
+      return;
+    }
+    
+    // Deep merge configurations
+    const mergedConfig = {
+      ...existingConfig,
+      ...settingConfig
+    };
+    
+    // Deep merge specific sections (only if no conflicts or user approved overwrite)
+    if (existingConfig.permissions && settingConfig.permissions) {
+      mergedConfig.permissions = {
+        ...existingConfig.permissions,
+        ...settingConfig.permissions
+      };
+      
+      // Merge arrays for allow, deny, ask (no conflicts here, just merge)
+      ['allow', 'deny', 'ask'].forEach(key => {
+        if (existingConfig.permissions[key] && settingConfig.permissions[key]) {
+          mergedConfig.permissions[key] = [
+            ...new Set([...existingConfig.permissions[key], ...settingConfig.permissions[key]])
+          ];
+        }
+      });
+    }
+    
+    if (existingConfig.env && settingConfig.env) {
+      mergedConfig.env = {
+        ...existingConfig.env,
+        ...settingConfig.env
+      };
+    }
+    
+    if (existingConfig.hooks && settingConfig.hooks) {
+      mergedConfig.hooks = {
+        ...existingConfig.hooks,
+        ...settingConfig.hooks
+      };
+    }
+    
+    // Write the merged configuration
+    await fs.writeJson(targetSettingsFile, mergedConfig, { spaces: 2 });
+    
+    if (!options.silent) {
+      console.log(chalk.green(`✅ Setting "${settingName}" installed successfully!`));
+      console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetSettingsFile)}`));
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    }
+    
+    // Track successful setting installation
+    trackingService.trackDownload('setting', settingName, {
+      installation_type: 'individual_setting',
+      merged_with_existing: Object.keys(existingConfig).length > 0,
+      source: 'github_main'
+    });
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing setting: ${error.message}`));
+  }
+}
+
+async function installIndividualHook(hookName, targetDir, options) {
+  console.log(chalk.blue(`🪝 Installing hook: ${hookName}`));
+  
+  try {
+    // Support both category/hook-name and direct hook-name formats
+    let githubUrl;
+    if (hookName.includes('/')) {
+      // Category/hook format: pre-tool/backup-before-edit
+      githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/${hookName}.json`;
+    } else {
+      // Direct hook format: backup-before-edit
+      githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/${hookName}.json`;
+    }
+    
+    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
+    
+    const response = await fetch(githubUrl);
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(chalk.red(`❌ Hook "${hookName}" not found`));
+        console.log(chalk.yellow('Available hooks: notify-before-bash, format-python-files, format-javascript-files, git-add-changes, backup-before-edit, run-tests-after-changes'));
+        return;
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const hookConfigText = await response.text();
+    const hookConfig = JSON.parse(hookConfigText);
+
+    // Remove description field before merging
+    if (hookConfig && typeof hookConfig === 'object') {
+      delete hookConfig.description;
+    }
+    
+    // Check if .claude/settings.json exists in target directory (hooks go in settings.json)
+    const claudeDir = path.join(targetDir, '.claude');
+    const targetSettingsFile = path.join(claudeDir, 'settings.json');
+    let existingConfig = {};
+    
+    // Ensure .claude directory exists
+    await fs.ensureDir(claudeDir);
+    
+    if (await fs.pathExists(targetSettingsFile)) {
+      existingConfig = await fs.readJson(targetSettingsFile);
+      console.log(chalk.yellow('📝 Existing .claude/settings.json found, merging hook configurations...'));
+    }
+    
+    // Check for conflicts before merging
+    const conflicts = [];
+    
+    // Check for conflicting hooks
+    if (existingConfig.hooks && hookConfig.hooks) {
+      ['PreToolUse', 'PostToolUse'].forEach(hookType => {
+        if (existingConfig.hooks[hookType] && hookConfig.hooks[hookType]) {
+          Object.keys(hookConfig.hooks[hookType]).forEach(toolName => {
+            if (existingConfig.hooks[hookType][toolName] && 
+                existingConfig.hooks[hookType][toolName] !== hookConfig.hooks[hookType][toolName]) {
+              conflicts.push(`Hook "${hookType}.${toolName}" (current: "${existingConfig.hooks[hookType][toolName]}", new: "${hookConfig.hooks[hookType][toolName]}")`);
+            }
+          });
+        }
+      });
+    }
+    
+    // Ask user about conflicts if any exist and not in silent mode
+    if (conflicts.length > 0 && !options.silent) {
+      console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing hook "${hookName}":`));
+      conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
+      
+      const inquirer = require('inquirer');
+      const { shouldOverwrite } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'shouldOverwrite',
+        message: 'Do you want to overwrite the existing hook configuration?',
+        default: false
+      }]);
+      
+      if (!shouldOverwrite) {
+        console.log(chalk.yellow(`⏹️  Installation of hook "${hookName}" cancelled by user.`));
+        return;
+      }
+    } else if (conflicts.length > 0 && options.silent) {
+      // In silent mode (batch installation), skip conflicting hooks and warn
+      console.log(chalk.yellow(`⚠️  Skipping hook "${hookName}" due to conflicts (use individual installation to resolve)`));
+      return;
+    }
+    
+    // Deep merge configurations
+    const mergedConfig = {
+      ...existingConfig,
+      ...hookConfig
+    };
+    
+    // Deep merge hooks specifically (only if no conflicts or user approved overwrite)
+    if (existingConfig.hooks && hookConfig.hooks) {
+      mergedConfig.hooks = {
+        ...existingConfig.hooks,
+        ...hookConfig.hooks
+      };
+      
+      // Deep merge hook types (PreToolUse, PostToolUse)
+      ['PreToolUse', 'PostToolUse'].forEach(hookType => {
+        if (existingConfig.hooks[hookType] && hookConfig.hooks[hookType]) {
+          mergedConfig.hooks[hookType] = {
+            ...existingConfig.hooks[hookType],
+            ...hookConfig.hooks[hookType]
+          };
+        }
+      });
+    }
+    
+    // Write the merged configuration
+    await fs.writeJson(targetSettingsFile, mergedConfig, { spaces: 2 });
+    
+    if (!options.silent) {
+      console.log(chalk.green(`✅ Hook "${hookName}" installed successfully!`));
+      console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetSettingsFile)}`));
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    }
+    
+    // Track successful hook installation
+    trackingService.trackDownload('hook', hookName, {
+      installation_type: 'individual_hook',
+      merged_with_existing: Object.keys(existingConfig).length > 0,
+      source: 'github_main'
+    });
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing hook: ${error.message}`));
+  }
+}
+
 // Helper functions to extract language/framework from agent content
 function extractLanguageFromAgent(content, agentName) {
   // Try to determine language from agent content or filename
@@ -644,7 +924,9 @@ async function installMultipleComponents(options, targetDir) {
     const components = {
       agents: [],
       commands: [],
-      mcps: []
+      mcps: [],
+      settings: [],
+      hooks: []
     };
     
     // Parse comma-separated values for each component type
@@ -663,7 +945,17 @@ async function installMultipleComponents(options, targetDir) {
       components.mcps = mcpsInput.split(',').map(m => m.trim()).filter(m => m);
     }
     
-    const totalComponents = components.agents.length + components.commands.length + components.mcps.length;
+    if (options.setting) {
+      const settingsInput = Array.isArray(options.setting) ? options.setting.join(',') : options.setting;
+      components.settings = settingsInput.split(',').map(s => s.trim()).filter(s => s);
+    }
+    
+    if (options.hook) {
+      const hooksInput = Array.isArray(options.hook) ? options.hook.join(',') : options.hook;
+      components.hooks = hooksInput.split(',').map(h => h.trim()).filter(h => h);
+    }
+    
+    const totalComponents = components.agents.length + components.commands.length + components.mcps.length + components.settings.length + components.hooks.length;
     
     if (totalComponents === 0) {
       console.log(chalk.yellow('⚠️  No components specified to install.'));
@@ -674,6 +966,8 @@ async function installMultipleComponents(options, targetDir) {
     console.log(chalk.gray(`   Agents: ${components.agents.length}`));
     console.log(chalk.gray(`   Commands: ${components.commands.length}`));
     console.log(chalk.gray(`   MCPs: ${components.mcps.length}`));
+    console.log(chalk.gray(`   Settings: ${components.settings.length}`));
+    console.log(chalk.gray(`   Hooks: ${components.hooks.length}`));
     
     // Install agents
     for (const agent of components.agents) {
@@ -691,6 +985,18 @@ async function installMultipleComponents(options, targetDir) {
     for (const mcp of components.mcps) {
       console.log(chalk.gray(`   Installing MCP: ${mcp}`));
       await installIndividualMCP(mcp, targetDir, { ...options, silent: true });
+    }
+    
+    // Install settings
+    for (const setting of components.settings) {
+      console.log(chalk.gray(`   Installing setting: ${setting}`));
+      await installIndividualSetting(setting, targetDir, { ...options, silent: true });
+    }
+    
+    // Install hooks
+    for (const hook of components.hooks) {
+      console.log(chalk.gray(`   Installing hook: ${hook}`));
+      await installIndividualHook(hook, targetDir, { ...options, silent: true });
     }
     
     // Handle YAML workflow if provided
@@ -736,6 +1042,8 @@ async function installMultipleComponents(options, targetDir) {
       agents_count: components.agents.length,
       commands_count: components.commands.length,
       mcps_count: components.mcps.length,
+      settings_count: components.settings.length,
+      hooks_count: components.hooks.length,
       has_yaml: !!options.yaml,
       target_directory: path.relative(process.cwd(), targetDir)
     });

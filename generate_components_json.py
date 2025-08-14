@@ -29,8 +29,8 @@ def generate_components_json():
     components_base_path = 'cli-tool/components'
     templates_base_path = 'cli-tool/templates'
     output_path = 'docs/components.json'
-    components_data = {'agents': [], 'commands': [], 'mcps': [], 'templates': []}
-    component_types = ['agents', 'commands', 'mcps']
+    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'templates': []}
+    component_types = ['agents', 'commands', 'mcps', 'settings', 'hooks']
 
     print(f"Starting scan of {components_base_path} and {templates_base_path}...")
 
@@ -58,17 +58,24 @@ def generate_components_json():
                             with open(file_path, 'r', encoding='utf-8') as f:
                                 content = f.read()
                                 
-                            # For MCP JSON files, extract description field from mcpServers
-                            if file_name.endswith('.json') and component_type == 'mcps':
+                            # Extract description field from JSON files
+                            if file_name.endswith('.json'):
                                 try:
                                     import json
                                     json_data = json.loads(content)
-                                    # Extract description from the first mcpServer entry
-                                    if 'mcpServers' in json_data:
-                                        for server_name, server_config in json_data['mcpServers'].items():
-                                            if isinstance(server_config, dict) and 'description' in server_config:
-                                                description = server_config['description']
-                                                break  # Use the first description found
+                                    
+                                    if component_type == 'mcps':
+                                        # Extract description from the first mcpServer entry
+                                        if 'mcpServers' in json_data:
+                                            for server_name, server_config in json_data['mcpServers'].items():
+                                                if isinstance(server_config, dict) and 'description' in server_config:
+                                                    description = server_config['description']
+                                                    break  # Use the first description found
+                                    elif component_type in ['settings', 'hooks']:
+                                        # Extract description from settings/hooks JSON files
+                                        if 'description' in json_data:
+                                            description = json_data['description']
+                                            
                                 except json.JSONDecodeError:
                                     print(f"Warning: Invalid JSON in {file_path}")
                                     

@@ -1,0 +1,148 @@
+{
+  "_meta": {
+    "purpose": "Claude Code Hook Template for AI",
+    "format_version": "2.0",
+    "claude_code_compatibility": ">=1.0.0",
+    "last_updated": "2025-08-14"
+  },
+  "template": {
+    "description": "[REQUIRED] Explain what this hook does for users",
+    "hooks": {
+      "EVENT_NAME": [
+        {
+          "matcher": "TOOL_PATTERN",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "BASH_COMMAND_WITH_ENV_VARS"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "events": {
+    "PreToolUse": "Before tool execution - use matchers",
+    "PostToolUse": "After successful tool execution - use matchers", 
+    "Notification": "On notifications - no matcher needed",
+    "UserPromptSubmit": "On prompt submit - no matcher needed",
+    "Stop": "Main agent finished - no matcher needed",
+    "SubagentStop": "Subagent finished - no matcher needed",
+    "PreCompact": "Before compaction - matcher: manual|auto",
+    "SessionStart": "Session start - matcher: startup|resume|clear"
+  },
+  "matchers": {
+    "*": "All tools",
+    "Edit": "File edits", 
+    "Write": "File writes",
+    "MultiEdit": "Multiple file edits",
+    "Bash": "Shell commands",
+    "Read": "File reads",
+    "Glob": "Pattern matching",
+    "Grep": "Content search",
+    "Task": "Subagent tasks",
+    "WebFetch": "Web fetches",
+    "WebSearch": "Web searches",
+    "Edit|Write": "Multiple tools (regex)",
+    "Notebook.*": "Notebook operations (regex)"
+  },
+  "env_vars": {
+    "CLAUDE_TOOL_NAME": "Name of executed tool",
+    "CLAUDE_TOOL_FILE_PATH": "File path for operations",
+    "CLAUDE_PROJECT_DIR": "Project root directory"
+  },
+  "examples": {
+    "simple_logging": {
+      "description": "Log all tool usage",
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "*",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo \"[$(date)] $CLAUDE_TOOL_NAME\" >> ~/.claude/tools.log"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "file_backup": {
+      "description": "Backup files before editing",
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Edit|MultiEdit",
+            "hooks": [
+              {
+                "type": "command", 
+                "command": "if [[ -f \"$CLAUDE_TOOL_FILE_PATH\" ]]; then cp \"$CLAUDE_TOOL_FILE_PATH\" \"$CLAUDE_TOOL_FILE_PATH.$(date +%s).bak\" 2>/dev/null || true; fi"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "git_auto_add": {
+      "description": "Auto-stage git changes",
+      "hooks": {
+        "PostToolUse": [
+          {
+            "matcher": "Edit|Write|MultiEdit",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "if git rev-parse --git-dir >/dev/null 2>&1 && [[ -n \"$CLAUDE_TOOL_FILE_PATH\" ]]; then git add \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; fi"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "multi_event": {
+      "description": "Complex hook with multiple events",
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo \"⚠️ About to run: $CLAUDE_TOOL_NAME\""
+              }
+            ]
+          }
+        ],
+        "PostToolUse": [
+          {
+            "matcher": "Bash", 
+            "hooks": [
+              {
+                "type": "command",
+                "command": "echo \"✅ Command completed successfully\""
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "validation_rules": [
+    "Event names must be arrays, never objects or strings",
+    "PreToolUse and PostToolUse require matcher field",
+    "Commands should include error suppression: 2>/dev/null || true", 
+    "File operations should check existence: [[ -f \"$FILE\" ]]",
+    "Always test cross-platform compatibility",
+    "Description must be human-readable and descriptive"
+  ],
+  "common_patterns": {
+    "error_suppression": "2>/dev/null || true",
+    "file_exists_check": "[[ -f \"$CLAUDE_TOOL_FILE_PATH\" ]]",
+    "git_repo_check": "git rev-parse --git-dir >/dev/null 2>&1",
+    "conditional_execution": "if [[ condition ]]; then command; fi",
+    "file_extension_check": "[[ \"$CLAUDE_TOOL_FILE_PATH\" == *.ext ]]",
+    "package_json_check": "[[ -f package.json ]]",
+    "timestamp": "$(date +%Y%m%d_%H%M%S)"
+  }
+}

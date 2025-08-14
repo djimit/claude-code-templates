@@ -747,22 +747,12 @@ async function installIndividualHook(hookName, targetDir, options) {
       console.log(chalk.yellow('📝 Existing .claude/settings.json found, merging hook configurations...'));
     }
     
-    // Check for conflicts before merging
+    // Check for conflicts before merging (simplified for new array format)
     const conflicts = [];
     
-    // Check for conflicting hooks
-    if (existingConfig.hooks && hookConfig.hooks) {
-      ['PreToolUse', 'PostToolUse'].forEach(hookType => {
-        if (existingConfig.hooks[hookType] && hookConfig.hooks[hookType]) {
-          Object.keys(hookConfig.hooks[hookType]).forEach(toolName => {
-            if (existingConfig.hooks[hookType][toolName] && 
-                existingConfig.hooks[hookType][toolName] !== hookConfig.hooks[hookType][toolName]) {
-              conflicts.push(`Hook "${hookType}.${toolName}" (current: "${existingConfig.hooks[hookType][toolName]}", new: "${hookConfig.hooks[hookType][toolName]}")`);
-            }
-          });
-        }
-      });
-    }
+    // For the new array format, we'll allow appending rather than conflict detection
+    // This is because Claude Code's array format naturally supports multiple hooks
+    // Conflicts are less likely and generally hooks can coexist
     
     // Ask user about conflicts if any exist and not in silent mode
     if (conflicts.length > 0 && !options.silent) {
@@ -787,26 +777,47 @@ async function installIndividualHook(hookName, targetDir, options) {
       return;
     }
     
-    // Deep merge configurations
+    // Deep merge configurations with proper hook array structure
     const mergedConfig = {
-      ...existingConfig,
-      ...hookConfig
+      ...existingConfig
     };
     
-    // Deep merge hooks specifically (only if no conflicts or user approved overwrite)
-    if (existingConfig.hooks && hookConfig.hooks) {
-      mergedConfig.hooks = {
-        ...existingConfig.hooks,
-        ...hookConfig.hooks
-      };
-      
-      // Deep merge hook types (PreToolUse, PostToolUse)
-      ['PreToolUse', 'PostToolUse'].forEach(hookType => {
-        if (existingConfig.hooks[hookType] && hookConfig.hooks[hookType]) {
-          mergedConfig.hooks[hookType] = {
-            ...existingConfig.hooks[hookType],
-            ...hookConfig.hooks[hookType]
-          };
+    // Initialize hooks structure if it doesn't exist
+    if (!mergedConfig.hooks) {
+      mergedConfig.hooks = {};
+    }
+    
+    // Merge hook configurations properly (Claude Code expects arrays)
+    if (hookConfig.hooks) {
+      Object.keys(hookConfig.hooks).forEach(hookType => {
+        if (!mergedConfig.hooks[hookType]) {
+          // If hook type doesn't exist, just copy the array
+          mergedConfig.hooks[hookType] = hookConfig.hooks[hookType];
+        } else {
+          // If hook type exists, append to the array (Claude Code format)
+          if (Array.isArray(hookConfig.hooks[hookType])) {
+            // New format: array of hook objects
+            if (!Array.isArray(mergedConfig.hooks[hookType])) {
+              // Convert old format to new format
+              mergedConfig.hooks[hookType] = [];
+            }
+            // Append new hooks to existing array
+            mergedConfig.hooks[hookType] = mergedConfig.hooks[hookType].concat(hookConfig.hooks[hookType]);
+          } else {
+            // Old format compatibility: convert to new format
+            console.log(chalk.yellow(`⚠️  Converting old hook format to new Claude Code format for ${hookType}`));
+            if (!Array.isArray(mergedConfig.hooks[hookType])) {
+              mergedConfig.hooks[hookType] = [];
+            }
+            // Add old format hook as a single matcher
+            mergedConfig.hooks[hookType].push({
+              matcher: "*",
+              hooks: [{
+                type: "command",
+                command: hookConfig.hooks[hookType]
+              }]
+            });
+          }
         }
       });
     }

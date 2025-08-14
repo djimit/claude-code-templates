@@ -586,17 +586,99 @@ async function installIndividualSetting(settingName, targetDir, options) {
       delete settingConfig.description;
     }
     
-    // Check if .claude/settings.json exists in target directory
+    // Ask user where to install the setting (unless in silent mode)
+    let settingsFile = 'settings.json'; // default
+    if (!options.silent) {
+      const inquirer = require('inquirer');
+      const { installLocation } = await inquirer.prompt([{
+        type: 'list',
+        name: 'installLocation',
+        message: 'Where would you like to install this setting?',
+        choices: [
+          {
+            name: '🏠 User settings (~/.claude/settings.json) - Applies to all projects',
+            value: 'user'
+          },
+          {
+            name: '📁 Project settings (.claude/settings.json) - Shared with team',
+            value: 'project'
+          },
+          {
+            name: '⚙️  Local settings (.claude/settings.local.json) - Personal, not committed',
+            value: 'local'
+          },
+          {
+            name: '🏢 Enterprise managed settings - System-wide policy (requires admin)',
+            value: 'enterprise'
+          }
+        ],
+        default: 'local'
+      }]);
+
+      if (installLocation === 'user') {
+        const os = require('os');
+        targetDir = os.homedir();
+        settingsFile = 'settings.json';
+      } else if (installLocation === 'project') {
+        settingsFile = 'settings.json';
+      } else if (installLocation === 'local') {
+        settingsFile = 'settings.local.json';
+      } else if (installLocation === 'enterprise') {
+        const os = require('os');
+        const platform = os.platform();
+        
+        if (platform === 'darwin') {
+          // macOS
+          targetDir = '/Library/Application Support/ClaudeCode';
+          settingsFile = 'managed-settings.json';
+        } else if (platform === 'linux' || (process.platform === 'win32' && process.env.WSL_DISTRO_NAME)) {
+          // Linux and WSL
+          targetDir = '/etc/claude-code';
+          settingsFile = 'managed-settings.json';
+        } else if (platform === 'win32') {
+          // Windows
+          targetDir = 'C:\\ProgramData\\ClaudeCode';
+          settingsFile = 'managed-settings.json';
+        } else {
+          console.log(chalk.yellow('⚠️  Platform not supported for enterprise settings. Using user settings instead.'));
+          const os = require('os');
+          targetDir = os.homedir();
+          settingsFile = 'settings.json';
+        }
+        
+        console.log(chalk.yellow(`⚠️  Enterprise settings require administrator privileges.`));
+        console.log(chalk.gray(`📍 Target path: ${path.join(targetDir, settingsFile)}`));
+      }
+    }
+    
+    // Determine target directory and file based on selection
     const claudeDir = path.join(targetDir, '.claude');
-    const targetSettingsFile = path.join(claudeDir, 'settings.json');
+    const targetSettingsFile = path.join(claudeDir, settingsFile);
     let existingConfig = {};
     
-    // Ensure .claude directory exists
-    await fs.ensureDir(claudeDir);
+    // For enterprise settings, create directory structure directly (not under .claude)
+    if (settingsFile === 'managed-settings.json') {
+      // Ensure enterprise directory exists (requires admin privileges)
+      try {
+        await fs.ensureDir(targetDir);
+      } catch (error) {
+        console.log(chalk.red(`❌ Failed to create enterprise directory: ${error.message}`));
+        console.log(chalk.yellow('💡 Try running with administrator privileges or choose a different installation location.'));
+        return;
+      }
+    } else {
+      // Ensure .claude directory exists for regular settings
+      await fs.ensureDir(claudeDir);
+    }
     
-    if (await fs.pathExists(targetSettingsFile)) {
-      existingConfig = await fs.readJson(targetSettingsFile);
-      console.log(chalk.yellow('📝 Existing .claude/settings.json found, merging configurations...'));
+    // Read existing configuration
+    const actualTargetFile = settingsFile === 'managed-settings.json' 
+      ? path.join(targetDir, settingsFile)
+      : targetSettingsFile;
+      
+    if (await fs.pathExists(actualTargetFile)) {
+      existingConfig = await fs.readJson(actualTargetFile);
+      console.log(chalk.yellow(`📝 Existing ${settingsFile} found, merging configurations...`));
     }
     
     // Check for conflicts before merging
@@ -680,11 +762,11 @@ async function installIndividualSetting(settingName, targetDir, options) {
     }
     
     // Write the merged configuration
-    await fs.writeJson(targetSettingsFile, mergedConfig, { spaces: 2 });
+    await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
     
     if (!options.silent) {
       console.log(chalk.green(`✅ Setting "${settingName}" installed successfully!`));
-      console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetSettingsFile)}`));
+      console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));
       console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
     }
     
@@ -734,17 +816,99 @@ async function installIndividualHook(hookName, targetDir, options) {
       delete hookConfig.description;
     }
     
-    // Check if .claude/settings.json exists in target directory (hooks go in settings.json)
+    // Ask user where to install the hook (unless in silent mode)
+    let settingsFile = 'settings.json'; // default
+    if (!options.silent) {
+      const inquirer = require('inquirer');
+      const { installLocation } = await inquirer.prompt([{
+        type: 'list',
+        name: 'installLocation',
+        message: 'Where would you like to install this hook?',
+        choices: [
+          {
+            name: '🏠 User settings (~/.claude/settings.json) - Applies to all projects',
+            value: 'user'
+          },
+          {
+            name: '📁 Project settings (.claude/settings.json) - Shared with team',
+            value: 'project'
+          },
+          {
+            name: '⚙️  Local settings (.claude/settings.local.json) - Personal, not committed',
+            value: 'local'
+          },
+          {
+            name: '🏢 Enterprise managed settings - System-wide policy (requires admin)',
+            value: 'enterprise'
+          }
+        ],
+        default: 'local'
+      }]);
+
+      if (installLocation === 'user') {
+        const os = require('os');
+        targetDir = os.homedir();
+        settingsFile = 'settings.json';
+      } else if (installLocation === 'project') {
+        settingsFile = 'settings.json';
+      } else if (installLocation === 'local') {
+        settingsFile = 'settings.local.json';
+      } else if (installLocation === 'enterprise') {
+        const os = require('os');
+        const platform = os.platform();
+        
+        if (platform === 'darwin') {
+          // macOS
+          targetDir = '/Library/Application Support/ClaudeCode';
+          settingsFile = 'managed-settings.json';
+        } else if (platform === 'linux' || (process.platform === 'win32' && process.env.WSL_DISTRO_NAME)) {
+          // Linux and WSL
+          targetDir = '/etc/claude-code';
+          settingsFile = 'managed-settings.json';
+        } else if (platform === 'win32') {
+          // Windows
+          targetDir = 'C:\\ProgramData\\ClaudeCode';
+          settingsFile = 'managed-settings.json';
+        } else {
+          console.log(chalk.yellow('⚠️  Platform not supported for enterprise settings. Using user settings instead.'));
+          const os = require('os');
+          targetDir = os.homedir();
+          settingsFile = 'settings.json';
+        }
+        
+        console.log(chalk.yellow(`⚠️  Enterprise settings require administrator privileges.`));
+        console.log(chalk.gray(`📍 Target path: ${path.join(targetDir, settingsFile)}`));
+      }
+    }
+    
+    // Determine target directory and file based on selection
     const claudeDir = path.join(targetDir, '.claude');
-    const targetSettingsFile = path.join(claudeDir, 'settings.json');
+    const targetSettingsFile = path.join(claudeDir, settingsFile);
     let existingConfig = {};
     
-    // Ensure .claude directory exists
-    await fs.ensureDir(claudeDir);
+    // For enterprise settings, create directory structure directly (not under .claude)
+    if (settingsFile === 'managed-settings.json') {
+      // Ensure enterprise directory exists (requires admin privileges)
+      try {
+        await fs.ensureDir(targetDir);
+      } catch (error) {
+        console.log(chalk.red(`❌ Failed to create enterprise directory: ${error.message}`));
+        console.log(chalk.yellow('💡 Try running with administrator privileges or choose a different installation location.'));
+        return;
+      }
+    } else {
+      // Ensure .claude directory exists for regular settings
+      await fs.ensureDir(claudeDir);
+    }
     
-    if (await fs.pathExists(targetSettingsFile)) {
-      existingConfig = await fs.readJson(targetSettingsFile);
-      console.log(chalk.yellow('📝 Existing .claude/settings.json found, merging hook configurations...'));
+    // Read existing configuration
+    const actualTargetFile = settingsFile === 'managed-settings.json' 
+      ? path.join(targetDir, settingsFile)
+      : targetSettingsFile;
+      
+    if (await fs.pathExists(actualTargetFile)) {
+      existingConfig = await fs.readJson(actualTargetFile);
+      console.log(chalk.yellow(`📝 Existing ${settingsFile} found, merging hook configurations...`));
     }
     
     // Check for conflicts before merging (simplified for new array format)
@@ -823,11 +987,11 @@ async function installIndividualHook(hookName, targetDir, options) {
     }
     
     // Write the merged configuration
-    await fs.writeJson(targetSettingsFile, mergedConfig, { spaces: 2 });
+    await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
     
     if (!options.silent) {
       console.log(chalk.green(`✅ Hook "${hookName}" installed successfully!`));
-      console.log(chalk.cyan(`📁 Configuration merged into: ${path.relative(targetDir, targetSettingsFile)}`));
+      console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));
       console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
     }
     

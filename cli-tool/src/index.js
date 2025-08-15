@@ -1208,17 +1208,17 @@ async function installMultipleComponents(options, targetDir) {
     console.log(chalk.gray(`   Settings: ${components.settings.length}`));
     console.log(chalk.gray(`   Hooks: ${components.hooks.length}`));
     
-    // Ask for installation locations once for settings and hooks (if any exist and not in silent mode)
+    // Ask for installation locations once for configuration components (if any exist and not in silent mode)
     let sharedInstallLocations = ['local']; // default
     const hasSettingsOrHooks = components.settings.length > 0 || components.hooks.length > 0;
     
     if (hasSettingsOrHooks && !options.yes) {
-      console.log(chalk.blue('\n📍 Choose installation locations for settings and hooks:'));
+      console.log(chalk.blue('\n📍 Choose installation locations for configuration components:'));
       const inquirer = require('inquirer');
       const { selectedLocations } = await inquirer.prompt([{
         type: 'checkbox',
         name: 'selectedLocations',
-        message: 'Where would you like to install settings and hooks? (Select one or more)',
+        message: 'Where would you like to install the configuration components? (Select one or more)',
         choices: [
           {
             name: '🏠 User settings (~/.claude/settings.json) - Applies to all projects',
@@ -1247,7 +1247,7 @@ async function installMultipleComponents(options, targetDir) {
       }]);
       
       sharedInstallLocations = selectedLocations;
-      console.log(chalk.cyan(`📋 Will install settings and hooks in: ${sharedInstallLocations.join(', ')}`));
+      console.log(chalk.cyan(`📋 Will install configuration components in: ${sharedInstallLocations.join(', ')}`));
     }
     
     // Install agents

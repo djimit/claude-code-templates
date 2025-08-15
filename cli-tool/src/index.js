@@ -587,7 +587,7 @@ async function installIndividualSetting(settingName, targetDir, options) {
     }
     
     // Ask user where to install the setting (unless in silent mode)
-    let settingsFile = 'settings.json'; // default
+    let settingsFile = 'settings.local.json'; // default to local settings (matches interactive default)
     if (!options.silent) {
       const inquirer = require('inquirer');
       const { installLocation } = await inquirer.prompt([{
@@ -817,7 +817,7 @@ async function installIndividualHook(hookName, targetDir, options) {
     }
     
     // Ask user where to install the hook (unless in silent mode)
-    let settingsFile = 'settings.json'; // default
+    let settingsFile = 'settings.local.json'; // default to local settings (matches interactive default)
     if (!options.silent) {
       const inquirer = require('inquirer');
       const { installLocation } = await inquirer.prompt([{
@@ -1162,16 +1162,16 @@ async function installMultipleComponents(options, targetDir) {
       await installIndividualMCP(mcp, targetDir, { ...options, silent: true });
     }
     
-    // Install settings
+    // Install settings (with interactive prompts for location unless --yes flag is used)
     for (const setting of components.settings) {
       console.log(chalk.gray(`   Installing setting: ${setting}`));
-      await installIndividualSetting(setting, targetDir, { ...options, silent: true });
+      await installIndividualSetting(setting, targetDir, { ...options, silent: options.yes });
     }
     
-    // Install hooks
+    // Install hooks (with interactive prompts for location unless --yes flag is used)
     for (const hook of components.hooks) {
       console.log(chalk.gray(`   Installing hook: ${hook}`));
-      await installIndividualHook(hook, targetDir, { ...options, silent: true });
+      await installIndividualHook(hook, targetDir, { ...options, silent: options.yes });
     }
     
     // Handle YAML workflow if provided

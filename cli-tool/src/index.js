@@ -586,14 +586,14 @@ async function installIndividualSetting(settingName, targetDir, options) {
       delete settingConfig.description;
     }
     
-    // Ask user where to install the setting (unless in silent mode)
-    let settingsFile = 'settings.local.json'; // default to local settings (matches interactive default)
+    // Ask user where to install the setting (unless in silent mode) - allow multiple locations
+    let installLocations = ['local']; // default to local settings
     if (!options.silent) {
       const inquirer = require('inquirer');
-      const { installLocation } = await inquirer.prompt([{
-        type: 'list',
-        name: 'installLocation',
-        message: 'Where would you like to install this setting?',
+      const { selectedLocations } = await inquirer.prompt([{
+        type: 'checkbox',
+        name: 'selectedLocations',
+        message: 'Where would you like to install this setting? (Select one or more)',
         choices: [
           {
             name: '🏠 User settings (~/.claude/settings.json) - Applies to all projects',
@@ -605,19 +605,35 @@ async function installIndividualSetting(settingName, targetDir, options) {
           },
           {
             name: '⚙️  Local settings (.claude/settings.local.json) - Personal, not committed',
-            value: 'local'
+            value: 'local',
+            checked: true // Default selection
           },
           {
             name: '🏢 Enterprise managed settings - System-wide policy (requires admin)',
             value: 'enterprise'
           }
         ],
-        default: 'local'
+        validate: function(answer) {
+          if (answer.length < 1) {
+            return 'You must choose at least one installation location.';
+          }
+          return true;
+        }
       }]);
-
+      
+      installLocations = selectedLocations;
+    }
+    
+    // Install the setting in each selected location
+    for (const installLocation of installLocations) {
+      console.log(chalk.blue(`\n📍 Installing "${settingName}" in ${installLocation} settings...`));
+      
+      let currentTargetDir = targetDir;
+      let settingsFile = 'settings.local.json'; // default
+      
       if (installLocation === 'user') {
         const os = require('os');
-        targetDir = os.homedir();
+        currentTargetDir = os.homedir();
         settingsFile = 'settings.json';
       } else if (installLocation === 'project') {
         settingsFile = 'settings.json';
@@ -629,153 +645,159 @@ async function installIndividualSetting(settingName, targetDir, options) {
         
         if (platform === 'darwin') {
           // macOS
-          targetDir = '/Library/Application Support/ClaudeCode';
+          currentTargetDir = '/Library/Application Support/ClaudeCode';
           settingsFile = 'managed-settings.json';
         } else if (platform === 'linux' || (process.platform === 'win32' && process.env.WSL_DISTRO_NAME)) {
           // Linux and WSL
-          targetDir = '/etc/claude-code';
+          currentTargetDir = '/etc/claude-code';
           settingsFile = 'managed-settings.json';
         } else if (platform === 'win32') {
           // Windows
-          targetDir = 'C:\\ProgramData\\ClaudeCode';
+          currentTargetDir = 'C:\\ProgramData\\ClaudeCode';
           settingsFile = 'managed-settings.json';
         } else {
           console.log(chalk.yellow('⚠️  Platform not supported for enterprise settings. Using user settings instead.'));
           const os = require('os');
-          targetDir = os.homedir();
+          currentTargetDir = os.homedir();
           settingsFile = 'settings.json';
         }
         
         console.log(chalk.yellow(`⚠️  Enterprise settings require administrator privileges.`));
-        console.log(chalk.gray(`📍 Target path: ${path.join(targetDir, settingsFile)}`));
+        console.log(chalk.gray(`📍 Target path: ${path.join(currentTargetDir, settingsFile)}`));
       }
-    }
-    
-    // Determine target directory and file based on selection
-    const claudeDir = path.join(targetDir, '.claude');
-    const targetSettingsFile = path.join(claudeDir, settingsFile);
-    let existingConfig = {};
-    
-    // For enterprise settings, create directory structure directly (not under .claude)
-    if (settingsFile === 'managed-settings.json') {
-      // Ensure enterprise directory exists (requires admin privileges)
-      try {
-        await fs.ensureDir(targetDir);
-      } catch (error) {
-        console.log(chalk.red(`❌ Failed to create enterprise directory: ${error.message}`));
-        console.log(chalk.yellow('💡 Try running with administrator privileges or choose a different installation location.'));
-        return;
-      }
-    } else {
-      // Ensure .claude directory exists for regular settings
-      await fs.ensureDir(claudeDir);
-    }
-    
-    // Read existing configuration
-    const actualTargetFile = settingsFile === 'managed-settings.json' 
-      ? path.join(targetDir, settingsFile)
-      : targetSettingsFile;
       
-    if (await fs.pathExists(actualTargetFile)) {
-      existingConfig = await fs.readJson(actualTargetFile);
-      console.log(chalk.yellow(`📝 Existing ${settingsFile} found, merging configurations...`));
-    }
-    
-    // Check for conflicts before merging
-    const conflicts = [];
-    
-    // Check for conflicting environment variables
-    if (existingConfig.env && settingConfig.env) {
-      Object.keys(settingConfig.env).forEach(key => {
-        if (existingConfig.env[key] && existingConfig.env[key] !== settingConfig.env[key]) {
-          conflicts.push(`Environment variable "${key}" (current: "${existingConfig.env[key]}", new: "${settingConfig.env[key]}")`);
+      // Determine target directory and file based on selection
+      const claudeDir = path.join(currentTargetDir, '.claude');
+      const targetSettingsFile = path.join(claudeDir, settingsFile);
+      let existingConfig = {};
+      
+      // For enterprise settings, create directory structure directly (not under .claude)
+      if (settingsFile === 'managed-settings.json') {
+        // Ensure enterprise directory exists (requires admin privileges)
+        try {
+          await fs.ensureDir(currentTargetDir);
+        } catch (error) {
+          console.log(chalk.red(`❌ Failed to create enterprise directory: ${error.message}`));
+          console.log(chalk.yellow('💡 Try running with administrator privileges or choose a different installation location.'));
+          continue; // Skip this location and continue with others
         }
+      } else {
+        // Ensure .claude directory exists for regular settings
+        await fs.ensureDir(claudeDir);
+      }
+      
+      // Read existing configuration
+      const actualTargetFile = settingsFile === 'managed-settings.json' 
+        ? path.join(currentTargetDir, settingsFile)
+        : targetSettingsFile;
+        
+      if (await fs.pathExists(actualTargetFile)) {
+        existingConfig = await fs.readJson(actualTargetFile);
+        console.log(chalk.yellow(`📝 Existing ${settingsFile} found, merging configurations...`));
+      }
+      
+      // Check for conflicts before merging
+      const conflicts = [];
+      
+      // Check for conflicting environment variables
+      if (existingConfig.env && settingConfig.env) {
+        Object.keys(settingConfig.env).forEach(key => {
+          if (existingConfig.env[key] && existingConfig.env[key] !== settingConfig.env[key]) {
+            conflicts.push(`Environment variable "${key}" (current: "${existingConfig.env[key]}", new: "${settingConfig.env[key]}")`);
+          }
+        });
+      }
+      
+      // Check for conflicting top-level settings
+      Object.keys(settingConfig).forEach(key => {
+        if (key !== 'permissions' && key !== 'env' && key !== 'hooks' && 
+            existingConfig[key] !== undefined && existingConfig[key] !== settingConfig[key]) {
+          conflicts.push(`Setting "${key}" (current: "${existingConfig[key]}", new: "${settingConfig[key]}")`);
+        }
+      });
+      
+      // Ask user about conflicts if any exist and not in silent mode
+      if (conflicts.length > 0 && !options.silent) {
+        console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing setting "${settingName}" in ${installLocation}:`));
+        conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
+        
+        const inquirer = require('inquirer');
+        const { shouldOverwrite } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'shouldOverwrite',
+          message: `Do you want to overwrite the existing configuration in ${installLocation}?`,
+          default: false
+        }]);
+        
+        if (!shouldOverwrite) {
+          console.log(chalk.yellow(`⏹️  Installation of setting "${settingName}" in ${installLocation} cancelled by user.`));
+          continue; // Skip this location and continue with others
+        }
+      } else if (conflicts.length > 0 && options.silent) {
+        // In silent mode (batch installation), skip conflicting settings and warn
+        console.log(chalk.yellow(`⚠️  Skipping setting "${settingName}" in ${installLocation} due to conflicts (use individual installation to resolve)`));
+        continue; // Skip this location and continue with others
+      }
+      
+      // Deep merge configurations
+      const mergedConfig = {
+        ...existingConfig,
+        ...settingConfig
+      };
+      
+      // Deep merge specific sections (only if no conflicts or user approved overwrite)
+      if (existingConfig.permissions && settingConfig.permissions) {
+        mergedConfig.permissions = {
+          ...existingConfig.permissions,
+          ...settingConfig.permissions
+        };
+        
+        // Merge arrays for allow, deny, ask (no conflicts here, just merge)
+        ['allow', 'deny', 'ask'].forEach(key => {
+          if (existingConfig.permissions[key] && settingConfig.permissions[key]) {
+            mergedConfig.permissions[key] = [
+              ...new Set([...existingConfig.permissions[key], ...settingConfig.permissions[key]])
+            ];
+          }
+        });
+      }
+      
+      if (existingConfig.env && settingConfig.env) {
+        mergedConfig.env = {
+          ...existingConfig.env,
+          ...settingConfig.env
+        };
+      }
+      
+      if (existingConfig.hooks && settingConfig.hooks) {
+        mergedConfig.hooks = {
+          ...existingConfig.hooks,
+          ...settingConfig.hooks
+        };
+      }
+      
+      // Write the merged configuration
+      await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
+      
+      if (!options.silent) {
+        console.log(chalk.green(`✅ Setting "${settingName}" installed successfully in ${installLocation}!`));
+        console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));
+        console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+      }
+      
+      // Track successful setting installation for this location
+      trackingService.trackDownload('setting', settingName, {
+        installation_type: 'individual_setting',
+        installation_location: installLocation,
+        merged_with_existing: Object.keys(existingConfig).length > 0,
+        source: 'github_main'
       });
     }
     
-    // Check for conflicting top-level settings
-    Object.keys(settingConfig).forEach(key => {
-      if (key !== 'permissions' && key !== 'env' && key !== 'hooks' && 
-          existingConfig[key] !== undefined && existingConfig[key] !== settingConfig[key]) {
-        conflicts.push(`Setting "${key}" (current: "${existingConfig[key]}", new: "${settingConfig[key]}")`);
-      }
-    });
-    
-    // Ask user about conflicts if any exist and not in silent mode
-    if (conflicts.length > 0 && !options.silent) {
-      console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing setting "${settingName}":`));
-      conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
-      
-      const inquirer = require('inquirer');
-      const { shouldOverwrite } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'shouldOverwrite',
-        message: 'Do you want to overwrite the existing configuration?',
-        default: false
-      }]);
-      
-      if (!shouldOverwrite) {
-        console.log(chalk.yellow(`⏹️  Installation of setting "${settingName}" cancelled by user.`));
-        return;
-      }
-    } else if (conflicts.length > 0 && options.silent) {
-      // In silent mode (batch installation), skip conflicting settings and warn
-      console.log(chalk.yellow(`⚠️  Skipping setting "${settingName}" due to conflicts (use individual installation to resolve)`));
-      return;
-    }
-    
-    // Deep merge configurations
-    const mergedConfig = {
-      ...existingConfig,
-      ...settingConfig
-    };
-    
-    // Deep merge specific sections (only if no conflicts or user approved overwrite)
-    if (existingConfig.permissions && settingConfig.permissions) {
-      mergedConfig.permissions = {
-        ...existingConfig.permissions,
-        ...settingConfig.permissions
-      };
-      
-      // Merge arrays for allow, deny, ask (no conflicts here, just merge)
-      ['allow', 'deny', 'ask'].forEach(key => {
-        if (existingConfig.permissions[key] && settingConfig.permissions[key]) {
-          mergedConfig.permissions[key] = [
-            ...new Set([...existingConfig.permissions[key], ...settingConfig.permissions[key]])
-          ];
-        }
-      });
-    }
-    
-    if (existingConfig.env && settingConfig.env) {
-      mergedConfig.env = {
-        ...existingConfig.env,
-        ...settingConfig.env
-      };
-    }
-    
-    if (existingConfig.hooks && settingConfig.hooks) {
-      mergedConfig.hooks = {
-        ...existingConfig.hooks,
-        ...settingConfig.hooks
-      };
-    }
-    
-    // Write the merged configuration
-    await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
-    
+    // Summary after all installations
     if (!options.silent) {
-      console.log(chalk.green(`✅ Setting "${settingName}" installed successfully!`));
-      console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));
-      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+      console.log(chalk.green(`\n🎉 Setting "${settingName}" successfully installed in ${installLocations.length} location(s)!`));
     }
-    
-    // Track successful setting installation
-    trackingService.trackDownload('setting', settingName, {
-      installation_type: 'individual_setting',
-      merged_with_existing: Object.keys(existingConfig).length > 0,
-      source: 'github_main'
-    });
     
   } catch (error) {
     console.log(chalk.red(`❌ Error installing setting: ${error.message}`));
@@ -816,14 +838,14 @@ async function installIndividualHook(hookName, targetDir, options) {
       delete hookConfig.description;
     }
     
-    // Ask user where to install the hook (unless in silent mode)
-    let settingsFile = 'settings.local.json'; // default to local settings (matches interactive default)
+    // Ask user where to install the hook (unless in silent mode) - allow multiple locations
+    let installLocations = ['local']; // default to local settings
     if (!options.silent) {
       const inquirer = require('inquirer');
-      const { installLocation } = await inquirer.prompt([{
-        type: 'list',
-        name: 'installLocation',
-        message: 'Where would you like to install this hook?',
+      const { selectedLocations } = await inquirer.prompt([{
+        type: 'checkbox',
+        name: 'selectedLocations',
+        message: 'Where would you like to install this hook? (Select one or more)',
         choices: [
           {
             name: '🏠 User settings (~/.claude/settings.json) - Applies to all projects',
@@ -835,19 +857,35 @@ async function installIndividualHook(hookName, targetDir, options) {
           },
           {
             name: '⚙️  Local settings (.claude/settings.local.json) - Personal, not committed',
-            value: 'local'
+            value: 'local',
+            checked: true // Default selection
           },
           {
             name: '🏢 Enterprise managed settings - System-wide policy (requires admin)',
             value: 'enterprise'
           }
         ],
-        default: 'local'
+        validate: function(answer) {
+          if (answer.length < 1) {
+            return 'You must choose at least one installation location.';
+          }
+          return true;
+        }
       }]);
+      
+      installLocations = selectedLocations;
+    }
+    
+    // Install the hook in each selected location
+    for (const installLocation of installLocations) {
+      console.log(chalk.blue(`\n📍 Installing "${hookName}" in ${installLocation} settings...`));
+      
+      let currentTargetDir = targetDir;
+      let settingsFile = 'settings.local.json'; // default
 
       if (installLocation === 'user') {
         const os = require('os');
-        targetDir = os.homedir();
+        currentTargetDir = os.homedir();
         settingsFile = 'settings.json';
       } else if (installLocation === 'project') {
         settingsFile = 'settings.json';
@@ -859,148 +897,154 @@ async function installIndividualHook(hookName, targetDir, options) {
         
         if (platform === 'darwin') {
           // macOS
-          targetDir = '/Library/Application Support/ClaudeCode';
+          currentTargetDir = '/Library/Application Support/ClaudeCode';
           settingsFile = 'managed-settings.json';
         } else if (platform === 'linux' || (process.platform === 'win32' && process.env.WSL_DISTRO_NAME)) {
           // Linux and WSL
-          targetDir = '/etc/claude-code';
+          currentTargetDir = '/etc/claude-code';
           settingsFile = 'managed-settings.json';
         } else if (platform === 'win32') {
           // Windows
-          targetDir = 'C:\\ProgramData\\ClaudeCode';
+          currentTargetDir = 'C:\\ProgramData\\ClaudeCode';
           settingsFile = 'managed-settings.json';
         } else {
           console.log(chalk.yellow('⚠️  Platform not supported for enterprise settings. Using user settings instead.'));
           const os = require('os');
-          targetDir = os.homedir();
+          currentTargetDir = os.homedir();
           settingsFile = 'settings.json';
         }
         
         console.log(chalk.yellow(`⚠️  Enterprise settings require administrator privileges.`));
-        console.log(chalk.gray(`📍 Target path: ${path.join(targetDir, settingsFile)}`));
+        console.log(chalk.gray(`📍 Target path: ${path.join(currentTargetDir, settingsFile)}`));
       }
-    }
-    
-    // Determine target directory and file based on selection
-    const claudeDir = path.join(targetDir, '.claude');
-    const targetSettingsFile = path.join(claudeDir, settingsFile);
-    let existingConfig = {};
-    
-    // For enterprise settings, create directory structure directly (not under .claude)
-    if (settingsFile === 'managed-settings.json') {
-      // Ensure enterprise directory exists (requires admin privileges)
-      try {
-        await fs.ensureDir(targetDir);
-      } catch (error) {
-        console.log(chalk.red(`❌ Failed to create enterprise directory: ${error.message}`));
-        console.log(chalk.yellow('💡 Try running with administrator privileges or choose a different installation location.'));
-        return;
-      }
-    } else {
-      // Ensure .claude directory exists for regular settings
-      await fs.ensureDir(claudeDir);
-    }
-    
-    // Read existing configuration
-    const actualTargetFile = settingsFile === 'managed-settings.json' 
-      ? path.join(targetDir, settingsFile)
-      : targetSettingsFile;
       
-    if (await fs.pathExists(actualTargetFile)) {
-      existingConfig = await fs.readJson(actualTargetFile);
-      console.log(chalk.yellow(`📝 Existing ${settingsFile} found, merging hook configurations...`));
-    }
-    
-    // Check for conflicts before merging (simplified for new array format)
-    const conflicts = [];
-    
-    // For the new array format, we'll allow appending rather than conflict detection
-    // This is because Claude Code's array format naturally supports multiple hooks
-    // Conflicts are less likely and generally hooks can coexist
-    
-    // Ask user about conflicts if any exist and not in silent mode
-    if (conflicts.length > 0 && !options.silent) {
-      console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing hook "${hookName}":`));
-      conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
+      // Determine target directory and file based on selection
+      const claudeDir = path.join(currentTargetDir, '.claude');
+      const targetSettingsFile = path.join(claudeDir, settingsFile);
+      let existingConfig = {};
       
-      const inquirer = require('inquirer');
-      const { shouldOverwrite } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'shouldOverwrite',
-        message: 'Do you want to overwrite the existing hook configuration?',
-        default: false
-      }]);
-      
-      if (!shouldOverwrite) {
-        console.log(chalk.yellow(`⏹️  Installation of hook "${hookName}" cancelled by user.`));
-        return;
-      }
-    } else if (conflicts.length > 0 && options.silent) {
-      // In silent mode (batch installation), skip conflicting hooks and warn
-      console.log(chalk.yellow(`⚠️  Skipping hook "${hookName}" due to conflicts (use individual installation to resolve)`));
-      return;
-    }
-    
-    // Deep merge configurations with proper hook array structure
-    const mergedConfig = {
-      ...existingConfig
-    };
-    
-    // Initialize hooks structure if it doesn't exist
-    if (!mergedConfig.hooks) {
-      mergedConfig.hooks = {};
-    }
-    
-    // Merge hook configurations properly (Claude Code expects arrays)
-    if (hookConfig.hooks) {
-      Object.keys(hookConfig.hooks).forEach(hookType => {
-        if (!mergedConfig.hooks[hookType]) {
-          // If hook type doesn't exist, just copy the array
-          mergedConfig.hooks[hookType] = hookConfig.hooks[hookType];
-        } else {
-          // If hook type exists, append to the array (Claude Code format)
-          if (Array.isArray(hookConfig.hooks[hookType])) {
-            // New format: array of hook objects
-            if (!Array.isArray(mergedConfig.hooks[hookType])) {
-              // Convert old format to new format
-              mergedConfig.hooks[hookType] = [];
-            }
-            // Append new hooks to existing array
-            mergedConfig.hooks[hookType] = mergedConfig.hooks[hookType].concat(hookConfig.hooks[hookType]);
-          } else {
-            // Old format compatibility: convert to new format
-            console.log(chalk.yellow(`⚠️  Converting old hook format to new Claude Code format for ${hookType}`));
-            if (!Array.isArray(mergedConfig.hooks[hookType])) {
-              mergedConfig.hooks[hookType] = [];
-            }
-            // Add old format hook as a single matcher
-            mergedConfig.hooks[hookType].push({
-              matcher: "*",
-              hooks: [{
-                type: "command",
-                command: hookConfig.hooks[hookType]
-              }]
-            });
-          }
+      // For enterprise settings, create directory structure directly (not under .claude)
+      if (settingsFile === 'managed-settings.json') {
+        // Ensure enterprise directory exists (requires admin privileges)
+        try {
+          await fs.ensureDir(currentTargetDir);
+        } catch (error) {
+          console.log(chalk.red(`❌ Failed to create enterprise directory: ${error.message}`));
+          console.log(chalk.yellow('💡 Try running with administrator privileges or choose a different installation location.'));
+          continue; // Skip this location and continue with others
         }
+      } else {
+        // Ensure .claude directory exists for regular settings
+        await fs.ensureDir(claudeDir);
+      }
+      
+      // Read existing configuration
+      const actualTargetFile = settingsFile === 'managed-settings.json' 
+        ? path.join(currentTargetDir, settingsFile)
+        : targetSettingsFile;
+        
+      if (await fs.pathExists(actualTargetFile)) {
+        existingConfig = await fs.readJson(actualTargetFile);
+        console.log(chalk.yellow(`📝 Existing ${settingsFile} found, merging hook configurations...`));
+      }
+      
+      // Check for conflicts before merging (simplified for new array format)
+      const conflicts = [];
+      
+      // For the new array format, we'll allow appending rather than conflict detection
+      // This is because Claude Code's array format naturally supports multiple hooks
+      // Conflicts are less likely and generally hooks can coexist
+      
+      // Ask user about conflicts if any exist and not in silent mode
+      if (conflicts.length > 0 && !options.silent) {
+        console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing hook "${hookName}" in ${installLocation}:`));
+        conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
+        
+        const inquirer = require('inquirer');
+        const { shouldOverwrite } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'shouldOverwrite',
+          message: `Do you want to overwrite the existing hook configuration in ${installLocation}?`,
+          default: false
+        }]);
+        
+        if (!shouldOverwrite) {
+          console.log(chalk.yellow(`⏹️  Installation of hook "${hookName}" in ${installLocation} cancelled by user.`));
+          continue; // Skip this location and continue with others
+        }
+      } else if (conflicts.length > 0 && options.silent) {
+        // In silent mode (batch installation), skip conflicting hooks and warn
+        console.log(chalk.yellow(`⚠️  Skipping hook "${hookName}" in ${installLocation} due to conflicts (use individual installation to resolve)`));
+        continue; // Skip this location and continue with others
+      }
+      
+      // Deep merge configurations with proper hook array structure
+      const mergedConfig = {
+        ...existingConfig
+      };
+      
+      // Initialize hooks structure if it doesn't exist
+      if (!mergedConfig.hooks) {
+        mergedConfig.hooks = {};
+      }
+      
+      // Merge hook configurations properly (Claude Code expects arrays)
+      if (hookConfig.hooks) {
+        Object.keys(hookConfig.hooks).forEach(hookType => {
+          if (!mergedConfig.hooks[hookType]) {
+            // If hook type doesn't exist, just copy the array
+            mergedConfig.hooks[hookType] = hookConfig.hooks[hookType];
+          } else {
+            // If hook type exists, append to the array (Claude Code format)
+            if (Array.isArray(hookConfig.hooks[hookType])) {
+              // New format: array of hook objects
+              if (!Array.isArray(mergedConfig.hooks[hookType])) {
+                // Convert old format to new format
+                mergedConfig.hooks[hookType] = [];
+              }
+              // Append new hooks to existing array
+              mergedConfig.hooks[hookType] = mergedConfig.hooks[hookType].concat(hookConfig.hooks[hookType]);
+            } else {
+              // Old format compatibility: convert to new format
+              console.log(chalk.yellow(`⚠️  Converting old hook format to new Claude Code format for ${hookType}`));
+              if (!Array.isArray(mergedConfig.hooks[hookType])) {
+                mergedConfig.hooks[hookType] = [];
+              }
+              // Add old format hook as a single matcher
+              mergedConfig.hooks[hookType].push({
+                matcher: "*",
+                hooks: [{
+                  type: "command",
+                  command: hookConfig.hooks[hookType]
+                }]
+              });
+            }
+          }
+        });
+      }
+      
+      // Write the merged configuration
+      await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
+      
+      if (!options.silent) {
+        console.log(chalk.green(`✅ Hook "${hookName}" installed successfully in ${installLocation}!`));
+        console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));
+        console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+      }
+      
+      // Track successful hook installation for this location
+      trackingService.trackDownload('hook', hookName, {
+        installation_type: 'individual_hook',
+        installation_location: installLocation,
+        merged_with_existing: Object.keys(existingConfig).length > 0,
+        source: 'github_main'
       });
     }
     
-    // Write the merged configuration
-    await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
-    
+    // Summary after all installations
     if (!options.silent) {
-      console.log(chalk.green(`✅ Hook "${hookName}" installed successfully!`));
-      console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));
-      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+      console.log(chalk.green(`\n🎉 Hook "${hookName}" successfully installed in ${installLocations.length} location(s)!`));
     }
-    
-    // Track successful hook installation
-    trackingService.trackDownload('hook', hookName, {
-      installation_type: 'individual_hook',
-      merged_with_existing: Object.keys(existingConfig).length > 0,
-      source: 'github_main'
-    });
     
   } catch (error) {
     console.log(chalk.red(`❌ Error installing hook: ${error.message}`));

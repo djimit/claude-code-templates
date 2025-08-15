@@ -586,9 +586,9 @@ async function installIndividualSetting(settingName, targetDir, options) {
       delete settingConfig.description;
     }
     
-    // Ask user where to install the setting (unless in silent mode) - allow multiple locations
-    let installLocations = ['local']; // default to local settings
-    if (!options.silent) {
+    // Use shared locations if provided (batch mode), otherwise ask user
+    let installLocations = options.sharedInstallLocations || ['local']; // default to local settings
+    if (!options.silent && !options.sharedInstallLocations) {
       const inquirer = require('inquirer');
       const { selectedLocations } = await inquirer.prompt([{
         type: 'checkbox',
@@ -848,9 +848,9 @@ async function installIndividualHook(hookName, targetDir, options) {
       delete hookConfig.description;
     }
     
-    // Ask user where to install the hook (unless in silent mode) - allow multiple locations
-    let installLocations = ['local']; // default to local settings
-    if (!options.silent) {
+    // Use shared locations if provided (batch mode), otherwise ask user
+    let installLocations = options.sharedInstallLocations || ['local']; // default to local settings
+    if (!options.silent && !options.sharedInstallLocations) {
       const inquirer = require('inquirer');
       const { selectedLocations } = await inquirer.prompt([{
         type: 'checkbox',
@@ -1208,6 +1208,48 @@ async function installMultipleComponents(options, targetDir) {
     console.log(chalk.gray(`   Settings: ${components.settings.length}`));
     console.log(chalk.gray(`   Hooks: ${components.hooks.length}`));
     
+    // Ask for installation locations once for settings and hooks (if any exist and not in silent mode)
+    let sharedInstallLocations = ['local']; // default
+    const hasSettingsOrHooks = components.settings.length > 0 || components.hooks.length > 0;
+    
+    if (hasSettingsOrHooks && !options.yes) {
+      console.log(chalk.blue('\n📍 Choose installation locations for settings and hooks:'));
+      const inquirer = require('inquirer');
+      const { selectedLocations } = await inquirer.prompt([{
+        type: 'checkbox',
+        name: 'selectedLocations',
+        message: 'Where would you like to install settings and hooks? (Select one or more)',
+        choices: [
+          {
+            name: '🏠 User settings (~/.claude/settings.json) - Applies to all projects',
+            value: 'user'
+          },
+          {
+            name: '📁 Project settings (.claude/settings.json) - Shared with team',
+            value: 'project'
+          },
+          {
+            name: '⚙️  Local settings (.claude/settings.local.json) - Personal, not committed',
+            value: 'local',
+            checked: true // Default selection
+          },
+          {
+            name: '🏢 Enterprise managed settings - System-wide policy (requires admin)',
+            value: 'enterprise'
+          }
+        ],
+        validate: function(answer) {
+          if (answer.length < 1) {
+            return 'You must choose at least one installation location.';
+          }
+          return true;
+        }
+      }]);
+      
+      sharedInstallLocations = selectedLocations;
+      console.log(chalk.cyan(`📋 Will install settings and hooks in: ${sharedInstallLocations.join(', ')}`));
+    }
+    
     // Install agents
     for (const agent of components.agents) {
       console.log(chalk.gray(`   Installing agent: ${agent}`));
@@ -1226,16 +1268,24 @@ async function installMultipleComponents(options, targetDir) {
       await installIndividualMCP(mcp, targetDir, { ...options, silent: true });
     }
     
-    // Install settings (with interactive prompts for location unless --yes flag is used)
+    // Install settings (using shared installation locations)
     for (const setting of components.settings) {
       console.log(chalk.gray(`   Installing setting: ${setting}`));
-      await installIndividualSetting(setting, targetDir, { ...options, silent: options.yes });
+      await installIndividualSetting(setting, targetDir, { 
+        ...options, 
+        silent: true, 
+        sharedInstallLocations: sharedInstallLocations 
+      });
     }
     
-    // Install hooks (with interactive prompts for location unless --yes flag is used)
+    // Install hooks (using shared installation locations)
     for (const hook of components.hooks) {
       console.log(chalk.gray(`   Installing hook: ${hook}`));
-      await installIndividualHook(hook, targetDir, { ...options, silent: options.yes });
+      await installIndividualHook(hook, targetDir, { 
+        ...options, 
+        silent: true, 
+        sharedInstallLocations: sharedInstallLocations 
+      });
     }
     
     // Handle YAML workflow if provided

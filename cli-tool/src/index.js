@@ -625,6 +625,7 @@ async function installIndividualSetting(settingName, targetDir, options) {
     }
     
     // Install the setting in each selected location
+    let successfulInstallations = 0;
     for (const installLocation of installLocations) {
       console.log(chalk.blue(`\n📍 Installing "${settingName}" in ${installLocation} settings...`));
       
@@ -792,11 +793,20 @@ async function installIndividualSetting(settingName, targetDir, options) {
         merged_with_existing: Object.keys(existingConfig).length > 0,
         source: 'github_main'
       });
+      
+      // Increment successful installations counter
+      successfulInstallations++;
     }
     
     // Summary after all installations
     if (!options.silent) {
-      console.log(chalk.green(`\n🎉 Setting "${settingName}" successfully installed in ${installLocations.length} location(s)!`));
+      if (successfulInstallations === installLocations.length) {
+        console.log(chalk.green(`\n🎉 Setting "${settingName}" successfully installed in ${successfulInstallations} location(s)!`));
+      } else {
+        console.log(chalk.yellow(`\n⚠️  Setting "${settingName}" installed in ${successfulInstallations} of ${installLocations.length} location(s).`));
+        const failedCount = installLocations.length - successfulInstallations;
+        console.log(chalk.red(`❌ ${failedCount} installation(s) failed due to permission or other errors.`));
+      }
     }
     
   } catch (error) {
@@ -877,6 +887,7 @@ async function installIndividualHook(hookName, targetDir, options) {
     }
     
     // Install the hook in each selected location
+    let successfulInstallations = 0;
     for (const installLocation of installLocations) {
       console.log(chalk.blue(`\n📍 Installing "${hookName}" in ${installLocation} settings...`));
       
@@ -1039,11 +1050,20 @@ async function installIndividualHook(hookName, targetDir, options) {
         merged_with_existing: Object.keys(existingConfig).length > 0,
         source: 'github_main'
       });
+      
+      // Increment successful installations counter
+      successfulInstallations++;
     }
     
     // Summary after all installations
     if (!options.silent) {
-      console.log(chalk.green(`\n🎉 Hook "${hookName}" successfully installed in ${installLocations.length} location(s)!`));
+      if (successfulInstallations === installLocations.length) {
+        console.log(chalk.green(`\n🎉 Hook "${hookName}" successfully installed in ${successfulInstallations} location(s)!`));
+      } else {
+        console.log(chalk.yellow(`\n⚠️  Hook "${hookName}" installed in ${successfulInstallations} of ${installLocations.length} location(s).`));
+        const failedCount = installLocations.length - successfulInstallations;
+        console.log(chalk.red(`❌ ${failedCount} installation(s) failed due to permission or other errors.`));
+      }
     }
     
   } catch (error) {

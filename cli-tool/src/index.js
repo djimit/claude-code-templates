@@ -401,8 +401,11 @@ async function installIndividualAgent(agentName, targetDir, options) {
       source: 'github_main'
     });
     
+    return true;
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing agent: ${error.message}`));
+    return false;
   }
 }
 
@@ -464,8 +467,11 @@ async function installIndividualCommand(commandName, targetDir, options) {
       source: 'github_main'
     });
     
+    return true;
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing command: ${error.message}`));
+    return false;
   }
 }
 
@@ -547,8 +553,11 @@ async function installIndividualMCP(mcpName, targetDir, options) {
       source: 'github_main'
     });
     
+    return true;
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing MCP: ${error.message}`));
+    return false;
   }
 }
 
@@ -712,13 +721,20 @@ async function installIndividualSetting(settingName, targetDir, options) {
       // Check for conflicting top-level settings
       Object.keys(settingConfig).forEach(key => {
         if (key !== 'permissions' && key !== 'env' && key !== 'hooks' && 
-            existingConfig[key] !== undefined && existingConfig[key] !== settingConfig[key]) {
-          conflicts.push(`Setting "${key}" (current: "${existingConfig[key]}", new: "${settingConfig[key]}")`);
+            existingConfig[key] !== undefined && JSON.stringify(existingConfig[key]) !== JSON.stringify(settingConfig[key])) {
+          
+          // For objects, just indicate the setting name without showing the complex values
+          if (typeof existingConfig[key] === 'object' && existingConfig[key] !== null &&
+              typeof settingConfig[key] === 'object' && settingConfig[key] !== null) {
+            conflicts.push(`Setting "${key}" (will be overwritten with new configuration)`);
+          } else {
+            conflicts.push(`Setting "${key}" (current: "${existingConfig[key]}", new: "${settingConfig[key]}")`);
+          }
         }
       });
       
-      // Ask user about conflicts if any exist and not in silent mode
-      if (conflicts.length > 0 && !options.silent) {
+      // Ask user about conflicts if any exist
+      if (conflicts.length > 0) {
         console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing setting "${settingName}" in ${installLocation}:`));
         conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
         
@@ -734,10 +750,6 @@ async function installIndividualSetting(settingName, targetDir, options) {
           console.log(chalk.yellow(`⏹️  Installation of setting "${settingName}" in ${installLocation} cancelled by user.`));
           continue; // Skip this location and continue with others
         }
-      } else if (conflicts.length > 0 && options.silent) {
-        // In silent mode (batch installation), skip conflicting settings and warn
-        console.log(chalk.yellow(`⚠️  Skipping setting "${settingName}" in ${installLocation} due to conflicts (use individual installation to resolve)`));
-        continue; // Skip this location and continue with others
       }
       
       // Deep merge configurations
@@ -809,8 +821,11 @@ async function installIndividualSetting(settingName, targetDir, options) {
       }
     }
     
+    return successfulInstallations;
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing setting: ${error.message}`));
+    return 0;
   }
 }
 
@@ -966,8 +981,8 @@ async function installIndividualHook(hookName, targetDir, options) {
       // This is because Claude Code's array format naturally supports multiple hooks
       // Conflicts are less likely and generally hooks can coexist
       
-      // Ask user about conflicts if any exist and not in silent mode
-      if (conflicts.length > 0 && !options.silent) {
+      // Ask user about conflicts if any exist
+      if (conflicts.length > 0) {
         console.log(chalk.yellow(`\n⚠️  Conflicts detected while installing hook "${hookName}" in ${installLocation}:`));
         conflicts.forEach(conflict => console.log(chalk.gray(`   • ${conflict}`)));
         
@@ -983,10 +998,6 @@ async function installIndividualHook(hookName, targetDir, options) {
           console.log(chalk.yellow(`⏹️  Installation of hook "${hookName}" in ${installLocation} cancelled by user.`));
           continue; // Skip this location and continue with others
         }
-      } else if (conflicts.length > 0 && options.silent) {
-        // In silent mode (batch installation), skip conflicting hooks and warn
-        console.log(chalk.yellow(`⚠️  Skipping hook "${hookName}" in ${installLocation} due to conflicts (use individual installation to resolve)`));
-        continue; // Skip this location and continue with others
       }
       
       // Deep merge configurations with proper hook array structure
@@ -1066,8 +1077,11 @@ async function installIndividualHook(hookName, targetDir, options) {
       }
     }
     
+    return successfulInstallations;
+    
   } catch (error) {
     console.log(chalk.red(`❌ Error installing hook: ${error.message}`));
+    return 0;
   }
 }
 
@@ -1208,6 +1222,9 @@ async function installMultipleComponents(options, targetDir) {
     console.log(chalk.gray(`   Settings: ${components.settings.length}`));
     console.log(chalk.gray(`   Hooks: ${components.hooks.length}`));
     
+    // Counter for successfully installed components
+    let successfullyInstalled = 0;
+    
     // Ask for installation locations once for configuration components (if any exist and not in silent mode)
     let sharedInstallLocations = ['local']; // default
     const hasSettingsOrHooks = components.settings.length > 0 || components.hooks.length > 0;
@@ -1253,39 +1270,44 @@ async function installMultipleComponents(options, targetDir) {
     // Install agents
     for (const agent of components.agents) {
       console.log(chalk.gray(`   Installing agent: ${agent}`));
-      await installIndividualAgent(agent, targetDir, { ...options, silent: true });
+      const agentSuccess = await installIndividualAgent(agent, targetDir, { ...options, silent: true });
+      if (agentSuccess) successfullyInstalled++;
     }
     
     // Install commands
     for (const command of components.commands) {
       console.log(chalk.gray(`   Installing command: ${command}`));
-      await installIndividualCommand(command, targetDir, { ...options, silent: true });
+      const commandSuccess = await installIndividualCommand(command, targetDir, { ...options, silent: true });
+      if (commandSuccess) successfullyInstalled++;
     }
     
     // Install MCPs
     for (const mcp of components.mcps) {
       console.log(chalk.gray(`   Installing MCP: ${mcp}`));
-      await installIndividualMCP(mcp, targetDir, { ...options, silent: true });
+      const mcpSuccess = await installIndividualMCP(mcp, targetDir, { ...options, silent: true });
+      if (mcpSuccess) successfullyInstalled++;
     }
     
     // Install settings (using shared installation locations)
     for (const setting of components.settings) {
       console.log(chalk.gray(`   Installing setting: ${setting}`));
-      await installIndividualSetting(setting, targetDir, { 
+      const settingSuccess = await installIndividualSetting(setting, targetDir, { 
         ...options, 
         silent: true, 
         sharedInstallLocations: sharedInstallLocations 
       });
+      if (settingSuccess > 0) successfullyInstalled++;
     }
     
     // Install hooks (using shared installation locations)
     for (const hook of components.hooks) {
       console.log(chalk.gray(`   Installing hook: ${hook}`));
-      await installIndividualHook(hook, targetDir, { 
+      const hookSuccess = await installIndividualHook(hook, targetDir, { 
         ...options, 
         silent: true, 
         sharedInstallLocations: sharedInstallLocations 
       });
+      if (hookSuccess > 0) successfullyInstalled++;
     }
     
     // Handle YAML workflow if provided
@@ -1317,7 +1339,15 @@ async function installMultipleComponents(options, targetDir) {
       }
     }
     
-    console.log(chalk.green(`\n✅ Successfully installed ${totalComponents} components!`));
+    if (successfullyInstalled === totalComponents) {
+      console.log(chalk.green(`\n✅ Successfully installed ${successfullyInstalled} components!`));
+    } else if (successfullyInstalled > 0) {
+      console.log(chalk.yellow(`\n⚠️  Successfully installed ${successfullyInstalled} of ${totalComponents} components.`));
+      console.log(chalk.red(`❌ ${totalComponents - successfullyInstalled} component(s) failed to install.`));
+    } else {
+      console.log(chalk.red(`\n❌ No components were installed successfully.`));
+      return; // Exit early if nothing was installed
+    }
     console.log(chalk.cyan(`📁 Components installed to: .claude/`));
     
     if (options.yaml) {

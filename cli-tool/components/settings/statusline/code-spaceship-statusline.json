@@ -1,9 +1,7 @@
 {
   "description": "Navigate through space on your coding journey. Track fuel consumption, travel distance, and warp levels. The ship's condition reflects your coding momentum.",
-  "config": {
-    "statusLine": {
-      "type": "command",
-      "command": "bash -c 'input=$(cat); MODEL=$(echo \"$input\" | jq -r \".model.display_name\"); DIR=$(echo \"$input\" | jq -r \".workspace.current_dir\"); SESSION=$(echo \"$input\" | jq -r \".session_id\" | cut -c1-8); CACHE=\"/tmp/spaceship_$SESSION\"; if [ ! -f \"$CACHE\" ]; then echo \"100 0 0\" > \"$CACHE\"; fi; read FUEL DISTANCE WARP < \"$CACHE\"; FUEL=$((FUEL - 1)); DISTANCE=$((DISTANCE + 5)); if [ $FUEL -le 0 ]; then FUEL=100; WARP=$((WARP + 1)); fi; echo \"$FUEL $DISTANCE $WARP\" > \"$CACHE\"; SHIP=$([ $FUEL -gt 80 ] && echo \"🚀\" || [ $FUEL -gt 40 ] && echo \"🛸\" || echo \"🆘\"); STARS=$(python3 -c \"import random; print(''.join(random.choice('⭐🌟✨') for _ in range(3)))\" 2>/dev/null || echo \"⭐🌟✨\"); echo \"[$MODEL] $SHIP Warp $WARP | ⛽$FUEL% | 🌌 ${DISTANCE}ly | $STARS | 📁 ${DIR##*/}\"'"
-    }
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'input=$(cat); MODEL=$(echo \"$input\" | jq -r \".model.display_name\"); DIR=$(echo \"$input\" | jq -r \".workspace.current_dir\"); SESSION=$(echo \"$input\" | jq -r \".session_id\" | cut -c1-8); CACHE=\"/tmp/spaceship_$SESSION\"; if [ ! -f \"$CACHE\" ]; then echo \"100 0 0\" > \"$CACHE\"; fi; read FUEL DISTANCE WARP < \"$CACHE\"; FUEL=$((FUEL - 1)); DISTANCE=$((DISTANCE + 5)); if [ $FUEL -le 0 ]; then FUEL=100; WARP=$((WARP + 1)); fi; echo \"$FUEL $DISTANCE $WARP\" > \"$CACHE\"; SHIP=$([ $FUEL -gt 80 ] && echo \"🚀\" || [ $FUEL -gt 40 ] && echo \"🛸\" || echo \"🆘\"); STARS=$(python3 -c \"import random; print(''.join(random.choice('⭐🌟✨') for _ in range(3)))\" 2>/dev/null || echo \"⭐🌟✨\"); echo \"[$MODEL] $SHIP Warp $WARP | ⛽$FUEL% | 🌌 ${DISTANCE}ly | $STARS | 📁 ${DIR##*/}\"'"
   }
 }

@@ -46,6 +46,18 @@ Agents are AI specialists for specific domains (security, performance, framework
    - `business-team/` - Product managers, analysts
    - `development-tools/` - Tool specialists, DevOps experts
 
+4. **Creating New Categories**
+   If your agent doesn't fit existing categories, create a new one:
+   ```bash
+   # Create new category folder
+   cd cli-tool/components/agents/
+   mkdir your-new-category
+   
+   # Add your agent file to the new category
+   cd your-new-category/
+   touch your-agent-name.md
+   ```
+
 ### ⚡ Adding Commands
 
 Commands are custom slash commands that extend Claude Code functionality.
@@ -78,6 +90,18 @@ Commands are custom slash commands that extend Claude Code functionality.
    - `project-management/` - File operations, project structure
    - `testing/` - Test generation, validation, coverage
    - `deployment/` - Build, deploy, CI/CD operations
+
+4. **Creating New Categories**
+   If your command doesn't fit existing categories, create a new one:
+   ```bash
+   # Create new category folder
+   cd cli-tool/components/commands/
+   mkdir your-new-category
+   
+   # Add your command file to the new category
+   cd your-new-category/
+   touch your-command-name.md
+   ```
 
 ### 🔌 Adding MCPs (Model Context Protocol)
 
@@ -112,6 +136,18 @@ MCPs provide external service integrations for Claude Code.
    - `devtools/` - Build tools, testing frameworks
    - `ai-services/` - OpenAI, Anthropic, other AI APIs
 
+4. **Creating New Categories**
+   If your MCP doesn't fit existing categories, create a new one:
+   ```bash
+   # Create new category folder
+   cd cli-tool/components/mcps/
+   mkdir your-new-category
+   
+   # Add your MCP file to the new category
+   cd your-new-category/
+   touch your-service-mcp.json
+   ```
+
 ### ⚙️ Adding Settings
 
 Settings configure Claude Code behavior and performance.
@@ -137,6 +173,18 @@ Settings configure Claude Code behavior and performance.
    - `ui/` - Interface customization, themes
    - `mcp/` - MCP server configurations
    - `security/` - Access control, permissions
+
+4. **Creating New Categories**
+   If your setting doesn't fit existing categories, create a new one:
+   ```bash
+   # Create new category folder
+   cd cli-tool/components/settings/
+   mkdir your-new-category
+   
+   # Add your setting file to the new category
+   cd your-new-category/
+   touch your-setting-name.json
+   ```
 
 ### 🪝 Adding Hooks
 
@@ -165,6 +213,18 @@ Hooks provide automation triggers for different development events.
    - `git/` - Pre-commit, post-commit, pre-push
    - `development/` - File changes, build events
    - `testing/` - Test execution, coverage checks
+
+4. **Creating New Categories**
+   If your hook doesn't fit existing categories, create a new one:
+   ```bash
+   # Create new category folder
+   cd cli-tool/components/hooks/
+   mkdir your-new-category
+   
+   # Add your hook file to the new category
+   cd your-new-category/
+   touch your-hook-name.json
+   ```
 
 ## 📦 Contributing Templates
 

@@ -6,87 +6,80 @@
 [![GitHub stars](https://img.shields.io/github/stars/davila7/claude-code-templates.svg?style=social&label=Star)](https://github.com/davila7/claude-code-templates)
 [![Open in DeepGraph](https://img.shields.io/badge/%E2%9C%A8%20Open%20in-DeepGraph-a465f7?style=flat)](https://www.deepgraph.co/davila7/claude-code-templates)
 
-# Claude Code Templates
+# Claude Code Templates (aitmpl.com)
 
-**CLI tool for configuring and monitoring Claude Code** - Quick setup for any project with framework-specific commands, mobile-first chats interface, and real-time monitoring dashboard.
+**Ready-to-use configurations for Anthropic's Claude Code.** A comprehensive collection of AI agents, custom commands, settings, hooks, external integrations (MCPs), and project templates to enhance your development workflow.
 
-## 🚀 Quick Start
+## Browse & Install Components and Templates
 
-```bash
-# Interactive setup (recommended)
-npx claude-code-templates@latest
-
-# Mobile-first chats interface ⭐ NEW!
-npx claude-code-templates@latest --chats
-
-# With secure remote access via Cloudflare Tunnel
-npx claude-code-templates@latest --chats --tunnel
-
-# Real-time analytics dashboard  
-npx claude-code-templates@latest --analytics
-
-# System health check
-npx claude-code-templates@latest --health-check
-```
-
-> **📌 Note**: For `--tunnel` option, you need [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/) installed:
-> ```bash
-> # macOS
-> brew install cloudflared
-> 
-> # Windows  
-> winget install --id Cloudflare.cloudflared
-> 
-> # Linux
-> apt-get install cloudflared
-> ```
-
-<img width="1279" height="827" alt="Claude Code Analytics Dashboard" src="https://github.com/user-attachments/assets/02cbe18b-21ed-4b8f-83e9-da86b4fcd95b" />
-
----
-
-## ✨ Core Features
-
-- **📱 Mobile Chats Interface** - AI-optimized mobile-first interface with intelligent auto-scroll and real-time WebSocket updates
-- **🌐 Cloudflare Tunnel Support** - Secure remote access with automatic tunnel setup and URL detection
-- **📋 Smart Project Setup** - Auto-detect and configure any project with framework-specific commands
-- **📊 Real-time Analytics** - Monitor Claude Code sessions with live state detection and performance metrics  
-- **🔍 Health Check** - Comprehensive system validation with actionable recommendations
-- **🧩 Individual Components** - Install specialized agents, commands, and MCPs individually
-
-## 🌐 Browse & Install Components
-
-**[🎯 Browse All Components](https://aitmpl.com)** - Interactive web interface to explore and install templates, agents, commands, and MCPs.
+**[Browse All Templates](https://aitmpl.com)** - Interactive web interface to explore and install 100+ agents, commands, settings, hooks, and MCPs.
 
 <img width="1155" height="855" alt="Browse Components Interface" src="https://github.com/user-attachments/assets/72b89472-890f-40a1-b89f-28441e6a8ce4" />
 
-## 🎯 What You Get
+## 🚀 Quick Installation
 
-| Component | Description | Example |
-|-----------|-------------|---------|
-| **CLAUDE.md** | Project-specific configuration | Framework best practices, coding standards |
-| **Commands** | Custom slash commands | `/generate-tests`, `/check-file`, `/optimize-bundle` |
-| **Agents** | AI specialists for domains | API security audit, React performance, database optimization |
-| **MCPs** | External service integrations | GitHub, databases, development tools |
-| **Analytics** | Real-time monitoring dashboard | Live session tracking, usage statistics, exports |
+```bash
+# Install a complete development stack
+npx claude-code-templates@latest --agent frontend-developer --command generate-tests --mcp github-integration
+
+# Browse and install interactively
+npx claude-code-templates@latest
+
+# Install specific components
+npx claude-code-templates@latest --agent security-auditor
+npx claude-code-templates@latest --command optimize-bundle
+npx claude-code-templates@latest --setting mcp-timeouts
+npx claude-code-templates@latest --hook pre-commit-validation
+npx claude-code-templates@latest --mcp postgresql-integration
+```
+
+## What You Get
+
+| Component | Description | Examples |
+|-----------|-------------|----------|
+| **🤖 Agents** | AI specialists for specific domains | Security auditor, React performance optimizer, database architect |
+| **⚡ Commands** | Custom slash commands | `/generate-tests`, `/optimize-bundle`, `/check-security` |
+| **🔌 MCPs** | External service integrations | GitHub, PostgreSQL, Stripe, AWS, OpenAI |
+| **⚙️ Settings** | Claude Code configurations | Timeouts, memory settings, output styles |
+| **🪝 Hooks** | Automation triggers | Pre-commit validation, post-completion actions |
+| **📦 Templates** | Complete project configurations with CLAUDE.md, .claude/* files and .mcp.json | Framework-specific setups, project best practices |
+
+## 🛠️ Additional Tools
+
+Beyond the template catalog, Claude Code Templates includes powerful development tools:
+
+### 📊 Claude Code Analytics
+Monitor your AI-powered development sessions in real-time with live state detection and performance metrics.
+
+```bash
+npx claude-code-templates@latest --analytics
+```
+
+### 💬 Conversation Monitor  
+Mobile-optimized interface to view Claude responses in real-time with secure remote access.
+
+```bash
+# Local access
+npx claude-code-templates@latest --chats
+
+# Secure remote access via Cloudflare Tunnel
+npx claude-code-templates@latest --chats --tunnel
+```
+
+### 🔍 Health Check
+Comprehensive diagnostics to ensure your Claude Code installation is optimized.
+
+```bash
+npx claude-code-templates@latest --health-check
+```
 
 ## 📖 Documentation
 
-**[📚 Complete Documentation](https://docs.aitmpl.com/)** - Comprehensive guides, examples, and API reference
+**[📚 docs.aitmpl.com](https://docs.aitmpl.com/)** - Complete guides, examples, and API reference for all components and tools.
 
-Quick links:
-- [Getting Started](https://docs.aitmpl.com/docs/intro) - Installation and first steps
-- [Project Setup](https://docs.aitmpl.com/docs/project-setup/interactive-setup) - Configure your projects
-- [Analytics Dashboard](https://docs.aitmpl.com/docs/analytics/overview) - Real-time monitoring
-- [Individual Components](https://docs.aitmpl.com/docs/components/overview) - Agents, Commands, MCPs
-- [CLI Options](https://docs.aitmpl.com/docs/cli-options) - All available commands
-- **[🔍 Tracking System Architecture](TRACKING_SYSTEM.md)** - Technical documentation with Mermaid diagrams
+## Contributing
 
-## 🤝 Contributing
-
-We welcome contributions from the open source community! 
-
-**[🎯 Browse Components](https://aitmpl.com)** to see what's available, then check our [contributing guidelines](CONTRIBUTING.md) to add your own templates, agents, commands, or MCPs.
+We welcome contributions! **[Browse existing templates](https://aitmpl.com)** to see what's available, then check our [contributing guidelines](CONTRIBUTING.md) to add your own agents, commands, MCPs, settings, or hooks.
 
 **Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.**
 
@@ -106,11 +99,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **🌐 Browse Components**: [aitmpl.com](https://aitmpl.com)
+- **🌐 Browse Templates**: [aitmpl.com](https://aitmpl.com)
 - **📚 Documentation**: [docs.aitmpl.com](https://docs.aitmpl.com)
+- **💬 Community**: [GitHub Discussions](https://github.com/davila7/claude-code-templates/discussions)
 - **🐛 Issues**: [GitHub Issues](https://github.com/davila7/claude-code-templates/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/davila7/claude-code-templates/discussions)
-- **🔒 Security**: [Security Policy](SECURITY.md)
 
 ## ⭐ Star History
 

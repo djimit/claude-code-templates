@@ -37,6 +37,15 @@ const sidebars: SidebarsConfig = {
         'components/mcps',
         'components/settings',
         'components/hooks',
+        {
+          type: 'category',
+          label: 'Notifications',
+          items: [
+            'components/telegram-notifications',
+            'components/slack-notifications',
+            'components/discord-notifications',
+          ],
+        },
       ],
     },
     {

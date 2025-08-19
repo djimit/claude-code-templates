@@ -1355,17 +1355,7 @@ async function installMultipleComponents(options, targetDir) {
       console.log(chalk.cyan(`🚀 Use the workflow file with Claude Code to execute the complete setup`));
     }
     
-    // Track installation
-    trackingService.trackDownload('multi-component', 'batch', {
-      installation_type: 'multi-component',
-      agents_count: components.agents.length,
-      commands_count: components.commands.length,
-      mcps_count: components.mcps.length,
-      settings_count: components.settings.length,
-      hooks_count: components.hooks.length,
-      has_yaml: !!options.yaml,
-      target_directory: path.relative(process.cwd(), targetDir)
-    });
+    // Note: Individual components are already tracked separately in their installation functions
     
     // Handle prompt execution if provided
     if (options.prompt) {

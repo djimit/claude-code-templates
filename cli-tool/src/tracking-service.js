@@ -134,7 +134,7 @@ class TrackingService {
                 cliVersion: trackingData.environment?.cli_version || 'unknown'
             };
 
-            const response = await fetch('https://aitmpl.com/api/track-download-supabase', {
+            const response = await fetch('https://www.aitmpl.com/api/track-download-supabase', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -145,10 +145,17 @@ class TrackingService {
             });
 
             if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Payload sent:', JSON.stringify(payload, null, 2));
                 if (response.ok) {
                     console.debug('📊 Successfully saved to database');
                 } else {
                     console.debug(`📊 Database save failed with status: ${response.status}`);
+                    try {
+                        const errorText = await response.text();
+                        console.debug('📊 Error response:', errorText);
+                    } catch (e) {
+                        console.debug('📊 Could not read error response');
+                    }
                 }
             }
 
@@ -175,7 +182,7 @@ class TrackingService {
             });
 
             // Use GitHub Pages tracking endpoint via custom domain (no auth needed)
-            await fetch(`https://aitmpl.com/api/track.html?${params}`, {
+            await fetch(`https://www.aitmpl.com/api/track.html?${params}`, {
                 method: 'GET',
                 mode: 'no-cors', // Prevents CORS errors
                 signal: signal

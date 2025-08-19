@@ -1,4 +1,5 @@
 .env
+.env.production
 node_modules
 dist
 coverage
@@ -9,3 +10,4 @@ coverage
 ._*
 .vscode
 .vscode/*
+.env*.local

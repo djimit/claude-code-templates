@@ -1,19 +1,10 @@
 // Download tracking API endpoint for Claude Code Templates
-import { createPool } from '@vercel/postgres';
-
-// Initialize database connection pool
-const pool = createPool({
-  connectionString: process.env.POSTGRES_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+import { sql } from '@vercel/postgres';
 
 // Create downloads table if it doesn't exist
 async function ensureTableExists() {
-  const client = await pool.connect();
   try {
-    await client.query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS component_downloads (
         id SERIAL PRIMARY KEY,
         component_type VARCHAR(20) NOT NULL,
@@ -25,18 +16,28 @@ async function ensureTableExists() {
         ip_address INET,
         country VARCHAR(2),
         cli_version VARCHAR(50),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        
-        -- Indexes for performance
-        INDEX idx_component_type (component_type),
-        INDEX idx_component_name (component_name),
-        INDEX idx_download_timestamp (download_timestamp),
-        INDEX idx_category (category)
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );
-    `);
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_component_type ON component_downloads (component_type);
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_component_name ON component_downloads (component_name);
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_download_timestamp ON component_downloads (download_timestamp);
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_category ON component_downloads (category);
+    `;
     
     // Create aggregated stats table for fast queries
-    await client.query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS download_stats (
         id SERIAL PRIMARY KEY,
         component_type VARCHAR(20) NOT NULL,
@@ -45,17 +46,21 @@ async function ensureTableExists() {
         last_download TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        
-        -- Unique constraint
-        UNIQUE(component_type, component_name),
-        
-        -- Indexes
-        INDEX idx_total_downloads (total_downloads DESC),
-        INDEX idx_last_download (last_download DESC)
+        UNIQUE(component_type, component_name)
       );
-    `);
-  } finally {
-    client.release();
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_total_downloads ON download_stats (total_downloads DESC);
+    `;
+    
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_last_download ON download_stats (last_download DESC);
+    `;
+    
+  } catch (error) {
+    // Tables might already exist, which is fine
+    console.log('Table creation info:', error.message);
   }
 }
 
@@ -130,51 +135,34 @@ export default async function handler(req, res) {
     const country = getCountry(req);
     const userAgent = req.headers['user-agent'];
     
-    const client = await pool.connect();
+    // Insert download record
+    await sql`
+      INSERT INTO component_downloads 
+      (component_type, component_name, component_path, category, user_agent, ip_address, country, cli_version)
+      VALUES (${type}, ${name}, ${path}, ${category}, ${userAgent}, ${ipAddress}, ${country}, ${cliVersion})
+    `;
     
-    try {
-      // Start transaction
-      await client.query('BEGIN');
-      
-      // Insert download record
-      await client.query(`
-        INSERT INTO component_downloads 
-        (component_type, component_name, component_path, category, user_agent, ip_address, country, cli_version)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `, [type, name, path, category, userAgent, ipAddress, country, cliVersion]);
-      
-      // Update aggregated stats
-      await client.query(`
-        INSERT INTO download_stats (component_type, component_name, total_downloads, last_download)
-        VALUES ($1, $2, 1, NOW())
-        ON CONFLICT (component_type, component_name) 
-        DO UPDATE SET 
-          total_downloads = download_stats.total_downloads + 1,
-          last_download = NOW(),
-          updated_at = NOW()
-      `, [type, name]);
-      
-      // Commit transaction
-      await client.query('COMMIT');
-      
-      // Return success response
-      res.status(200).json({
-        success: true,
-        message: 'Download tracked successfully',
-        data: {
-          type,
-          name,
-          timestamp: new Date().toISOString()
-        }
-      });
-      
-    } catch (dbError) {
-      // Rollback transaction on error
-      await client.query('ROLLBACK');
-      throw dbError;
-    } finally {
-      client.release();
-    }
+    // Update aggregated stats
+    await sql`
+      INSERT INTO download_stats (component_type, component_name, total_downloads, last_download)
+      VALUES (${type}, ${name}, 1, NOW())
+      ON CONFLICT (component_type, component_name) 
+      DO UPDATE SET 
+        total_downloads = download_stats.total_downloads + 1,
+        last_download = NOW(),
+        updated_at = NOW()
+    `;
+    
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: 'Download tracked successfully',
+      data: {
+        type,
+        name,
+        timestamp: new Date().toISOString()
+      }
+    });
     
   } catch (error) {
     console.error('Download tracking error:', error);
@@ -190,9 +178,7 @@ export default async function handler(req, res) {
 // Health check endpoint
 export async function health() {
   try {
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
+    await sql`SELECT 1`;
     return { status: 'healthy', timestamp: new Date().toISOString() };
   } catch (error) {
     return { status: 'unhealthy', error: error.message, timestamp: new Date().toISOString() };

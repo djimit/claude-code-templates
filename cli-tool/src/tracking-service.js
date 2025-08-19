@@ -83,12 +83,87 @@ class TrackingService {
     }
 
     /**
-     * Send tracking data via public telemetry endpoint (like Google Analytics)
+     * Send tracking data via database endpoint and fallback to public telemetry
      */
     async sendTrackingData(trackingData) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
+        try {
+            // Primary: Send to Vercel database endpoint
+            await this.sendToDatabase(trackingData, controller.signal);
+
+            // Secondary: Send to existing telemetry endpoint (for compatibility)
+            await this.sendToTelemetry(trackingData, controller.signal);
+
+            clearTimeout(timeoutId);
+
+            if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Download tracked successfully via database and telemetry');
+            }
+            
+        } catch (error) {
+            clearTimeout(timeoutId);
+            // Silent fail - tracking should never break user experience
+            if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Tracking failed (non-critical):', error.message);
+            }
+        }
+    }
+
+    /**
+     * Send tracking data to Vercel database
+     */
+    async sendToDatabase(trackingData, signal) {
+        try {
+            // Extract component path from metadata
+            const componentPath = trackingData.metadata?.target_directory || 
+                                trackingData.metadata?.path || 
+                                trackingData.component_name;
+
+            // Extract category from metadata or component name
+            const category = trackingData.metadata?.category || 
+                           (trackingData.component_name.includes('/') ? 
+                            trackingData.component_name.split('/')[0] : 'general');
+
+            const payload = {
+                type: trackingData.component_type,
+                name: trackingData.component_name,
+                path: componentPath,
+                category: category,
+                cliVersion: trackingData.environment?.cli_version || 'unknown'
+            };
+
+            const response = await fetch('https://aitmpl.com/api/track-download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': `claude-code-templates/${trackingData.environment?.cli_version || 'unknown'}`
+                },
+                body: JSON.stringify(payload),
+                signal: signal
+            });
+
+            if (process.env.CCT_DEBUG === 'true') {
+                if (response.ok) {
+                    console.debug('📊 Successfully saved to database');
+                } else {
+                    console.debug(`📊 Database save failed with status: ${response.status}`);
+                }
+            }
+
+        } catch (error) {
+            if (process.env.CCT_DEBUG === 'true') {
+                console.debug('📊 Database tracking failed:', error.message);
+            }
+            // Don't throw - we want to continue to telemetry fallback
+        }
+    }
+
+    /**
+     * Send tracking data to existing telemetry endpoint (fallback)
+     */
+    async sendToTelemetry(trackingData, signal) {
         try {
             // Build query parameters for GET request (like image tracking)
             const params = new URLSearchParams({
@@ -103,23 +178,14 @@ class TrackingService {
             await fetch(`https://aitmpl.com/api/track.html?${params}`, {
                 method: 'GET',
                 mode: 'no-cors', // Prevents CORS errors
-                signal: controller.signal
+                signal: signal
             });
 
-            clearTimeout(timeoutId);
-
-            // No need to check response with no-cors mode
-            // Only show success message when debugging
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Download tracked successfully via telemetry');
-            }
-            
         } catch (error) {
-            clearTimeout(timeoutId);
-            // Silent fail - tracking should never break user experience
             if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Tracking failed (non-critical):', error.message);
+                console.debug('📊 Telemetry tracking failed:', error.message);
             }
+            // Silent fail for telemetry too
         }
     }
 

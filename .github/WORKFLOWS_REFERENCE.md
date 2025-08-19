@@ -2,81 +2,87 @@
 
 ## ✅ Active Workflows
 
-### `simple-tracking.yml` - **OFFICIAL DOWNLOAD TRACKING**
-- **Status**: ✅ ACTIVE - Use this one
-- **Purpose**: Download tracking with PR creation
-- **Trigger**: Manual workflow_dispatch
+### `deploy.yml` - **VERCEL DEPLOYMENT**
+- **Status**: ✅ ACTIVE - Production deployment
+- **Purpose**: Deploys main site to Vercel production
+- **Trigger**: Push to main branch
 - **Features**: 
-  - Creates PRs with tracking updates
-  - Updates `docs/analytics/download-stats.json`
-  - Maintains repository security
-  - Real-time analytics updates
+  - Automated Vercel deployment
+  - Production environment setup
+  - Zero-downtime deployment
 
-### `deploy-docusaurus.yml` - **DOCUMENTATION DEPLOYMENT**
-- **Status**: ✅ ACTIVE - Keep this one
-- **Purpose**: Deploys Docusaurus documentation site
-- **Trigger**: Push to main (docs changes)
+### `deploy-docusaurus.yml` - **GITHUB PAGES DEPLOYMENT**
+- **Status**: ✅ ACTIVE - Documentation site
+- **Purpose**: Deploys main site to GitHub Pages
+- **Trigger**: Push to main branch or manual dispatch
+- **Features**:
+  - Builds and deploys documentation
+  - GitHub Pages integration
+  - Jekyll disabled (.nojekyll)
 
-### `pages-build-deployment` - **GITHUB PAGES**
-- **Status**: ✅ ACTIVE - GitHub managed
-- **Purpose**: Builds and deploys GitHub Pages
-- **Trigger**: Automatic on changes
+### `publish-package.yml` - **PACKAGE PUBLISHING**
+- **Status**: ✅ ACTIVE - Package distribution
+- **Purpose**: Publishes CLI package to GitHub Packages
+- **Trigger**: Release published or manual dispatch
+- **Features**:
+  - Automated version management
+  - GitHub Packages publishing
+  - NPM registry integration
 
-## ❌ Deprecated Workflows
+## 📊 Download Tracking System
 
-### `analytics-processor.yml (DEPRECATED)`
-- **Status**: ❌ DEPRECATED - Do not use
-- **Original Purpose**: Issues-based tracking system
-- **Why Deprecated**: Too complex, relied on GitHub Issues
-- **Replaced By**: `simple-tracking.yml`
+**Current Architecture**: Direct Supabase database integration
 
-### `process-tracking-logs.yml (DEPRECATED)`
-- **Status**: ❌ DEPRECATED - Do not use
-- **Original Purpose**: Scheduled log processing
-- **Why Deprecated**: No access to GitHub Pages logs, used simulated data
-- **Replaced By**: `simple-tracking.yml`
-
-### `tracking-dispatch.yml (DEPRECATED)`
-- **Status**: ❌ DEPRECATED - Do not use
-- **Original Purpose**: Repository dispatch event handling
-- **Why Deprecated**: Authentication issues, complex setup
-- **Replaced By**: `simple-tracking.yml`
+- **Method**: CLI directly sends tracking data to Supabase API endpoint
+- **Endpoint**: `https://www.aitmpl.com/api/track-download-supabase`
+- **Database**: Supabase PostgreSQL with anonymous data collection
+- **Real-time**: Immediate tracking on component installation
+- **Privacy**: Completely anonymous, no personal data collected
 
 ## Usage Instructions
 
-### For Download Tracking
-**Use only**: `simple-tracking.yml`
+### For Production Deployment
+**Use**: `deploy.yml` (triggers automatically on main branch)
+
+### For Documentation Updates  
+**Use**: `deploy-docusaurus.yml` (triggers automatically on main branch)
+
+### For Package Publishing
+**Use**: `publish-package.yml`
 
 ```bash
-# Trigger the workflow manually
-gh workflow run "Simple Download Tracking" \
-  --field component_type=agent \
-  --field component_name=your-component \
-  --field platform=production \
-  --field cli_version=1.15.0
+# Trigger manual package publishing
+gh workflow run "Publish Package to GitHub Packages" \
+  --field version=patch
 ```
 
-### For Documentation Updates
-**Use**: `deploy-docusaurus.yml` (triggers automatically)
+## Migration History
 
-## Migration Notes
+**Previous Tracking System**: The project previously used multiple GitHub Actions workflows for download tracking:
+- `analytics-processor.yml` - Processed GitHub Issues as data backend
+- `tracking-dispatch.yml` - Handled repository dispatch events  
+- `process-tracking-logs.yml` - Processed GitHub Pages access logs
+- `simple-tracking.yml` - Manual workflow dispatch system
 
-All deprecated workflows have been:
-- ✅ Disabled (triggers commented out)
-- ✅ Marked with `(DEPRECATED)` in the name
-- ✅ Kept for reference and historical context
-- ✅ Configured with warning inputs if manually triggered
-
-**Do not delete** the deprecated workflows - they contain valuable implementation history and debugging information.
+**Current System**: All tracking workflows have been **removed** and replaced with direct Supabase database integration from the CLI. This provides:
+- ✅ Real-time tracking (no workflow delays)
+- ✅ Better performance (no GitHub API rate limits)
+- ✅ Simpler maintenance (no complex workflow logic)
+- ✅ Higher reliability (no dependency on GitHub Actions)
 
 ## Troubleshooting
 
-If you see multiple tracking workflows running:
-1. ✅ Use only `Simple Download Tracking`
-2. ❌ Ignore any workflows with `(DEPRECATED)` in the name
-3. 📞 Check this file if unsure which workflow to use
+### Workflow Issues
+- **Deployment failed**: Check Vercel token and environment variables
+- **Pages not updating**: Verify GitHub Pages settings and branch configuration
+- **Package publishing failed**: Ensure GitHub token has packages:write permission
+
+### Download Tracking Issues
+- **Tracking not working**: Verify CLI is updated and Supabase endpoint is accessible
+- **Debug tracking**: Run CLI with `CCT_DEBUG=true` environment variable
+- **Opt-out**: Set `CCT_NO_TRACKING=true` to disable tracking
 
 ---
 
-Last updated: 2025-08-01  
-Active tracking system: `simple-tracking.yml`
+Last updated: 2025-08-19  
+Active tracking system: Direct Supabase database integration

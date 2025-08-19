@@ -141,7 +141,7 @@ curl -X POST https://tu-dominio.com/api/track-download \
 
 ## API Reference
 
-### POST /api/track-download
+### POST /api/track-download-supabase
 
 **Request Body:**
 ```json

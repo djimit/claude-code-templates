@@ -12,11 +12,11 @@ Este sistema rastrea las descargas e instalaciones de componentes de forma compl
 
 ## Arquitectura
 
-### Backend (Vercel + PostgreSQL)
+### Backend (Vercel + Supabase)
 
-1. **API Endpoint**: `/api/track-download.js`
+1. **API Endpoint**: `/api/track-download-supabase.js`
    - Recibe requests POST con datos de descarga
-   - Valida y almacena en PostgreSQL
+   - Valida y almacena en Supabase (PostgreSQL)
    - Maneja rate limiting y validaciones
 
 2. **Base de Datos**:
@@ -79,8 +79,9 @@ export CCT_NO_ANALYTICS=true
 # Modo debug (mostrar info de tracking)
 export CCT_DEBUG=true
 
-# Base de datos (Vercel)
-export POSTGRES_URL="postgresql://..."
+# Base de datos (Supabase)
+export SUPABASE_URL="https://..."
+export SUPABASE_SERVICE_ROLE_KEY="..."
 ```
 
 ### Opt-out del Usuario
@@ -108,23 +109,26 @@ El tracking se desactiva automáticamente si:
    vercel
    ```
 
-3. Configurar base de datos:
+3. Configurar base de datos (Supabase):
    ```bash
-   # Agregar PostgreSQL en Vercel Dashboard
-   # Copiar POSTGRES_URL a variables de entorno
+   # Crear proyecto en Supabase
+   # Copiar SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY
+   # Agregar variables de entorno en Vercel Dashboard
    ```
 
 ### Testing
 
 ```bash
-# Ejecutar tests de tracking
-node test-download-tracking.js
-
-# Test con debug
-CCT_DEBUG=true node test-download-tracking.js
+# Test local con CLI
+CCT_DEBUG=true node cli-tool/bin/create-claude-config.js --agent deep-research-team/academic-researcher
 
 # Test sin tracking (simula opt-out)
-CCT_NO_TRACKING=true node test-download-tracking.js
+CCT_NO_TRACKING=true node cli-tool/bin/create-claude-config.js --agent test-agent
+
+# Test directo al API
+curl -X POST https://www.aitmpl.com/api/track-download-supabase \
+  -H "Content-Type: application/json" \
+  -d '{"type":"agent","name":"test","path":"test","category":"test","cliVersion":"1.19.0"}'
 ```
 
 ### Deployment
@@ -134,9 +138,9 @@ CCT_NO_TRACKING=true node test-download-tracking.js
 vercel --prod
 
 # Verificar endpoints
-curl -X POST https://tu-dominio.com/api/track-download \
+curl -X POST https://tu-dominio.com/api/track-download-supabase \
   -H "Content-Type: application/json" \
-  -d '{"type":"agent","name":"test","category":"test"}'
+  -d '{"type":"agent","name":"test","path":"test","category":"test","cliVersion":"1.19.0"}'
 ```
 
 ## API Reference

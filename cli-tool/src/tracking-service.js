@@ -1,12 +1,10 @@
 /**
- * TrackingService - Download analytics using GitHub Issues as backend
+ * TrackingService - Anonymous download analytics using Supabase database
  * Records component installations for analytics without impacting user experience
  */
 
 class TrackingService {
     constructor() {
-        this.repoOwner = 'davila7';
-        this.repoName = 'claude-code-templates';
         this.trackingEnabled = this.shouldEnableTracking();
         this.timeout = 5000; // 5s timeout for tracking requests
     }
@@ -83,23 +81,20 @@ class TrackingService {
     }
 
     /**
-     * Send tracking data via database endpoint and fallback to public telemetry
+     * Send tracking data to database endpoint
      */
     async sendTrackingData(trackingData) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
         try {
-            // Primary: Send to Vercel database endpoint
+            // Send to Vercel database endpoint
             await this.sendToDatabase(trackingData, controller.signal);
-
-            // Secondary: Send to existing telemetry endpoint (for compatibility)
-            await this.sendToTelemetry(trackingData, controller.signal);
 
             clearTimeout(timeoutId);
 
             if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Download tracked successfully via database and telemetry');
+                console.debug('📊 Download tracked successfully');
             }
             
         } catch (error) {
@@ -163,38 +158,10 @@ class TrackingService {
             if (process.env.CCT_DEBUG === 'true') {
                 console.debug('📊 Database tracking failed:', error.message);
             }
-            // Don't throw - we want to continue to telemetry fallback
+            // Don't throw - tracking should be non-blocking
         }
     }
 
-    /**
-     * Send tracking data to existing telemetry endpoint (fallback)
-     */
-    async sendToTelemetry(trackingData, signal) {
-        try {
-            // Build query parameters for GET request (like image tracking)
-            const params = new URLSearchParams({
-                type: trackingData.component_type,
-                name: trackingData.component_name,
-                platform: trackingData.environment.platform || 'unknown',
-                cli: trackingData.environment.cli_version || 'unknown',
-                session: trackingData.session_id.substring(0, 8) // Only first 8 chars for privacy
-            });
-
-            // Use GitHub Pages tracking endpoint via custom domain (no auth needed)
-            await fetch(`https://www.aitmpl.com/api/track.html?${params}`, {
-                method: 'GET',
-                mode: 'no-cors', // Prevents CORS errors
-                signal: signal
-            });
-
-        } catch (error) {
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Telemetry tracking failed:', error.message);
-            }
-            // Silent fail for telemetry too
-        }
-    }
 
     /**
      * Generate a session ID for grouping related downloads

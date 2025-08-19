@@ -1,5 +1,5 @@
 // Download tracking API endpoint for Claude Code Templates
-const { createPool } = require('@vercel/postgres');
+import { createPool } from '@vercel/postgres';
 
 // Initialize database connection pool
 const pool = createPool({

@@ -41,7 +41,7 @@ console.log(
 
 program
   .name('create-claude-config')
-  .description('Setup Claude Code configurations for different programming languages')
+  .description('Setup Claude Code configurations and create global AI agents powered by Claude Code SDK')
   .version(require('../package.json').version)
   .option('-l, --language <language>', 'specify programming language (deprecated, use --template)')
   .option('-f, --framework <framework>', 'specify framework (deprecated, use --template)')
@@ -66,6 +66,10 @@ program
   .option('--hook <hook>', 'install specific hook component (supports comma-separated values)')
   .option('--workflow <workflow>', 'install workflow from hash (#hash) OR workflow YAML (base64 encoded) when used with --agent/--command/--mcp')
   .option('--prompt <prompt>', 'execute the provided prompt in Claude Code after installation')
+  .option('--create-agent <agent>', 'create a global agent accessible from anywhere (e.g., customer-support)')
+  .option('--list-agents', 'list all installed global agents')
+  .option('--remove-agent <agent>', 'remove a global agent')
+  .option('--update-agent <agent>', 'update a global agent to the latest version')
   .action(async (options) => {
     try {
       await createClaudeConfig(options);

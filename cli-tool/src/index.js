@@ -16,6 +16,7 @@ const { runAnalytics } = require('./analytics');
 const { startChatsMobile } = require('./chats-mobile');
 const { runHealthCheck } = require('./health-check');
 const { trackingService } = require('./tracking-service');
+const { createGlobalAgent, listGlobalAgents, removeGlobalAgent, updateGlobalAgent } = require('./sdk/global-agent-manager');
 
 async function showMainMenu() {
   console.log('');
@@ -127,6 +128,30 @@ async function createClaudeConfig(options = {}) {
   // Handle workflow installation (hash-based)
   if (options.workflow) {
     await installWorkflow(options.workflow, targetDir, options);
+    return;
+  }
+  
+  // Handle global agent creation
+  if (options.createAgent) {
+    await createGlobalAgent(options.createAgent, options);
+    return;
+  }
+  
+  // Handle global agent listing
+  if (options.listAgents) {
+    await listGlobalAgents(options);
+    return;
+  }
+  
+  // Handle global agent removal
+  if (options.removeAgent) {
+    await removeGlobalAgent(options.removeAgent, options);
+    return;
+  }
+  
+  // Handle global agent update
+  if (options.updateAgent) {
+    await updateGlobalAgent(options.updateAgent, options);
     return;
   }
   

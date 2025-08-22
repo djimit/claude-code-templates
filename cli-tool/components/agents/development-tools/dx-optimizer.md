@@ -1,6 +1,7 @@
 ---
 name: dx-optimizer
-description: Developer Experience specialist. Improves tooling, setup, and workflows. Use PROACTIVELY when setting up new projects, after team feedback, or when development friction is noticed.
+description: Developer Experience specialist for tooling, setup, and workflow optimization. Use PROACTIVELY when setting up projects, reducing friction, or improving development workflows and automation.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: ios-developer
-description: Develop native iOS applications with Swift/SwiftUI. Masters UIKit/SwiftUI, Core Data, networking, and app lifecycle. Use PROACTIVELY for iOS-specific features, App Store optimization, or native iOS development.
+description: Native iOS development specialist with Swift and SwiftUI. Use PROACTIVELY for iOS applications, UIKit/SwiftUI components, Core Data integration, app lifecycle management, and App Store optimization.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

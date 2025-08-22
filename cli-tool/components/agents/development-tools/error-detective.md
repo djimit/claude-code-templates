@@ -1,6 +1,7 @@
 ---
 name: error-detective
-description: Search logs and codebases for error patterns, stack traces, and anomalies. Correlates errors across systems and identifies root causes. Use PROACTIVELY when debugging issues, analyzing logs, or investigating production errors.
+description: Log analysis and error pattern detection specialist. Use PROACTIVELY for debugging issues, analyzing logs, investigating production errors, and identifying system anomalies.
+tools: Read, Write, Edit, Bash, Grep
 model: sonnet
 ---
 

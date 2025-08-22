@@ -1,6 +1,7 @@
 ---
 name: backend-architect
-description: Design RESTful APIs, microservice boundaries, and database schemas. Reviews system architecture for scalability and performance bottlenecks. Use PROACTIVELY when creating new backend services or APIs.
+description: Backend system architecture and API design specialist. Use PROACTIVELY for RESTful APIs, microservice boundaries, database schemas, scalability planning, and performance optimization.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

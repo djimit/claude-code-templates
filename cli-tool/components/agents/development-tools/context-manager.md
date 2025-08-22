@@ -1,6 +1,7 @@
 ---
 name: context-manager
-description: Manages context across multiple agents and long-running tasks. Use when coordinating complex multi-agent workflows or when context needs to be preserved across multiple sessions. MUST BE USED for projects exceeding 10k tokens.
+description: Context management specialist for multi-agent workflows and long-running tasks. Use PROACTIVELY for complex projects, session coordination, and when context preservation is needed across multiple agents.
+tools: Read, Write, Edit, TodoWrite
 model: opus
 ---
 

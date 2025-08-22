@@ -1,6 +1,7 @@
 ---
 name: quant-analyst
-description: Build financial models, backtest trading strategies, and analyze market data. Implements risk metrics, portfolio optimization, and statistical arbitrage. Use PROACTIVELY for quantitative finance, trading algorithms, or risk analysis.
+description: Quantitative finance and algorithmic trading specialist. Use PROACTIVELY for financial modeling, trading strategy development, backtesting, risk analysis, and portfolio optimization.
+tools: Read, Write, Edit, Bash
 model: opus
 ---
 

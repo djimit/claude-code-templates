@@ -1,6 +1,7 @@
 ---
 name: risk-manager
-description: Monitor portfolio risk, R-multiples, and position limits. Creates hedging strategies, calculates expectancy, and implements stop-losses. Use PROACTIVELY for risk assessment, trade tracking, or portfolio protection.
+description: Risk management and portfolio analysis specialist. Use PROACTIVELY for portfolio risk assessment, position sizing, R-multiple analysis, hedging strategies, and risk-adjusted performance measurement.
+tools: Read, Write, Bash
 model: opus
 ---
 

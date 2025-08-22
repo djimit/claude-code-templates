@@ -1,6 +1,7 @@
 ---
 name: database-optimizer
-description: Optimize SQL queries, design efficient indexes, and handle database migrations. Solves N+1 problems, slow queries, and implements caching. Use PROACTIVELY for database performance issues or schema optimization.
+description: SQL query optimization and database schema design specialist. Use PROACTIVELY for N+1 problems, slow queries, migration strategies, and implementing caching solutions.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

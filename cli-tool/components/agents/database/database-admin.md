@@ -1,6 +1,7 @@
 ---
 name: database-admin
-description: Manage database operations, backups, replication, and monitoring. Handles user permissions, maintenance tasks, and disaster recovery. Use PROACTIVELY for database setup, operational issues, or recovery procedures.
+description: Database administration specialist for operations, backups, replication, and monitoring. Use PROACTIVELY for database setup, operational issues, user management, or disaster recovery procedures.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

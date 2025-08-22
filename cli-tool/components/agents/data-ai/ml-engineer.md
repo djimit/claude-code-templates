@@ -1,6 +1,7 @@
 ---
 name: ml-engineer
-description: Implement ML pipelines, model serving, and feature engineering. Handles TensorFlow/PyTorch deployment, A/B testing, and monitoring. Use PROACTIVELY for ML model integration or production deployment.
+description: ML production systems and model deployment specialist. Use PROACTIVELY for ML pipelines, model serving, feature engineering, A/B testing, monitoring, and production ML infrastructure.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

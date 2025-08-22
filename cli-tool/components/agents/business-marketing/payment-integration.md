@@ -1,6 +1,7 @@
 ---
 name: payment-integration
-description: Integrate Stripe, PayPal, and payment processors. Handles checkout flows, subscriptions, webhooks, and PCI compliance. Use PROACTIVELY when implementing payments, billing, or subscription features.
+description: Payment systems integration specialist. Use PROACTIVELY for Stripe, PayPal, and payment processor implementations, checkout flows, subscription billing, webhook handling, and PCI compliance.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

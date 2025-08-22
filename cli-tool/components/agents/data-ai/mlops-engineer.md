@@ -1,6 +1,7 @@
 ---
 name: mlops-engineer
-description: Build ML pipelines, experiment tracking, and model registries. Implements MLflow, Kubeflow, and automated retraining. Handles data versioning and reproducibility. Use PROACTIVELY for ML infrastructure, experiment management, or pipeline automation.
+description: ML infrastructure and operations specialist. Use PROACTIVELY for ML pipelines, experiment tracking, model registries, automated retraining, data versioning, and MLOps platform implementation.
+tools: Read, Write, Edit, Bash
 model: opus
 ---
 

@@ -23,21 +23,23 @@ function colorizeTitle(text) {
     .join('');
 }
 
-console.clear();
-console.log(chalk.hex('#F97316')('════════════════════════════════════════════════════════════════'));
-console.log('\n');
-console.log('       🔮 ' + colorizeTitle(title));
-console.log('\n');
-console.log('       ' + chalk.hex('#FDBA74')(subtitle));
-console.log('\n');
-console.log(chalk.hex('#F97316')('════════════════════════════════════════════════════════════════\n'));
+function showBanner() {
+  console.clear();
+  console.log(chalk.hex('#F97316')('════════════════════════════════════════════════════════════════'));
+  console.log('\n');
+  console.log('       🔮 ' + colorizeTitle(title));
+  console.log('\n');
+  console.log('       ' + chalk.hex('#FDBA74')(subtitle));
+  console.log('\n');
+  console.log(chalk.hex('#F97316')('════════════════════════════════════════════════════════════════\n'));
 
-console.log(
-  chalk.hex('#D97706')('🚀 Setup Claude Code for any project language 🚀') +
-  chalk.gray(`\n                             v${pkg.version}\n\n`) +
-  chalk.blue('🌐 Templates: ') + chalk.underline('https://aitmpl.com') + '\n' +
-  chalk.blue('📖 Documentation: ') + chalk.underline('https://docs.aitmpl.com') + '\n'
-);
+  console.log(
+    chalk.hex('#D97706')('🚀 Setup Claude Code for any project language 🚀') +
+    chalk.gray(`\n                             v${pkg.version}\n\n`) +
+    chalk.blue('🌐 Templates: ') + chalk.underline('https://aitmpl.com') + '\n' +
+    chalk.blue('📖 Documentation: ') + chalk.underline('https://docs.aitmpl.com') + '\n'
+  );
+}
 
 program
   .name('create-claude-config')
@@ -72,6 +74,15 @@ program
   .option('--update-agent <agent>', 'update a global agent to the latest version')
   .action(async (options) => {
     try {
+      // Only show banner for non-agent-list commands
+      const isQuietCommand = options.listAgents || 
+                            options.removeAgent || 
+                            options.updateAgent;
+      
+      if (!isQuietCommand) {
+        showBanner();
+      }
+      
       await createClaudeConfig(options);
     } catch (error) {
       console.error(chalk.red('Error:'), error.message);

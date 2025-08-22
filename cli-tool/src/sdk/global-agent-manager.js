@@ -265,7 +265,10 @@ if (!fs.existsSync(agentPath)) {
   process.exit(1);
 }
 
-const systemPrompt = fs.readFileSync(agentPath, 'utf8');
+const rawSystemPrompt = fs.readFileSync(agentPath, 'utf8');
+
+// Remove YAML front matter if present to get clean system prompt
+const systemPrompt = rawSystemPrompt.replace(/^---[\\s\\S]*?---\\n/, '').trim();
 
 // Parse arguments and detect context
 const args = process.argv.slice(2);
@@ -275,6 +278,8 @@ let explicitDirs = [];
 let autoDetect = true;
 
 // Parse command line arguments
+let verbose = false;
+
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   
@@ -286,6 +291,8 @@ for (let i = 0; i < args.length; i++) {
     autoDetect = false;
   } else if (arg === '--no-auto') {
     autoDetect = false;
+  } else if (arg === '--verbose' || arg === '-v') {
+    verbose = true;
   } else if (arg === '--help' || arg === '-h') {
     console.log('Usage: ${agentName} [options] "your prompt"');
     console.log('');
@@ -294,6 +301,7 @@ for (let i = 0; i < args.length; i++) {
     console.log('  --file <path>       Include specific file');
     console.log('  --dir <path>        Include specific directory');
     console.log('  --no-auto           Disable auto-detection');
+    console.log('  --verbose, -v       Enable verbose debugging output');
     console.log('');
     console.log('Examples:');
     console.log('  ${agentName} "review for security issues"        # Auto-detect');
@@ -385,8 +393,20 @@ const escapedSystemPrompt = systemPrompt.replace(/"/g, '\\\\"').replace(/\`/g, '
 const finalPrompt = userInput + contextPrompt;
 const escapedFinalPrompt = finalPrompt.replace(/"/g, '\\\\"').replace(/\`/g, '\\\\\`');
 
-// Build Claude command with SDK
-const claudeCmd = \`claude -p "\${escapedFinalPrompt}" --append-system-prompt "\${escapedSystemPrompt}"\`;
+// Build Claude command with SDK - use --system-prompt instead of --append-system-prompt for better control
+const claudeCmd = \`claude -p "\${escapedFinalPrompt}" --system-prompt "\${escapedSystemPrompt}"\${verbose ? ' --verbose' : ''}\`;
+
+// Debug output if verbose
+if (verbose) {
+  console.log('\\n🔍 DEBUG MODE - Command Details:');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📝 User Input:', userInput);
+  console.log('📁 Project Context:', contextPrompt ? 'Auto-detected' : 'None');
+  console.log('🎯 Final Prompt Length:', finalPrompt.length, 'characters');
+  console.log('🤖 System Prompt Preview:', systemPrompt.substring(0, 150) + '...');
+  console.log('⚡ Claude Command:', claudeCmd);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n');
+}
 
 // Show loading indicator
 const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];

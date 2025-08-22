@@ -1,6 +1,7 @@
 ---
 name: cloud-architect
-description: Design AWS/Azure/GCP infrastructure, implement Terraform IaC, and optimize cloud costs. Handles auto-scaling, multi-region deployments, and serverless architectures. Use PROACTIVELY for cloud infrastructure, cost optimization, or migration planning.
+description: Cloud infrastructure design and optimization specialist for AWS/Azure/GCP. Use PROACTIVELY for infrastructure architecture, Terraform IaC, cost optimization, auto-scaling, and multi-region deployments.
+tools: Read, Write, Edit, Bash
 model: opus
 ---
 

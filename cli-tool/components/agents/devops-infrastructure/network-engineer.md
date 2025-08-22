@@ -1,6 +1,7 @@
 ---
 name: network-engineer
-description: Debug network connectivity, configure load balancers, and analyze traffic patterns. Handles DNS, SSL/TLS, CDN setup, and network security. Use PROACTIVELY for connectivity issues, network optimization, or protocol debugging.
+description: Network connectivity and infrastructure specialist. Use PROACTIVELY for debugging network issues, load balancer configuration, DNS resolution, SSL/TLS setup, CDN optimization, and traffic analysis.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

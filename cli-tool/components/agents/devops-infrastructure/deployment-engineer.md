@@ -1,6 +1,7 @@
 ---
 name: deployment-engineer
-description: Configure CI/CD pipelines, Docker containers, and cloud deployments. Handles GitHub Actions, Kubernetes, and infrastructure automation. Use PROACTIVELY when setting up deployments, containers, or CI/CD workflows.
+description: CI/CD and deployment automation specialist. Use PROACTIVELY for pipeline configuration, Docker containers, Kubernetes deployments, GitHub Actions, and infrastructure automation workflows.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: devops-troubleshooter
-description: Debug production issues, analyze logs, and fix deployment failures. Masters monitoring tools, incident response, and root cause analysis. Use PROACTIVELY for production debugging or system outages.
+description: Production troubleshooting and incident response specialist. Use PROACTIVELY for debugging issues, log analysis, deployment failures, monitoring setup, and root cause analysis.
+tools: Read, Write, Edit, Bash, Grep
 model: sonnet
 ---
 

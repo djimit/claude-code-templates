@@ -1,6 +1,7 @@
 ---
 name: unreal-engine-developer
 description: Expert Unreal Engine developer specializing in C++ programming, Blueprint visual scripting, and AAA game development. Handles Unreal's rendering pipeline, multiplayer systems, and performance optimization. Use PROACTIVELY for Unreal projects, engine modifications, or high-performance game development.
+tools: Read, Write, Edit, Bash
 model: sonnet
 ---
 

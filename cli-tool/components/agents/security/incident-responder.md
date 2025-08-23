@@ -1,6 +1,7 @@
 ---
 name: incident-responder
 description: Handles production incidents with urgency and precision. Use IMMEDIATELY when production issues occur. Coordinates debugging, implements fixes, and documents post-mortems.
+tools: Read, Write, Edit, Bash
 model: opus
 ---
 

@@ -1,8 +1,25 @@
-# Containerize Application
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [application-type] | --node | --python | --java | --go | --multi-stage
+description: Containerize application with optimized Docker configuration, security, and multi-stage builds
+model: sonnet
+---
 
-Containerize application for deployment
+# Application Containerization
 
-## Instructions
+Containerize application for deployment: $ARGUMENTS
+
+## Current Application Analysis
+
+- Application type: @package.json or @setup.py or @go.mod or @pom.xml (detect runtime)
+- Existing Docker: @Dockerfile or @docker-compose.yml (if exists)
+- Dependencies: !`find . -name "*requirements*.txt" -o -name "package*.json" -o -name "go.mod" | head -3`
+- Port configuration: !`grep -r "PORT\|listen\|bind" src/ 2>/dev/null | head -3 || echo "Port detection needed"`
+- Build tools: @Makefile or build scripts detection
+
+## Task
+
+Implement production-ready containerization strategy:
 
 1. **Application Analysis and Containerization Strategy**
    - Analyze application architecture and runtime requirements

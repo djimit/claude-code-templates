@@ -1,10 +1,25 @@
-# Troubleshooting Guide Generator Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [system-component] | --application | --database | --network | --deployment | --comprehensive
+description: Generate systematic troubleshooting documentation with diagnostic procedures, common issues, and automated solutions
+model: sonnet
+---
 
-Generate troubleshooting documentation
+# Troubleshooting Guide Generator
 
-## Instructions
+Generate troubleshooting documentation: $ARGUMENTS
 
-Follow this systematic approach to create troubleshooting guides: **$ARGUMENTS**
+## Current System Context
+
+- System architecture: @docker-compose.yml or @k8s/ or detect deployment type
+- Log locations: !`find . -name "*log*" -type d | head -3`
+- Monitoring setup: !`grep -r "prometheus\|grafana\|datadog" . 2>/dev/null | wc -l` monitoring references
+- Error patterns: !`find . -name "*.log" | head -3` recent logs
+- Health endpoints: !`grep -r "health\|status" src/ 2>/dev/null | head -3`
+
+## Task
+
+Create comprehensive troubleshooting guide with systematic diagnostic procedures: $ARGUMENTS
 
 1. **System Overview and Architecture**
    - Document the system architecture and components

@@ -1,10 +1,25 @@
-# Migration Guide Generator Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [migration-type] | framework | database | cloud | architecture | --version-upgrade
+description: Create comprehensive migration guides with step-by-step procedures, validation, and rollback strategies
+model: sonnet
+---
 
-Create migration guides for updates
+# Migration Guide Generator
 
-## Instructions
+Create comprehensive migration guide: $ARGUMENTS
 
-Follow this systematic approach to create migration guides: **$ARGUMENTS**
+## Current System Analysis
+
+- Current versions: @package.json or @requirements.txt or detect from lock files
+- Migration history: !`find . -name "*migration*" -o -name "*upgrade*" | head -5`
+- Database schema: !`find . -name "*schema*" -o -name "*.sql" | head -3`
+- Dependencies: !`grep -c "dependency\|require\|import" package.json requirements.txt 2>/dev/null || echo "0"`
+- Infrastructure: @docker-compose.yml or @k8s/ or @terraform/ (if exists)
+
+## Task
+
+Generate systematic migration guide with comprehensive safety measures: $ARGUMENTS
 
 1. **Migration Scope Analysis**
    - Identify what is being migrated (framework, library, architecture, etc.)

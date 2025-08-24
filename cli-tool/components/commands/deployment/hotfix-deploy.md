@@ -1,10 +1,25 @@
-# Hotfix Deploy Command
+---
+allowed-tools: Read, Edit, Bash
+argument-hint: [hotfix-type] | --security | --critical | --rollback-ready | --emergency
+description: Deploy critical hotfixes with emergency procedures, validation, and rollback capabilities
+model: sonnet
+---
 
-Deploy critical hotfixes quickly
+# Emergency Hotfix Deployment
 
-## Instructions
+Deploy critical hotfix: $ARGUMENTS
 
-Follow this emergency hotfix deployment process: **$ARGUMENTS**
+## Current Production State
+
+- Current version: !`git describe --tags --abbrev=0 2>/dev/null || echo "No tags found"`
+- Production branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -5`
+- Deployment status: !`curl -s https://api.example.com/health 2>/dev/null | jq -r '.version // "Unknown"' || echo "Health check failed"`
+- Staging environment: Check for staging deployment capabilities
+
+## Emergency Response Protocol
+
+Execute emergency hotfix deployment: $ARGUMENTS
 
 1. **Emergency Assessment and Triage**
    - Assess the severity and impact of the issue

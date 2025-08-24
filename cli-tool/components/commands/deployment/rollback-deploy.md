@@ -1,10 +1,25 @@
-# Rollback Deploy Command
+---
+allowed-tools: Read, Edit, Bash
+argument-hint: [target-version] | --previous | --emergency | --validate-first | --with-db
+description: Rollback deployment to previous version with safety checks, database considerations, and monitoring
+model: sonnet
+---
 
-Rollback deployment to previous version
+# Deployment Rollback
 
-## Instructions
+Rollback deployment to previous version: $ARGUMENTS
 
-Follow this systematic rollback procedure: **$ARGUMENTS**
+## Current Deployment State
+
+- Current version: !`curl -s https://api.example.com/version 2>/dev/null || kubectl get deployments -o wide 2>/dev/null | head -3 || echo "Version detection needed"`
+- Available versions: !`git tag --sort=-version:refname | head -5`
+- Container status: !`docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" 2>/dev/null | head -5 || echo "No containers"`
+- K8s deployments: !`kubectl get deployments 2>/dev/null || echo "No K8s access"`
+- Health status: !`curl -sf https://api.example.com/health 2>/dev/null && echo "✅ Healthy" || echo "❌ Unhealthy"`
+
+## Emergency Rollback Protocol
+
+Systematic rollback procedure: $ARGUMENTS
 
 1. **Incident Assessment and Decision**
    - Assess the severity and impact of the current deployment issues

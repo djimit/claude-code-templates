@@ -1,4 +1,23 @@
-# Documentation Update Command: Update Implementation Documentation
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [doc-type] | --implementation | --api | --architecture | --sync | --validate
+description: Systematically update project documentation with implementation status, API changes, and synchronized content
+model: sonnet
+---
+
+# Documentation Update & Synchronization
+
+Update project documentation systematically: $ARGUMENTS
+
+## Current Documentation State
+
+- Documentation structure: !`find . -name "*.md" | head -10`
+- Specs directory: @specs/ (if exists)
+- Implementation status: !`grep -r "✅\|❌\|⚠️" docs/ specs/ 2>/dev/null | wc -l` status indicators
+- Recent changes: !`git log --oneline --since="1 week ago" -- "*.md" | head -5`
+- Project progress: @CLAUDE.md or @README.md (if exists)
+
+## Task
 
 ## Documentation Analysis
 

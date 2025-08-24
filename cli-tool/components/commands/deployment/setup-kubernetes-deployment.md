@@ -1,8 +1,25 @@
-# Setup Kubernetes Deployment
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [deployment-type] | --microservices | --monolith | --stateful | --full-stack | --production-ready
+description: Configure comprehensive Kubernetes deployment with manifests, security, scaling, and production best practices
+model: sonnet
+---
 
-Configure Kubernetes deployment manifests
+# Kubernetes Deployment Configuration
 
-## Instructions
+Configure Kubernetes deployment: $ARGUMENTS
+
+## Current Environment Analysis
+
+- Application type: @package.json or @Dockerfile (detect containerization readiness)
+- Existing K8s config: !`find . -name "*.yaml" -o -name "*.yml" | grep -E "(k8s|kubernetes|deployment|service)" | head -3`
+- Cluster access: !`kubectl cluster-info 2>/dev/null | head -2 || echo "No cluster access"`
+- Container registry: @docker-compose.yml or check for registry configuration
+- Resource requirements: Analysis needed based on application type
+
+## Task
+
+Implement production-ready Kubernetes deployment:
 
 1. **Kubernetes Architecture Planning**
    - Analyze application architecture and deployment requirements

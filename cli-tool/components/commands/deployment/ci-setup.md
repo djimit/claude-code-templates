@@ -1,10 +1,25 @@
-# CI/CD Setup Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [platform] | --github-actions | --gitlab-ci | --jenkins | --full-setup
+description: Setup comprehensive CI/CD pipeline with automated testing, building, and deployment
+model: sonnet
+---
 
-Setup continuous integration pipeline
+# CI/CD Pipeline Setup
 
-## Instructions
+Setup continuous integration pipeline: $ARGUMENTS
 
-Follow this systematic approach to implement CI/CD: **$ARGUMENTS**
+## Current Project Analysis
+
+- Project type: @package.json or @setup.py or @go.mod or @pom.xml (detect language/framework)
+- Existing workflows: !`find .github/workflows -name "*.yml" 2>/dev/null | head -3`
+- Git branches: !`git branch -r | head -5`
+- Dependencies: @package-lock.json or @requirements.txt or @go.sum (if exists)
+- Build scripts: Check for build commands in package.json or Makefile
+
+## Task
+
+Implement comprehensive CI/CD following best practices: $ARGUMENTS
 
 1. **Project Analysis**
    - Identify the technology stack and deployment requirements

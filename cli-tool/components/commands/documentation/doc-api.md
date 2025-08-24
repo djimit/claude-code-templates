@@ -1,10 +1,25 @@
-# API Documentation Generator Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [api-type] | --openapi | --graphql | --rest | --grpc | --interactive
+description: Generate comprehensive API documentation from code with interactive examples and testing capabilities
+model: sonnet
+---
 
-Generate API documentation from code
+# API Documentation Generator
 
-## Instructions
+Generate API documentation from code: $ARGUMENTS
 
-Follow this systematic approach to create API documentation: **$ARGUMENTS**
+## Current API Context
+
+- API endpoints: !`find . -name "*route*" -o -name "*controller*" -o -name "*api*" | head -5`
+- API specs: !`find . -name "*openapi*" -o -name "*swagger*" -o -name "*.graphql" | head -3`
+- Server framework: @package.json or detect from imports
+- Existing docs: @docs/api/ or @api-docs/ (if exists)
+- Test files: !`find . -name "*test*" -path "*/api/*" | head -3`
+
+## Task
+
+Generate comprehensive API documentation with interactive features: $ARGUMENTS
 
 1. **Code Analysis and Discovery**
    - Scan the codebase for API endpoints, routes, and handlers

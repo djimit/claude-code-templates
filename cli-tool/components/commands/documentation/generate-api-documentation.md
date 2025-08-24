@@ -1,8 +1,25 @@
-# Generate API Documentation
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [output-format] | --swagger-ui | --redoc | --postman | --insomnia | --multi-format
+description: Auto-generate API reference documentation with multiple output formats and automated deployment
+model: sonnet
+---
 
-Auto-generate API reference documentation
+# Automated API Documentation Generator
 
-## Instructions
+Auto-generate API reference documentation: $ARGUMENTS
+
+## Current API Infrastructure
+
+- Code annotations: !`grep -r "@api\|@swagger\|@doc" src/ 2>/dev/null | wc -l` annotations found
+- API framework: @package.json or detect from imports
+- Existing specs: !`find . -name "*spec*.yaml" -o -name "*spec*.json" | head -3`
+- Documentation tools: !`grep -E "swagger|redoc|postman" package.json 2>/dev/null || echo "None detected"`
+- CI/CD pipeline: @.github/workflows/ (if exists)
+
+## Task
+
+Setup automated API documentation generation with modern tooling:
 
 1. **API Documentation Strategy Analysis**
    - Analyze current API structure and endpoints

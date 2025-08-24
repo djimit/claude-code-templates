@@ -1,8 +1,25 @@
-# Create Architecture Documentation
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [framework] | --c4-model | --arc42 | --adr | --plantuml | --full-suite
+description: Generate comprehensive architecture documentation with diagrams, ADRs, and interactive visualization
+model: sonnet
+---
 
-Generate comprehensive architecture documentation
+# Architecture Documentation Generator
 
-## Instructions
+Generate comprehensive architecture documentation: $ARGUMENTS
+
+## Current Architecture Context
+
+- Project structure: !`find . -type f -name "*.json" -o -name "*.yaml" -o -name "*.toml" | head -5`
+- Documentation exists: @docs/ or @README.md (if exists)
+- Architecture files: !`find . -name "*architecture*" -o -name "*design*" -o -name "*.puml" | head -3`
+- Services/containers: @docker-compose.yml or @k8s/ (if exists)
+- API definitions: !`find . -name "*api*" -o -name "*openapi*" -o -name "*swagger*" | head -3`
+
+## Task
+
+Generate comprehensive architecture documentation with modern tooling and best practices:
 
 1. **Architecture Analysis and Discovery**
    - Analyze current system architecture and component relationships

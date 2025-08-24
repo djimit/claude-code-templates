@@ -1,10 +1,25 @@
-# Prepare Release Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [version-type] | patch | minor | major | --pre-release | --hotfix
+description: Prepare and validate release packages with comprehensive testing, documentation, and automation
+model: sonnet
+---
 
-Prepare and validate release packages
+# Release Preparation
 
-## Instructions
+Prepare and validate release: $ARGUMENTS
 
-Follow this systematic approach to prepare a release: **$ARGUMENTS**
+## Current Release Context
+
+- Current version: !`git describe --tags --abbrev=0 2>/dev/null || echo "No previous releases"`
+- Package version: @package.json or @setup.py or @pyproject.toml or @go.mod (if exists)
+- Unreleased changes: !`git log $(git describe --tags --abbrev=0)..HEAD --oneline 2>/dev/null | wc -l || echo "All commits"`
+- Branch status: !`git status --porcelain | wc -l || echo "0"` uncommitted changes
+- Build status: !`npm test 2>/dev/null || python -m pytest 2>/dev/null || go test ./... 2>/dev/null || echo "Test framework detection needed"`
+
+## Task
+
+Systematic release preparation: $ARGUMENTS
 
 1. **Release Planning and Validation**
    - Determine release version number (semantic versioning)

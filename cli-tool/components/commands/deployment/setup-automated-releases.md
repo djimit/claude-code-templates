@@ -1,10 +1,25 @@
-# Setup Automated Releases
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [release-type] | --semantic | --conventional-commits | --github-actions | --full-automation
+description: Setup automated release workflows with semantic versioning, conventional commits, and comprehensive automation
+model: sonnet
+---
 
-Setup automated release workflows
+# Automated Release System
 
-## Instructions
+Setup automated release workflows: $ARGUMENTS
 
-Set up automated releases following industry best practices:
+## Current Project Analysis
+
+- Project structure: @package.json or @setup.py or @go.mod (detect project type)
+- Existing workflows: !`find .github/workflows -name "*.yml" 2>/dev/null | head -3`
+- Current versioning: @package.json version or git tags analysis
+- Commit patterns: !`git log --oneline -20 | grep -E "^(feat|fix|docs|style|refactor|test|chore)" | wc -l || echo "0"` conventional commits
+- Release history: !`git tag -l | wc -l || echo "0"` existing releases
+
+## Task
+
+Implement comprehensive automated release system:
 
 1. **Analyze Repository Structure**
    - Detect project type (Node.js, Python, Go, etc.)

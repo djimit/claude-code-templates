@@ -1,12 +1,25 @@
 ---
-name: unity-project-setup
-description: Initializes a complete Unity project with optimal folder structure, essential packages, and development configurations. Sets up version control, coding standards, and build pipeline for professional game development.
-type: command
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [project-name] | --2d | --3d | --mobile | --vr | --console
+description: Use PROACTIVELY to set up professional Unity game development projects with industry-standard structure, essential packages, and platform-optimized configurations
+model: sonnet
 ---
 
-# Unity Project Setup Command
+# Unity Project Setup & Development Environment
 
-Sets up a professional Unity project with industry-standard structure and configurations.
+Initialize professional Unity game development project: $ARGUMENTS
+
+## Current Unity Environment
+
+- Unity version: !`unity-editor --version 2>/dev/null || echo "Unity Editor not found"`
+- Current directory: !`pwd`
+- Available templates: !`find . -name "*.unitypackage" 2>/dev/null | wc -l` Unity packages
+- Git status: !`git status --porcelain 2>/dev/null | wc -l` uncommitted changes
+- System info: !`system_profiler SPSoftwareDataType | grep "System Version" 2>/dev/null || uname -a`
+
+## Task
+
+Set up a complete Unity project with professional development environment and platform-specific optimizations.
 
 ## What it creates:
 

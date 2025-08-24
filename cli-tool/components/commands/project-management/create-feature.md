@@ -1,10 +1,24 @@
-# Create Feature Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [feature-name] | [feature-type] [name]
+description: Scaffold new feature with boilerplate code, tests, and documentation
+model: sonnet
+---
 
-Scaffold new feature with boilerplate code
+# Create Feature
 
-## Instructions
+Scaffold new feature: $ARGUMENTS
 
-Follow this systematic approach to create a new feature: **$ARGUMENTS**
+## Current Project Context
+
+- Project structure: !`find . -maxdepth 2 -type d -name src -o -name components -o -name features | head -5`
+- Current branch: !`git branch --show-current`
+- Package info: @package.json or @Cargo.toml or @requirements.txt (if exists)
+- Architecture docs: @docs/architecture.md or @README.md (if exists)
+
+## Task
+
+Follow this systematic approach to create a new feature: $ARGUMENTS
 
 1. **Feature Planning**
    - Define the feature requirements and acceptance criteria

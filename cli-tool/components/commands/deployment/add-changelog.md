@@ -1,10 +1,22 @@
-# Add Changelog Command
+---
+allowed-tools: Read, Edit, Write, Bash
+argument-hint: [version] | [entry-type] [description]
+description: Generate and maintain project changelog with Keep a Changelog format
+model: sonnet
+---
 
-Generate and maintain project changelog
+# Add Changelog Entry
 
-## Instructions
+Generate and maintain project changelog: $ARGUMENTS
 
-Setup and maintain changelog following these steps: **$ARGUMENTS**
+## Current State
+
+- Existing changelog: @CHANGELOG.md (if exists)
+- Recent commits: !`git log --oneline -10`
+- Current version: !`git describe --tags --abbrev=0 2>/dev/null || echo "No tags found"`
+- Package version: @package.json (if exists)
+
+## Task
 
 1. **Changelog Format (Keep a Changelog)**
    ```markdown

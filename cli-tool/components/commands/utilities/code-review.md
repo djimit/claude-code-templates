@@ -1,8 +1,22 @@
-# Comprehensive Code Quality Review
+---
+allowed-tools: Read, Bash, Grep, Glob
+argument-hint: [file-path] | [commit-hash] | --full
+description: Comprehensive code quality review with security, performance, and architecture analysis
+model: sonnet
+---
 
-Perform comprehensive code quality review
+# Code Quality Review
 
-## Instructions
+Perform comprehensive code quality review: $ARGUMENTS
+
+## Current State
+
+- Git status: !`git status --porcelain`
+- Recent changes: !`git diff --stat HEAD~5`
+- Repository info: !`git log --oneline -5`
+- Build status: !`npm run build --dry-run 2>/dev/null || echo "No build script"`
+
+## Task
 
 Follow these steps to conduct a thorough code review:
 

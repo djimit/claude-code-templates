@@ -1,6 +1,20 @@
-# Test Generator
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [file-path] | [component-name]
+description: Generate comprehensive test suite with unit, integration, and edge case coverage
+model: sonnet
+---
 
-Generate comprehensive test suite for $ARGUMENTS following project testing conventions and best practices.
+# Generate Tests
+
+Generate comprehensive test suite for: $ARGUMENTS
+
+## Current Testing Setup
+
+- Test framework: @package.json or @jest.config.js or @vitest.config.js (detect framework)
+- Existing tests: !`find . -name "*.test.*" -o -name "*.spec.*" | head -5`
+- Test coverage: !`npm run test:coverage 2>/dev/null || echo "No coverage script"`
+- Target file: @$ARGUMENTS (if file path provided)
 
 ## Task
 

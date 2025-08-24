@@ -1,10 +1,24 @@
-# Security Audit Command
+---
+allowed-tools: Read, Bash, Grep, Glob
+argument-hint: [focus-area] | --full
+description: Perform comprehensive security assessment and vulnerability analysis
+model: sonnet
+---
 
-Perform comprehensive security assessment
+# Security Audit
 
-## Instructions
+Perform comprehensive security assessment: $ARGUMENTS
 
-Perform a systematic security audit following these steps:
+## Current Environment
+
+- Dependency scan: !`npm audit --audit-level=moderate 2>/dev/null || pip check 2>/dev/null || echo "No package manager detected"`
+- Environment files: @.env* (if exists)
+- Security config: @.github/workflows/security.yml or @security/ (if exists)
+- Recent commits: !`git log --oneline --grep="security\|fix" -10`
+
+## Task
+
+Perform systematic security audit following these steps:
 
 1. **Environment Setup**
    - Identify the technology stack and framework

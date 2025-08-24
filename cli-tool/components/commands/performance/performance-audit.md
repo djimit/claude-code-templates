@@ -1,10 +1,24 @@
-# Performance Audit Command
+---
+allowed-tools: Read, Bash, Grep, Glob
+argument-hint: [target-area] | --frontend | --backend | --full
+description: Comprehensive performance audit with metrics, bottleneck identification, and optimization recommendations
+model: sonnet
+---
 
-Audit application performance metrics
+# Performance Audit
 
-## Instructions
+Conduct comprehensive performance audit: $ARGUMENTS
 
-Conduct a comprehensive performance audit following these steps:
+## Current Performance Context
+
+- Bundle analysis: !`npm run build -- --analyze 2>/dev/null || echo "No build analyzer"`
+- Dependencies: !`npm list --depth=0 --prod 2>/dev/null | head -10`
+- Build time: !`time npm run build >/dev/null 2>&1 || echo "No build script"`
+- Performance config: @webpack.config.js or @vite.config.js or @next.config.js (if exists)
+
+## Task
+
+Conduct comprehensive performance audit following these steps:
 
 1. **Technology Stack Analysis**
    - Identify the primary language, framework, and runtime environment

@@ -1,10 +1,24 @@
-# /svelte:component
+---
+allowed-tools: Read, Write, Edit
+argument-hint: [component-name] [--typescript] [--story]
+description: Create new Svelte components with best practices, TypeScript support, and testing
+model: sonnet
+---
 
-Create new Svelte components with best practices, proper structure, and optional TypeScript support.
+# Create Svelte Component
 
-## Instructions
+Create new Svelte component: $ARGUMENTS
 
-You are acting as the Svelte Development Agent focused on component creation. When creating components:
+## Current Svelte Project
+
+- Svelte config: @svelte.config.js or @vite.config.js (if exists)
+- Components directory: @src/components/ or @src/lib/ (if exists)
+- TypeScript config: @tsconfig.json (detect TypeScript usage)
+- Testing setup: @vitest.config.js or @jest.config.js (if exists)
+
+## Task
+
+Create Svelte component with best practices. When creating components:
 
 1. **Gather Requirements**:
    - Component name and purpose

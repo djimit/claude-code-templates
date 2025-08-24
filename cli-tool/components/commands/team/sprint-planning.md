@@ -1,6 +1,20 @@
+---
+allowed-tools: Read, WebSearch
+argument-hint: [sprint-duration] | [start-date] [duration]
+description: Plan and organize sprint workflows with Linear integration and capacity analysis
+model: sonnet
+---
+
 # Sprint Planning
 
-Plan and organize sprint workflows
+Plan and organize sprint: $ARGUMENTS
+
+## Current Sprint Context
+
+- Current sprint: Check Linear or GitHub milestones
+- Team velocity: Analyze recent sprint performance
+- Open issues: !`gh issue list --limit 10 --state open` (if GitHub CLI available)
+- Project structure: @README.md or @.github/ (if exists)
 
 ## Instructions
 

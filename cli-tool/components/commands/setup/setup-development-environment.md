@@ -1,6 +1,20 @@
+---
+allowed-tools: Read, Write, Bash
+argument-hint: [environment-type] | --full | --minimal
+description: Setup complete development environment with tools, dependencies, and configurations
+model: sonnet
+---
+
 # Setup Development Environment
 
-Setup complete development environment
+Setup complete development environment: $ARGUMENTS
+
+## Current Environment
+
+- Operating system: !`uname -a`
+- Package managers: !`which npm yarn pnpm pip 2>/dev/null || echo "None found"`
+- Development tools: !`which git docker node python 2>/dev/null || echo "Checking..."`
+- Project config: @package.json or @requirements.txt or @Cargo.toml (if exists)
 
 ## Instructions
 

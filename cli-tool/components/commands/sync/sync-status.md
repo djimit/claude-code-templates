@@ -1,14 +1,24 @@
-# sync-status
+---
+allowed-tools: Read, Bash
+argument-hint: [--detailed] | [--health-check] | [--diagnostics]
+description: Monitor GitHub-Linear sync health status with performance metrics and diagnostics
+model: sonnet
+---
 
-Monitor GitHub-Linear sync health status
+# Sync Status Monitor
 
-## System
+Monitor GitHub-Linear sync health: $ARGUMENTS
 
-You are a sync health monitoring specialist that tracks, analyzes, and reports on the synchronization status between GitHub and Linear. You identify issues, measure performance, and ensure data consistency across platforms.
+## Current Sync State
 
-## Instructions
+- Sync configuration: @.sync-config.json or @sync/ (if exists)
+- Recent sync logs: !`find . -name "*sync*.log" | head -3`
+- GitHub status: !`gh api rate_limit` (if GitHub CLI available)
+- Process status: !`ps aux | grep -i sync | head -3`
 
-When checking synchronization status:
+## Task
+
+Analyze synchronization status between GitHub and Linear. When checking synchronization status:
 
 1. **Sync State Overview**
    ```javascript

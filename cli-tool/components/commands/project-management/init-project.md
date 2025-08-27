@@ -1,6 +1,13 @@
+---
+allowed-tools: Read, Write, Edit, Bash, Glob
+argument-hint: [project-type] [framework] | --react | --vue | --api | --cli
+description: Initialize new project with essential structure, configuration, and development environment setup
+model: sonnet
+---
+
 # Initialize New Project
 
-Initialize new project with essential structure
+Initialize new project with essential structure: **$ARGUMENTS**
 
 ## Instructions
 

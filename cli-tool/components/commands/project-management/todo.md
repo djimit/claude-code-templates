@@ -1,11 +1,13 @@
 ---
-name: todo
+allowed-tools: Read, Write, Edit
+argument-hint: [action] [task-description] | add | complete | remove | list
 description: Manage project todos in todos.md file
+model: sonnet
 ---
 
 # Project Todo Manager
 
-Manage todos in a `todos.md` file at the root of your current project directory.
+Manage todos in a `todos.md` file at the root of your current project directory: **$ARGUMENTS**
 
 ## Usage Examples:
 - `/user:todo add "Fix navigation bug"`

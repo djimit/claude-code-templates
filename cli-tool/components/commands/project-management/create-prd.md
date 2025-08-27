@@ -1,19 +1,36 @@
-You are an experienced Product Manager. Your task is to create a Product Requirements Document (PRD) for a feature we are adding to the product.
+---
+allowed-tools: Read, Write, Edit, Grep, Glob
+argument-hint: [feature-name] | --template | --interactive
+description: Create Product Requirements Document (PRD) for new features
+model: sonnet
+---
 
-IMPORTANT:
-- This is a product requirements document, focus on the feature and the user needs, not the technical implementation.
-- Do not include any time estimates.
+# Create Product Requirements Document
 
-## READ PRODUCT DOCUMENTATION
-1. Read the `product-development/resources/product.md` file to understand the product.
+You are an experienced Product Manager. Create a Product Requirements Document (PRD) for a feature we are adding to the product: **$ARGUMENTS**
 
-## READ FEATURE DOCUMENTATION
-2. Read the `product-development/current-feature/feature.md` file to understand the feature idea.
+**IMPORTANT:**
+- Focus on the feature and user needs, not technical implementation
+- Do not include any time estimates
 
-## READ JTBD DOCUMENTATION
-3. Read the `product-development/current-feature/JTBD.md` file to understand the Jobs to be Done.
+## Product Context
 
-## 🧭 CREATE PRD DOCUMENT
-4. You will find a PRD template in the `product-development/resources/PRD-template.md` file. Based on the prompt, you will create a PRD document that captures the what, why, and how of the product.
+1. **Product Documentation**: @product-development/resources/product.md (to understand the product)
+2. **Feature Documentation**: @product-development/current-feature/feature.md (to understand the feature idea)
+3. **JTBD Documentation**: @product-development/current-feature/JTBD.md (to understand the Jobs to be Done)
 
-5. Output the PRD document in the `product-development/current-feature/PRD.md` file.
+## Task
+
+Create a comprehensive PRD document that captures the what, why, and how of the product:
+
+1. Use the PRD template from `@product-development/resources/PRD-template.md`
+2. Based on the feature documentation, create a PRD that defines:
+   - Problem statement and user needs
+   - Feature specifications and scope
+   - Success metrics and acceptance criteria
+   - User experience requirements
+   - Technical considerations (high-level only)
+
+3. Output the completed PRD to `product-development/current-feature/PRD.md`
+
+Focus on creating a comprehensive PRD that clearly defines the feature requirements while maintaining alignment with user needs and business objectives.

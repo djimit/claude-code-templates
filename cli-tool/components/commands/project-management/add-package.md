@@ -1,6 +1,13 @@
+---
+allowed-tools: Read, Write, Edit, Bash, Glob
+argument-hint: [package-name] [package-type] | --library | --application | --tool
+description: Add and configure new package to workspace with proper structure and dependencies
+model: sonnet
+---
+
 # Add Package to Workspace
 
-Add and configure new project dependencies
+Add and configure new project dependencies: **$ARGUMENTS**
 
 ## Instructions
 

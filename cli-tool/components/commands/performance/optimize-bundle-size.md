@@ -1,393 +1,84 @@
+---
+allowed-tools: Read, Bash, Grep, Glob
+argument-hint: [build-tool] | --webpack | --vite | --rollup
+description: Reduce and optimize bundle sizes through analysis, configuration, and code splitting strategies
+model: sonnet
+---
+
 # Optimize Bundle Size
 
-Reduce and optimize bundle sizes
+Reduce and optimize bundle sizes: **$ARGUMENTS**
 
 ## Instructions
 
 1. **Bundle Analysis and Assessment**
-   - Analyze current bundle size and composition using webpack-bundle-analyzer or similar
-   - Identify large dependencies and unused code
+   - Analyze current bundle size and composition using webpack-bundle-analyzer or similar tools
+   - Identify large dependencies and unused code across all bundles
    - Assess current build configuration and optimization settings
    - Create baseline measurements for optimization tracking
    - Document current performance metrics and loading times
 
 2. **Build Tool Configuration**
-   - Configure build tool optimization settings:
-
-   **Webpack Configuration:**
-   ```javascript
-   // webpack.config.js
-   const path = require('path');
-   const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-
-   module.exports = {
-     mode: 'production',
-     optimization: {
-       splitChunks: {
-         chunks: 'all',
-         cacheGroups: {
-           vendor: {
-             test: /[\\/]node_modules[\\/]/,
-             name: 'vendors',
-             priority: 10,
-             reuseExistingChunk: true,
-           },
-           common: {
-             name: 'common',
-             minChunks: 2,
-             priority: 5,
-             reuseExistingChunk: true,
-           },
-         },
-       },
-       usedExports: true,
-       sideEffects: false,
-     },
-     plugins: [
-       new BundleAnalyzerPlugin({
-         analyzerMode: 'static',
-         openAnalyzer: false,
-       }),
-     ],
-   };
-   ```
-
-   **Vite Configuration:**
-   ```javascript
-   // vite.config.js
-   import { defineConfig } from 'vite';
-   import { visualizer } from 'rollup-plugin-visualizer';
-
-   export default defineConfig({
-     build: {
-       rollupOptions: {
-         output: {
-           manualChunks: {
-             vendor: ['react', 'react-dom'],
-             ui: ['@mui/material', '@emotion/react'],
-           },
-         },
-       },
-     },
-     plugins: [
-       visualizer({
-         filename: 'dist/stats.html',
-         open: true,
-         gzipSize: true,
-       }),
-     ],
-   });
-   ```
+   - Configure build tool optimization settings for production builds
+   - Enable code splitting and chunk optimization features
+   - Configure tree shaking and dead code elimination
+   - Set up bundle analyzers and visualization tools
+   - Optimize build performance and output sizes
 
 3. **Code Splitting and Lazy Loading**
-   - Implement route-based code splitting:
-
-   **React Route Splitting:**
-   ```javascript
-   import { lazy, Suspense } from 'react';
-   import { Routes, Route } from 'react-router-dom';
-
-   const Home = lazy(() => import('./pages/Home'));
-   const Dashboard = lazy(() => import('./pages/Dashboard'));
-   const Profile = lazy(() => import('./pages/Profile'));
-
-   function App() {
-     return (
-       <Suspense fallback={<div>Loading...</div>}>
-         <Routes>
-           <Route path="/" element={<Home />} />
-           <Route path="/dashboard" element={<Dashboard />} />
-           <Route path="/profile" element={<Profile />} />
-         </Routes>
-       </Suspense>
-     );
-   }
-   ```
-
-   **Dynamic Imports:**
-   ```javascript
-   // Lazy load heavy components
-   const HeavyComponent = lazy(() => 
-     import('./HeavyComponent').then(module => ({
-       default: module.HeavyComponent
-     }))
-   );
-
-   // Conditional loading
-   async function loadAnalytics() {
-     if (process.env.NODE_ENV === 'production') {
-       const { analytics } = await import('./analytics');
-       return analytics;
-     }
-   }
-   ```
+   - Implement route-based code splitting for single-page applications
+   - Set up dynamic imports for components and modules
+   - Configure lazy loading for non-critical resources
+   - Optimize chunk sizes and loading strategies
+   - Implement progressive loading patterns
 
 4. **Tree Shaking and Dead Code Elimination**
-   - Configure tree shaking for optimal dead code elimination:
-
-   **Package.json Configuration:**
-   ```json
-   {
-     "sideEffects": false,
-     "exports": {
-       ".": {
-         "import": "./dist/index.esm.js",
-         "require": "./dist/index.cjs.js"
-       }
-     }
-   }
-   ```
-
-   **Import Optimization:**
-   ```javascript
-   // Instead of importing entire library
-   // import * as _ from 'lodash';
-
-   // Import only what you need
-   import debounce from 'lodash/debounce';
-   import throttle from 'lodash/throttle';
-
-   // Use babel-plugin-import for automatic optimization
-   // .babelrc
-   {
-     "plugins": [
-       ["import", {
-         "libraryName": "lodash",
-         "libraryDirectory": "",
-         "camel2DashComponentName": false
-       }, "lodash"]
-     ]
-   }
-   ```
+   - Configure build tools for optimal tree shaking
+   - Mark packages as side-effect free where appropriate
+   - Optimize import statements for better tree shaking
+   - Use ES6 modules and avoid CommonJS where possible
+   - Implement babel plugins for automatic import optimization
 
 5. **Dependency Optimization**
-   - Analyze and optimize dependencies:
-
-   **Package Analysis Script:**
-   ```javascript
-   // scripts/analyze-deps.js
-   const fs = require('fs');
-   const path = require('path');
-
-   function analyzeDependencies() {
-     const packageJson = JSON.parse(
-       fs.readFileSync('package.json', 'utf8')
-     );
-     
-     const deps = {
-       ...packageJson.dependencies,
-       ...packageJson.devDependencies
-     };
-
-     console.log('Large dependencies to review:');
-     Object.keys(deps).forEach(dep => {
-       try {
-         const depPath = require.resolve(dep);
-         const stats = fs.statSync(depPath);
-         if (stats.size > 100000) { // > 100KB
-           console.log(`${dep}: ${(stats.size / 1024).toFixed(2)}KB`);
-         }
-       } catch (e) {
-         // Skip if can't resolve
-       }
-     });
-   }
-
-   analyzeDependencies();
-   ```
+   - Analyze and audit package dependencies for size impact
+   - Replace large libraries with smaller alternatives
+   - Use specific imports instead of importing entire libraries
+   - Implement dependency deduplication strategies
+   - Configure external dependencies and CDN usage
 
 6. **Asset Optimization**
-   - Optimize static assets and media files:
-
-   **Image Optimization:**
-   ```javascript
-   // webpack.config.js
-   module.exports = {
-     module: {
-       rules: [
-         {
-           test: /\.(png|jpe?g|gif|svg)$/i,
-           use: [
-             {
-               loader: 'file-loader',
-               options: {
-                 outputPath: 'images',
-               },
-             },
-             {
-               loader: 'image-webpack-loader',
-               options: {
-                 mozjpeg: { progressive: true, quality: 80 },
-                 optipng: { enabled: false },
-                 pngquant: { quality: [0.6, 0.8] },
-                 gifsicle: { interlaced: false },
-               },
-             },
-           ],
-         },
-       ],
-     },
-   };
-   ```
+   - Optimize images through compression and format conversion
+   - Implement responsive image loading strategies
+   - Configure asset minification and compression
+   - Set up efficient file loaders and processors
+   - Optimize font loading and subsetting
 
 7. **Module Federation and Micro-frontends**
-   - Implement module federation for large applications:
-
-   **Module Federation Setup:**
-   ```javascript
-   // webpack.config.js
-   const ModuleFederationPlugin = require('@module-federation/webpack');
-
-   module.exports = {
-     plugins: [
-       new ModuleFederationPlugin({
-         name: 'host',
-         remotes: {
-           mfe1: 'mfe1@http://localhost:3001/remoteEntry.js',
-           mfe2: 'mfe2@http://localhost:3002/remoteEntry.js',
-         },
-         shared: {
-           react: { singleton: true },
-           'react-dom': { singleton: true },
-         },
-       }),
-     ],
-   };
-   ```
+   - Implement module federation for large applications
+   - Configure shared dependencies and runtime optimization
+   - Set up micro-frontend architecture for code sharing
+   - Optimize remote module loading and caching
+   - Implement federation performance monitoring
 
 8. **Performance Monitoring and Measurement**
-   - Set up bundle size monitoring:
-
-   **Bundle Size Monitoring:**
-   ```javascript
-   // scripts/bundle-monitor.js
-   const fs = require('fs');
-   const path = require('path');
-   const gzipSize = require('gzip-size');
-
-   async function measureBundleSize() {
-     const distPath = path.join(__dirname, '../dist');
-     const files = fs.readdirSync(distPath);
-     
-     for (const file of files) {
-       if (file.endsWith('.js')) {
-         const filePath = path.join(distPath, file);
-         const content = fs.readFileSync(filePath);
-         const originalSize = content.length;
-         const compressed = await gzipSize(content);
-         
-         console.log(`${file}:`);
-         console.log(`  Original: ${(originalSize / 1024).toFixed(2)}KB`);
-         console.log(`  Gzipped: ${(compressed / 1024).toFixed(2)}KB`);
-       }
-     }
-   }
-
-   measureBundleSize();
-   ```
+   - Set up bundle size monitoring and tracking
+   - Configure automated bundle analysis in CI/CD
+   - Monitor bundle size changes over time
+   - Set up performance budgets and alerts
+   - Track loading performance metrics
 
 9. **Progressive Loading Strategies**
-   - Implement progressive loading and resource hints:
-
-   **Resource Hints:**
-   ```html
-   <!-- Preload critical resources -->
-   <link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin>
-   <link rel="preload" href="/critical.css" as="style">
-
-   <!-- Prefetch non-critical resources -->
-   <link rel="prefetch" href="/dashboard.js">
-   <link rel="prefetch" href="/profile.js">
-
-   <!-- DNS prefetch for external domains -->
-   <link rel="dns-prefetch" href="//api.example.com">
-   ```
-
-   **Intersection Observer for Lazy Loading:**
-   ```javascript
-   // utils/lazyLoad.js
-   export function lazyLoadComponent(importFunc) {
-     return lazy(() => {
-       return new Promise(resolve => {
-         const observer = new IntersectionObserver((entries) => {
-           entries.forEach(entry => {
-             if (entry.isIntersecting) {
-               importFunc().then(resolve);
-               observer.disconnect();
-             }
-           });
-         });
-         
-         // Observe a trigger element
-         const trigger = document.getElementById('lazy-trigger');
-         if (trigger) observer.observe(trigger);
-       });
-     });
-   }
-   ```
+   - Implement resource hints (preload, prefetch, dns-prefetch)
+   - Configure service workers for caching strategies
+   - Set up intersection observer for lazy loading
+   - Optimize critical resource loading priorities
+   - Implement adaptive loading based on connection speed
 
 10. **Validation and Continuous Monitoring**
-    - Set up automated bundle size validation:
+    - Set up automated bundle size validation in CI/CD
+    - Configure bundle size thresholds and alerts
+    - Implement bundle size regression testing
+    - Monitor real-world loading performance
+    - Set up automated optimization recommendations
 
-    **CI/CD Bundle Size Check:**
-    ```yaml
-    # .github/workflows/bundle-size.yml
-    name: Bundle Size Check
-    on: [pull_request]
-
-    jobs:
-      bundle-size:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v2
-          - name: Setup Node
-            uses: actions/setup-node@v2
-            with:
-              node-version: '16'
-          - name: Install dependencies
-            run: npm ci
-          - name: Build bundle
-            run: npm run build
-          - name: Check bundle size
-            run: |
-              npm run bundle:analyze
-              node scripts/bundle-size-check.js
-    ```
-
-    **Bundle Size Threshold Check:**
-    ```javascript
-    // scripts/bundle-size-check.js
-    const fs = require('fs');
-    const path = require('path');
-
-    const THRESHOLDS = {
-      'main.js': 250 * 1024, // 250KB
-      'vendor.js': 500 * 1024, // 500KB
-    };
-
-    function checkBundleSize() {
-      const distPath = path.join(__dirname, '../dist');
-      const files = fs.readdirSync(distPath);
-      let failed = false;
-
-      files.forEach(file => {
-        if (file.endsWith('.js') && THRESHOLDS[file]) {
-          const filePath = path.join(distPath, file);
-          const size = fs.statSync(filePath).size;
-          
-          if (size > THRESHOLDS[file]) {
-            console.error(`❌ ${file} exceeds threshold: ${size} > ${THRESHOLDS[file]}`);
-            failed = true;
-          } else {
-            console.log(`✅ ${file} within threshold: ${size}`);
-          }
-        }
-      });
-
-      if (failed) {
-        process.exit(1);
-      }
-    }
-
-    checkBundleSize();
-    ```
+Focus on optimizations that provide the most significant bundle size reductions while maintaining application functionality. Always measure the impact of changes on both bundle size and runtime performance.

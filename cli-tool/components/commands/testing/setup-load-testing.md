@@ -1,80 +1,37 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [testing-type] | --capacity | --stress | --spike | --endurance | --volume
+description: Configure comprehensive load testing with performance metrics and bottleneck identification
+model: sonnet
+---
+
 # Setup Load Testing
 
-Configure load and performance testing
+Configure comprehensive load testing with performance analysis and bottleneck identification: **$ARGUMENTS**
 
-## Instructions
+## Current Performance Context
 
-1. **Load Testing Strategy and Requirements**
-   - Analyze application architecture and identify performance-critical components
-   - Define load testing objectives (capacity planning, performance validation, bottleneck identification)
-   - Determine testing scenarios (normal load, peak load, stress testing, spike testing)
-   - Identify key performance metrics and acceptance criteria
-   - Plan load testing environments and infrastructure requirements
+- Application type: !`find . -name "server.js" -o -name "app.py" -o -name "main.go" | head -1 && echo "Server application" || echo "Detect app type"`
+- API endpoints: !`grep -r "app\\.get\\|app\\.post\\|@RequestMapping" . 2>/dev/null | wc -l` detected endpoints
+- Database: !`find . -name "*.sql" -o -name "database.js" | head -1 && echo "Database detected" || echo "No database files"`
+- Current monitoring: !`find . -name "prometheus.yml" -o -name "newrelic.js" | head -1 || echo "No monitoring detected"`
 
-2. **Load Testing Tool Selection**
-   - Choose appropriate load testing tools based on requirements:
-     - **k6**: Modern, developer-friendly with JavaScript scripting
-     - **Artillery**: Simple, powerful, great for CI/CD integration
-     - **JMeter**: Feature-rich GUI and command-line tool
-     - **Gatling**: High-performance tool with detailed reporting
-     - **Locust**: Python-based with web UI and distributed testing
-     - **WebPageTest**: Web performance and real user monitoring
-   - Consider factors: scripting language, reporting, CI integration, cost
+## Task
 
-3. **Test Environment Setup**
-   - Set up dedicated load testing environment matching production
-   - Configure test data and database setup for consistent testing
-   - Set up network configuration and firewall rules
-   - Configure monitoring and observability for test environment
-   - Set up test isolation and cleanup procedures
+Implement comprehensive load testing with performance optimization and bottleneck analysis:
 
-4. **Load Test Script Development**
-   - Create test scripts for critical user journeys and API endpoints
-   - Implement realistic user behavior patterns and think times
-   - Set up test data generation and management
-   - Configure authentication and session management
-   - Implement parameterization and data-driven testing
+**Testing Type**: Use $ARGUMENTS to focus on capacity planning, stress testing, spike testing, endurance testing, or volume testing
 
-5. **Performance Scenarios Configuration**
-   - **Load Testing**: Normal expected traffic patterns
-   - **Stress Testing**: Beyond normal capacity to find breaking points
-   - **Spike Testing**: Sudden traffic increases and decreases
-   - **Volume Testing**: Large amounts of data processing
-   - **Endurance Testing**: Extended periods under normal load
-   - **Capacity Testing**: Maximum user load determination
+**Load Testing Framework**:
+1. **Strategy & Requirements** - Analyze application architecture, define testing objectives, determine scenarios, identify performance metrics
+2. **Tool Selection & Setup** - Choose appropriate tools (k6, Artillery, JMeter, Gatling), install dependencies, configure environments
+3. **Test Scenario Design** - Create realistic user scenarios, implement API test scripts, configure data generation, design load patterns
+4. **Performance Metrics** - Configure response time monitoring, throughput measurement, error rate tracking, resource utilization monitoring
+5. **Infrastructure Setup** - Configure test environments, setup monitoring dashboards, implement result collection, optimize test execution
+6. **Analysis & Optimization** - Identify performance bottlenecks, analyze resource constraints, recommend optimizations, track improvements
 
-6. **Monitoring and Metrics Collection**
-   - Set up application performance monitoring during tests
-   - Configure infrastructure metrics collection (CPU, memory, disk, network)
-   - Set up database performance monitoring and query analysis
-   - Configure real-time dashboards and alerting
-   - Set up log aggregation and error tracking
+**Advanced Features**: Distributed load generation, real-time monitoring, automated performance regression detection, CI/CD integration, chaos engineering.
 
-7. **Test Execution and Automation**
-   - Configure automated test execution and scheduling
-   - Set up test result collection and analysis
-   - Configure test environment provisioning and teardown
-   - Set up parallel and distributed test execution
-   - Configure test result storage and historical tracking
+**Quality Assurance**: Test reliability, result accuracy, environment consistency, monitoring completeness.
 
-8. **Performance Analysis and Reporting**
-   - Set up automated performance analysis and threshold checking
-   - Configure performance trend analysis and regression detection
-   - Set up detailed performance reporting and visualization
-   - Configure performance alerts and notifications
-   - Set up performance benchmark and baseline management
-
-9. **CI/CD Integration**
-   - Integrate load tests into continuous integration pipeline
-   - Configure performance gates and deployment blocking
-   - Set up automated performance regression detection
-   - Configure test result integration with development workflow
-   - Set up performance testing in staging and pre-production environments
-
-10. **Optimization and Maintenance**
-    - Document load testing procedures and maintenance guidelines
-    - Set up load test script maintenance and version control
-    - Configure test environment maintenance and updates
-    - Create performance optimization recommendations workflow
-    - Train team on load testing best practices and tool usage
-    - Set up performance testing standards and conventions
+**Output**: Complete load testing setup with configured scenarios, performance monitoring, bottleneck analysis, and optimization recommendations.

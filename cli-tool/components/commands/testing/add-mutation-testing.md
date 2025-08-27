@@ -1,80 +1,37 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [language] | --javascript | --java | --python | --rust | --go | --csharp
+description: Setup comprehensive mutation testing with framework selection and CI integration
+model: sonnet
+---
+
 # Add Mutation Testing
 
-Setup mutation testing for code quality
+Setup mutation testing framework with quality metrics and CI integration: **$ARGUMENTS**
 
-## Instructions
+## Current Testing Context
 
-1. **Mutation Testing Strategy Analysis**
-   - Analyze current test suite coverage and quality
-   - Identify critical code paths and business logic for mutation testing
-   - Assess existing testing infrastructure and CI/CD integration points
-   - Determine mutation testing scope and performance requirements
-   - Plan mutation testing integration with existing quality gates
+- Language: !`find . -name "*.js" -o -name "*.ts" | head -1 >/dev/null && echo "JavaScript/TypeScript" || find . -name "*.py" | head -1 >/dev/null && echo "Python" || find . -name "*.java" | head -1 >/dev/null && echo "Java" || echo "Multi-language"`
+- Test coverage: !`find . -name "coverage" -o -name ".nyc_output" | head -1 || echo "No coverage data"`
+- Test framework: !`grep -l "jest\\|mocha\\|pytest\\|junit" package.json pom.xml setup.py 2>/dev/null | head -1 || echo "Detect from tests"`
+- CI system: !`find . -name ".github" -o -name ".gitlab-ci.yml" -o -name "Jenkinsfile" | head -1 || echo "No CI detected"`
 
-2. **Mutation Testing Tool Selection**
-   - Choose appropriate mutation testing framework:
-     - **JavaScript/TypeScript**: Stryker, Mutode
-     - **Java**: PIT (Pitest), Major
-     - **C#**: Stryker.NET, VisualMutator
-     - **Python**: mutmut, Cosmic Ray, MutPy
-     - **Go**: go-mutesting, mut
-     - **Rust**: mutagen, cargo-mutants
-     - **PHP**: Infection
-   - Consider factors: language support, performance, CI integration, reporting
+## Task
 
-3. **Mutation Testing Configuration**
-   - Install and configure mutation testing framework
-   - Set up mutation testing configuration files and settings
-   - Configure mutation operators and strategies
-   - Set up file and directory inclusion/exclusion rules
-   - Configure performance and timeout settings
+Implement comprehensive mutation testing with framework optimization and quality gates:
 
-4. **Mutation Operator Configuration**
-   - Configure arithmetic operator mutations (+, -, *, /, %)
-   - Set up relational operator mutations (<, >, <=, >=, ==, !=)
-   - Configure logical operator mutations (&&, ||, !)
-   - Set up conditional boundary mutations (< to <=, > to >=)
-   - Configure statement deletion and insertion mutations
+**Language Focus**: Use $ARGUMENTS to specify JavaScript, Java, Python, Rust, Go, C#, or auto-detect from codebase
 
-5. **Test Execution and Performance**
-   - Configure mutation test execution strategy and parallelization
-   - Set up incremental mutation testing for large codebases
-   - Configure mutation testing timeouts and resource limits
-   - Set up mutation test caching and optimization
-   - Configure selective mutation testing for changed code
+**Mutation Testing Framework**:
+1. **Tool Selection & Setup** - Choose framework (Stryker, PIT, mutmut, cargo-mutants), install dependencies, configure basic settings, validate installation
+2. **Mutation Operator Configuration** - Configure arithmetic operators, relational operators, logical operators, conditional boundaries, statement mutations
+3. **Performance Optimization** - Setup parallel execution, configure incremental testing, optimize file filtering, implement caching strategies
+4. **Quality Metrics** - Configure mutation score calculation, setup survival analysis, implement threshold enforcement, track effectiveness trends
+5. **CI/CD Integration** - Automate execution triggers, configure performance monitoring, setup result reporting, implement deployment gates
+6. **Result Analysis** - Setup visualization dashboards, configure surviving mutant analysis, implement remediation workflows, track regression patterns
 
-6. **Quality Metrics and Thresholds**
-   - Set up mutation score calculation and reporting
-   - Configure mutation testing thresholds and quality gates
-   - Set up mutation survival analysis and reporting
-   - Configure test effectiveness metrics and tracking
-   - Set up mutation testing trend analysis
+**Advanced Features**: Selective mutation testing, performance profiling, automated test improvement suggestions, mutation trend analysis, quality gate integration.
 
-7. **Integration with Testing Workflow**
-   - Integrate mutation testing with existing test suites
-   - Configure mutation testing execution order and dependencies
-   - Set up mutation testing in development and CI environments
-   - Configure mutation testing result integration with test reports
-   - Set up mutation testing feedback loops for developers
+**Framework Support**: Language-specific optimizations, tool ecosystem integration, performance tuning, reporting customization.
 
-8. **CI/CD Pipeline Integration**
-   - Configure automated mutation testing in continuous integration
-   - Set up mutation testing scheduling and triggers
-   - Configure mutation testing result reporting and notifications
-   - Set up mutation testing performance monitoring
-   - Configure mutation testing deployment gates
-
-9. **Result Analysis and Remediation**
-   - Set up mutation testing result analysis and visualization
-   - Configure surviving mutant analysis and categorization
-   - Set up test gap identification and remediation workflow
-   - Configure mutation testing regression tracking
-   - Set up automated test improvement recommendations
-
-10. **Maintenance and Optimization**
-    - Create mutation testing maintenance and optimization procedures
-    - Set up mutation testing configuration version control
-    - Configure mutation testing performance optimization
-    - Document mutation testing best practices and guidelines
-    - Train team on mutation testing concepts and workflow
-    - Set up mutation testing tool updates and maintenance
+**Output**: Complete mutation testing setup with configured framework, CI integration, quality thresholds, and analysis workflows.

@@ -1,76 +1,37 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [scope] | --unit | --integration | --e2e | --visual | --performance | --full-stack
+description: Setup complete testing infrastructure with framework configuration and CI integration
+model: sonnet
+---
+
 # Setup Comprehensive Testing
 
-Setup complete testing infrastructure
+Setup complete testing infrastructure with multi-layer testing strategy: **$ARGUMENTS**
 
-## Instructions
+## Current Testing Infrastructure
 
-1. **Testing Strategy Analysis**
-   - Analyze current project structure and identify testing needs
-   - Determine appropriate testing frameworks based on technology stack
-   - Define testing pyramid strategy (unit, integration, e2e, visual)
-   - Plan test coverage goals and quality metrics
-   - Assess existing testing infrastructure and gaps
+- Project type: !`[ -f package.json ] && echo "Node.js" || [ -f requirements.txt ] && echo "Python" || [ -f pom.xml ] && echo "Java" || echo "Multi-language"`
+- Existing tests: !`find . -name "*.test.*" -o -name "*.spec.*" | wc -l` test files
+- CI system: !`find . -name ".github" -o -name ".gitlab-ci.yml" -o -name "Jenkinsfile" | head -1 || echo "No CI detected"`
+- Framework: !`grep -l "jest\\|vitest\\|pytest\\|junit" package.json requirements.txt pom.xml 2>/dev/null | head -1 || echo "Detect framework"`
 
-2. **Unit Testing Framework Setup**
-   - Install and configure primary testing framework (Jest, Vitest, pytest, etc.)
-   - Set up test runner configuration and environment
-   - Configure test file patterns and directory structure
-   - Set up test utilities and helper functions
-   - Configure mocking and stubbing capabilities
+## Task
 
-3. **Integration Testing Configuration**
-   - Set up integration testing framework and tools
-   - Configure test database and data seeding
-   - Set up API testing with tools like Supertest or requests
-   - Configure service integration testing
-   - Set up component integration testing for frontend
+Implement comprehensive testing infrastructure with multi-layer testing strategy:
 
-4. **End-to-End Testing Setup**
-   - Install and configure E2E testing framework (Playwright, Cypress, Selenium)
-   - Set up test environment and browser configuration
-   - Create page object models and test helpers
-   - Configure test data management and cleanup
-   - Set up cross-browser and device testing
+**Setup Scope**: Use $ARGUMENTS to focus on unit, integration, e2e, visual, performance testing, or full-stack implementation
 
-5. **Visual Testing Integration**
-   - Set up visual regression testing tools (Chromatic, Percy, Playwright)
-   - Configure screenshot comparison and diff detection
-   - Set up visual testing for different viewports and devices
-   - Create visual test baselines and approval workflows
-   - Configure visual testing in CI/CD pipeline
+**Comprehensive Testing Framework**:
+1. **Testing Strategy Design** - Analyze project requirements, define testing pyramid, plan coverage goals, optimize testing investment
+2. **Unit Testing Setup** - Configure primary framework (Jest, Vitest, pytest), setup test runners, implement test utilities, optimize execution
+3. **Integration Testing** - Setup integration test framework, configure test databases, implement API testing, optimize test isolation
+4. **E2E Testing Configuration** - Setup browser testing (Cypress, Playwright), configure test environments, implement page objects
+5. **Visual & Performance Testing** - Setup visual regression testing, configure performance benchmarks, implement accessibility testing
+6. **CI/CD Integration** - Configure automated test execution, setup parallel testing, implement quality gates, optimize pipeline performance
 
-6. **Test Coverage and Reporting**
-   - Configure code coverage collection and reporting
-   - Set up coverage thresholds and quality gates
-   - Configure test result reporting and visualization
-   - Set up test performance monitoring
-   - Configure test report generation and distribution
+**Advanced Features**: Contract testing, chaos engineering, load testing, security testing, cross-browser testing, mobile testing.
 
-7. **Performance and Load Testing**
-   - Set up performance testing framework (k6, Artillery, JMeter)
-   - Configure load testing scenarios and benchmarks
-   - Set up performance monitoring and alerting
-   - Configure stress testing and capacity planning
-   - Set up performance regression detection
+**Infrastructure Quality**: Test reliability, execution performance, maintainability, scalability, cost optimization.
 
-8. **Test Data Management**
-   - Set up test data factories and fixtures
-   - Configure database seeding and cleanup
-   - Set up test data isolation and parallel test execution
-   - Configure test environment data management
-   - Set up API mocking and service virtualization
-
-9. **CI/CD Integration**
-   - Configure automated test execution in CI/CD pipeline
-   - Set up parallel test execution and optimization
-   - Configure test result reporting and notifications
-   - Set up test environment provisioning and cleanup
-   - Configure deployment gates based on test results
-
-10. **Testing Best Practices and Documentation**
-    - Create comprehensive testing guidelines and standards
-    - Set up test naming conventions and organization
-    - Document testing workflows and procedures
-    - Create testing templates and examples
-    - Set up testing metrics and quality monitoring
-    - Train team on testing best practices and tools
+**Output**: Complete testing infrastructure with configured frameworks, CI integration, quality metrics, and maintenance workflows.

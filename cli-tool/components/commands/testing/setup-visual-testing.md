@@ -1,78 +1,37 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [testing-scope] | --components | --pages | --responsive | --cross-browser | --accessibility
+description: Setup comprehensive visual regression testing with cross-browser and responsive testing
+model: sonnet
+---
+
 # Setup Visual Testing
 
-Setup visual regression testing
+Setup comprehensive visual regression testing with responsive and accessibility validation: **$ARGUMENTS**
 
-## Instructions
+## Current Visual Testing Context
 
-1. **Visual Testing Strategy Analysis**
-   - Analyze current UI/component structure and testing needs
-   - Identify critical user interfaces and visual components
-   - Determine testing scope (components, pages, user flows)
-   - Assess existing testing infrastructure and integration points
-   - Plan visual testing coverage and baseline creation strategy
+- Frontend framework: !`grep -l "react\\|vue\\|angular" package.json 2>/dev/null || echo "Detect framework"`
+- UI components: !`find . -name "components" -o -name "src" | head -1 && echo "Component structure detected" || echo "Analyze structure"`
+- Existing testing: !`find . -name "cypress" -o -name "playwright" -o -name "storybook" | head -1 || echo "No visual testing"`
+- CI system: !`find . -name ".github" -o -name ".gitlab-ci.yml" | head -1 || echo "No CI detected"`
 
-2. **Visual Testing Tool Selection**
-   - Evaluate visual testing tools based on project requirements:
-     - **Chromatic**: For Storybook integration and component testing
-     - **Percy**: For comprehensive visual testing and CI integration
-     - **Playwright**: For browser-based visual testing with built-in capabilities
-     - **BackstopJS**: For lightweight visual regression testing
-     - **Applitools**: For AI-powered visual testing and cross-browser support
-   - Consider factors: budget, team size, CI/CD integration, browser support
+## Task
 
-3. **Visual Testing Framework Installation**
-   - Install chosen visual testing tool and dependencies
-   - Configure testing framework integration (Jest, Playwright, Cypress)
-   - Set up browser automation and screenshot capabilities
-   - Configure testing environment and viewport settings
-   - Set up test runner and execution environment
+Implement comprehensive visual testing with regression detection and accessibility validation:
 
-4. **Baseline Creation and Management**
-   - Create initial visual baselines for all critical UI components
-   - Establish baseline approval workflow and review process
-   - Set up baseline version control and storage
-   - Configure baseline updates and maintenance procedures
-   - Implement baseline branching strategy for feature development
+**Testing Scope**: Use $ARGUMENTS to focus on component testing, page testing, responsive testing, cross-browser testing, or accessibility testing
 
-5. **Test Configuration and Setup**
-   - Configure visual testing parameters (viewports, browsers, devices)
-   - Set up visual diff thresholds and sensitivity settings
-   - Configure screenshot capture settings and optimization
-   - Set up test data and state management for consistent testing
-   - Configure async loading and timing handling
+**Visual Testing Framework**:
+1. **Tool Selection & Setup** - Choose visual testing tools (Percy, Chromatic, BackstopJS, Playwright), configure integration, setup environments
+2. **Baseline Creation** - Capture visual baselines, organize screenshot structure, implement version control, optimize image management
+3. **Test Scenario Design** - Create component tests, design page workflows, implement responsive breakpoints, configure browser matrix
+4. **Integration Setup** - Configure CI/CD integration, setup automated execution, implement review workflows, optimize performance
+5. **Regression Detection** - Configure diff algorithms, setup threshold management, implement approval workflows, optimize accuracy
+6. **Advanced Testing** - Setup accessibility testing, configure cross-browser validation, implement responsive testing, design performance monitoring
 
-6. **Component and Page Testing**
-   - Create visual tests for individual UI components
-   - Set up page-level visual testing for critical user flows
-   - Configure responsive design testing across different viewports
-   - Implement cross-browser visual testing
-   - Set up accessibility and color contrast visual validation
+**Advanced Features**: Automated visual testing, intelligent diff analysis, accessibility compliance checking, responsive design validation, performance visual metrics.
 
-7. **CI/CD Pipeline Integration**
-   - Configure automated visual testing in CI/CD pipeline
-   - Set up visual test execution on pull requests
-   - Configure test result reporting and notifications
-   - Set up deployment blocking for failed visual tests
-   - Implement parallel test execution for performance
+**Quality Assurance**: Test reliability, false positive reduction, maintainability optimization, execution performance.
 
-8. **Review and Approval Workflow**
-   - Set up visual diff review and approval process
-   - Configure team notifications for visual changes
-   - Establish approval authority and review guidelines
-   - Set up automated approval for minor acceptable changes
-   - Configure change documentation and tracking
-
-9. **Monitoring and Maintenance**
-   - Set up visual test performance monitoring
-   - Configure test flakiness detection and resolution
-   - Implement baseline cleanup and maintenance procedures
-   - Set up visual testing metrics and reporting
-   - Configure alerting for test failures and issues
-
-10. **Documentation and Team Training**
-    - Create comprehensive visual testing documentation
-    - Document baseline creation and update procedures
-    - Create troubleshooting guide for common visual testing issues
-    - Train team on visual testing workflows and best practices
-    - Set up visual testing standards and conventions
-    - Document visual testing maintenance and optimization procedures
+**Output**: Complete visual testing setup with baseline management, regression detection, CI integration, and comprehensive validation workflows.

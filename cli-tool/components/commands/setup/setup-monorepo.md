@@ -1,80 +1,37 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [monorepo-tool] | --nx | --lerna | --rush | --turborepo | --yarn-workspaces
+description: Configure monorepo project structure with comprehensive workspace management and build orchestration
+model: sonnet
+---
+
 # Setup Monorepo
 
-Configure monorepo project structure
+Configure comprehensive monorepo structure with advanced workspace management: **$ARGUMENTS**
 
-## Instructions
+## Current Project State
 
-1. **Monorepo Tool Analysis**
-   - Parse monorepo tool from arguments: `$ARGUMENTS` (nx, lerna, rush, yarn-workspaces, pnpm-workspaces, turborepo)
-   - If no tool specified, analyze project structure and recommend best tool based on:
-     - Project size and complexity
-     - Existing package manager
-     - Team preferences and CI/CD requirements
-   - Validate tool compatibility with existing codebase
+- Repository structure: !`find . -maxdepth 2 -type d | head -10`
+- Package manager: @package.json or existing workspace configuration
+- Existing monorepo: @nx.json or @lerna.json or @rush.json or @turbo.json
+- Project count: !`find . -name "package.json" -not -path "./node_modules/*" | wc -l`
 
-2. **Workspace Structure Setup**
-   - Create standard monorepo directory structure:
-     - `packages/` or `apps/` for applications
-     - `libs/` or `shared/` for shared libraries
-     - `tools/` for build tools and scripts
-     - `docs/` for documentation
-   - Configure workspace root package.json with workspace definitions
-   - Set up proper .gitignore for monorepo patterns
+## Task
 
-3. **Tool-Specific Configuration**
-   - **Nx**: Initialize Nx workspace, configure nx.json, add essential plugins
-   - **Lerna**: Set up lerna.json, configure version management and publishing
-   - **Rush**: Initialize rush.json, configure build orchestration and policies
-   - **Yarn Workspaces**: Configure workspaces in package.json, set up workspace protocols
-   - **pnpm Workspaces**: Set up pnpm-workspace.yaml, configure filtering and dependencies
-   - **Turborepo**: Initialize turbo.json, configure pipeline and caching
+Implement production-ready monorepo with advanced workspace management and build orchestration:
 
-4. **Package Management Configuration**
-   - Configure package manager settings for workspace support
-   - Set up dependency hoisting and deduplication rules
-   - Configure workspace-specific package.json templates
-   - Set up cross-package dependency management
-   - Configure private package registry if needed
+**Monorepo Tool**: Use $ARGUMENTS to configure Nx, Lerna, Rush, Turborepo, or Yarn Workspaces
 
-5. **Build System Integration**
-   - Configure build orchestration and task running
-   - Set up dependency graph analysis and affected package detection
-   - Configure parallel builds and task caching
-   - Set up incremental builds for changed packages
-   - Configure build artifacts and output management
+**Monorepo Architecture**:
+1. **Workspace Structure** - Directory organization, package architecture, shared libraries, application separation
+2. **Dependency Management** - Workspace dependencies, version management, package hoisting, conflict resolution
+3. **Build Orchestration** - Task dependencies, parallel builds, incremental compilation, affected package detection
+4. **Development Workflow** - Hot reloading, debugging, testing strategies, development server coordination
+5. **CI/CD Integration** - Build pipelines, affected project detection, deployment orchestration, artifact management
+6. **Tooling Configuration** - Shared configurations, code quality tools, testing frameworks, documentation
 
-6. **Development Workflow**
-   - Set up workspace-wide development scripts
-   - Configure hot reloading and watch mode for development
-   - Set up workspace-wide linting and formatting
-   - Configure debugging across multiple packages
-   - Set up workspace-wide testing and coverage
+**Advanced Features**: Task caching, distributed execution, performance optimization, plugin ecosystem integration.
 
-7. **Version Management**
-   - Configure versioning strategy (independent vs. fixed versions)
-   - Set up changelog generation for workspace packages
-   - Configure release workflow and package publishing
-   - Set up semantic versioning and conventional commits
-   - Configure workspace-wide dependency updates
+**Team Productivity**: Developer experience optimization, onboarding automation, maintenance procedures.
 
-8. **CI/CD Pipeline Integration**
-   - Configure CI to detect affected packages and run targeted tests
-   - Set up build matrix for different package combinations
-   - Configure deployment pipeline for multiple packages
-   - Set up workspace-wide quality gates
-   - Configure artifact publishing and registry management
-
-9. **Documentation and Standards**
-   - Create workspace-wide development guidelines
-   - Document package creation and management procedures
-   - Set up workspace-wide code standards and conventions
-   - Create architectural decision records for monorepo patterns
-   - Document deployment and release procedures
-
-10. **Validation and Testing**
-    - Verify workspace configuration is correct
-    - Test package creation and cross-package dependencies
-    - Validate build pipeline and task execution
-    - Test development workflow and hot reloading
-    - Verify CI/CD integration and affected package detection
-    - Create example packages to demonstrate workspace functionality
+**Output**: Complete monorepo setup with optimized build system, comprehensive tooling, and team productivity enhancements.

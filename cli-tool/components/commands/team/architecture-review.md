@@ -1,99 +1,37 @@
-# Architecture Review Command
+---
+allowed-tools: Read, Glob, Grep, Bash
+argument-hint: [scope] | --modules | --patterns | --dependencies | --security
+description: Comprehensive architecture review with design patterns analysis and improvement recommendations
+model: sonnet
+---
 
-Review and improve system architecture
+# Architecture Review
 
-## Instructions
+Perform comprehensive system architecture analysis and improvement planning: **$ARGUMENTS**
 
-Perform a comprehensive architectural analysis following these steps:
+## Current Architecture Context
 
-1. **High-Level Architecture Analysis**
-   - Map out the overall system architecture and components
-   - Identify architectural patterns in use (MVC, MVP, Clean Architecture, etc.)
-   - Review module boundaries and separation of concerns
-   - Analyze the application's layered structure
+- Project structure: !`find . -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.go" | head -5 && echo "..."`
+- Package dependencies: !`[ -f package.json ] && echo "Node.js project" || [ -f requirements.txt ] && echo "Python project" || [ -f go.mod ] && echo "Go project" || echo "Multiple languages"`
+- Testing framework: !`find . -name "*.test.*" -o -name "*spec.*" | head -3 && echo "..." || echo "No test files found"`
+- Documentation: !`find . -name "README*" -o -name "*.md" | wc -l` documentation files
 
-2. **Design Patterns Assessment**
-   - Identify design patterns used throughout the codebase
-   - Check for proper implementation of common patterns
-   - Look for anti-patterns and code smells
-   - Assess pattern consistency across the application
+## Task
 
-3. **Dependency Management**
-   - Review dependency injection and inversion of control
-   - Analyze coupling between modules and components
-   - Check for circular dependencies
-   - Assess dependency direction and adherence to dependency rule
+Execute comprehensive architectural analysis with actionable improvement recommendations:
 
-4. **Data Flow Architecture**
-   - Trace data flow through the application
-   - Review state management patterns and implementation
-   - Analyze data persistence and storage strategies
-   - Check for proper data validation and transformation
+**Review Scope**: Use $ARGUMENTS to focus on specific modules, design patterns, dependency analysis, or security architecture
 
-5. **Component Architecture**
-   - Review component design and responsibilities
-   - Check for single responsibility principle adherence
-   - Analyze component composition and reusability
-   - Assess interface design and abstraction levels
+**Architecture Analysis Framework**:
+1. **System Structure Assessment** - Map component hierarchy, identify architectural patterns, analyze module boundaries, assess layered design
+2. **Design Pattern Evaluation** - Identify implemented patterns, assess pattern consistency, detect anti-patterns, evaluate pattern effectiveness
+3. **Dependency Architecture** - Analyze coupling levels, detect circular dependencies, evaluate dependency injection, assess architectural boundaries
+4. **Data Flow Analysis** - Trace information flow, evaluate state management, assess data persistence strategies, validate transformation patterns
+5. **Scalability & Performance** - Analyze scaling capabilities, evaluate caching strategies, assess bottlenecks, review resource management
+6. **Security Architecture** - Review trust boundaries, assess authentication patterns, analyze authorization flows, evaluate data protection
 
-6. **Error Handling Architecture**
-   - Review error handling strategy and consistency
-   - Check for proper error propagation and recovery
-   - Analyze logging and monitoring integration
-   - Assess resilience and fault tolerance patterns
+**Advanced Analysis**: Component testability, configuration management, error handling patterns, monitoring integration, extensibility assessment.
 
-7. **Scalability Assessment**
-   - Analyze horizontal and vertical scaling capabilities
-   - Review caching strategies and implementation
-   - Check for stateless design where appropriate
-   - Assess performance bottlenecks and scaling limitations
+**Quality Assessment**: Code organization, documentation adequacy, team communication patterns, technical debt evaluation.
 
-8. **Security Architecture**
-   - Review security boundaries and trust zones
-   - Check authentication and authorization architecture
-   - Analyze data protection and privacy measures
-   - Assess security pattern implementation
-
-9. **Testing Architecture**
-   - Review test structure and organization
-   - Check for testability in design
-   - Analyze mocking and dependency isolation strategies
-   - Assess test coverage across architectural layers
-
-10. **Configuration Management**
-    - Review configuration handling and environment management
-    - Check for proper separation of config from code
-    - Analyze feature flags and runtime configuration
-    - Assess deployment configuration strategies
-
-11. **Documentation & Communication**
-    - Review architectural documentation and diagrams
-    - Check for clear API contracts and interfaces
-    - Assess code self-documentation and clarity
-    - Analyze team communication patterns in code
-
-12. **Future-Proofing & Extensibility**
-    - Assess the architecture's ability to accommodate change
-    - Review extension points and plugin architectures
-    - Check for proper versioning and backward compatibility
-    - Analyze migration and upgrade strategies
-
-13. **Technology Choices**
-    - Review technology stack alignment with requirements
-    - Assess framework and library choices
-    - Check for consistent technology usage
-    - Analyze technical debt and modernization opportunities
-
-14. **Performance Architecture**
-    - Review caching layers and strategies
-    - Analyze asynchronous processing patterns
-    - Check for proper resource management
-    - Assess monitoring and observability architecture
-
-15. **Recommendations**
-    - Provide specific architectural improvements
-    - Suggest refactoring strategies for problem areas
-    - Recommend patterns and practices for better design
-    - Create a roadmap for architectural evolution
-
-Focus on providing actionable insights with specific examples and clear rationale for recommendations.
+**Output**: Detailed architecture assessment with specific improvement recommendations, refactoring strategies, and implementation roadmap.

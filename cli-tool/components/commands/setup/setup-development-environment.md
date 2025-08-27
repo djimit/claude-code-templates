@@ -1,98 +1,37 @@
 ---
-allowed-tools: Read, Write, Bash
-argument-hint: [environment-type] | --full | --minimal
-description: Setup complete development environment with tools, dependencies, and configurations
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [environment-type] | --local | --docker | --cloud | --full-stack
+description: Setup comprehensive development environment with tools, configurations, and workflows
 model: sonnet
 ---
 
 # Setup Development Environment
 
-Setup complete development environment: $ARGUMENTS
+Setup comprehensive development environment with modern tooling: **$ARGUMENTS**
 
-## Current Environment
+## Current Environment State
 
-- Operating system: !`uname -a`
-- Package managers: !`which npm yarn pnpm pip 2>/dev/null || echo "None found"`
-- Development tools: !`which git docker node python 2>/dev/null || echo "Checking..."`
-- Project config: @package.json or @requirements.txt or @Cargo.toml (if exists)
+- Operating system: !`uname -s` and architecture detection
+- Development tools: !`node --version 2>/dev/null || python --version 2>/dev/null || echo "No runtime detected"`
+- Package managers: !`which npm yarn pnpm pip poetry cargo 2>/dev/null | wc -l` managers available
+- IDE/Editor: Check for VS Code, IntelliJ, or other development environments
 
-## Instructions
+## Task
 
-1. **Environment Analysis and Requirements**
-   - Analyze current project structure and technology stack
-   - Identify required development tools and dependencies
-   - Check existing development environment configuration
-   - Determine team size and collaboration requirements
-   - Assess platform requirements (Windows, macOS, Linux)
+Configure complete development environment with modern tools and best practices:
 
-2. **Core Development Tools Installation**
-   - Verify and install required runtime environments (Node.js, Python, Java, etc.)
-   - Set up package managers with proper versions (npm, yarn, pnpm, pip, maven, etc.)
-   - Install and configure version control tools (Git, Git LFS)
-   - Set up code editors with workspace-specific settings (VSCode, IntelliJ)
-   - Configure terminal and shell environment
+**Environment Type**: Use $ARGUMENTS to specify local setup, Docker-based, cloud environment, or full-stack development
 
-3. **Project-Specific Tooling**
-   - Install project dependencies and dev dependencies
-   - Set up build tools and task runners
-   - Configure bundlers and module systems
-   - Install testing frameworks and runners
-   - Set up debugging tools and extensions
-   - Configure profiling and performance monitoring tools
+**Environment Setup**:
+1. **Runtime Installation** - Programming languages, package managers, version managers (nvm, pyenv, rustup)
+2. **Development Tools** - IDE configuration, extensions, debuggers, profilers, database clients
+3. **Build System** - Compilers, bundlers, task runners, CI/CD tools, testing frameworks
+4. **Code Quality** - Linting, formatting, pre-commit hooks, code analysis tools
+5. **Environment Configuration** - Environment variables, secrets management, configuration files
+6. **Team Synchronization** - Shared configurations, documentation, onboarding guides
 
-4. **Code Quality and Standards**
-   - Install and configure linting tools (ESLint, Pylint, etc.)
-   - Set up code formatting tools (Prettier, Black, etc.)
-   - Configure pre-commit hooks with Husky or similar
-   - Set up code spell checking and grammar tools
-   - Configure import sorting and organization tools
-   - Set up code complexity and quality metrics
+**Advanced Features**: Hot reloading, debugging configuration, performance monitoring, container orchestration.
 
-5. **Development Server and Database**
-   - Set up local development server with hot reloading
-   - Configure database server and management tools
-   - Set up containerized development environment (Docker)
-   - Configure API mocking and testing tools
-   - Set up local SSL certificates for HTTPS development
-   - Configure environment variable management
+**Automation**: Automated setup scripts, configuration management, team environment synchronization.
 
-6. **IDE and Editor Configuration**
-   - Configure workspace settings and extensions
-   - Set up language-specific plugins and syntax highlighting
-   - Configure IntelliSense and auto-completion
-   - Set up debugging configurations and breakpoints
-   - Configure integrated terminal and task running
-   - Set up code snippets and templates
-
-7. **Environment Variables and Secrets**
-   - Create .env template files for different environments
-   - Set up local environment variable management
-   - Configure secrets management for development
-   - Set up API keys and service credentials
-   - Configure environment-specific configuration files
-   - Document required environment variables
-
-8. **Documentation and Knowledge Base**
-   - Create comprehensive setup documentation
-   - Document common development workflows
-   - Set up project wiki or knowledge base
-   - Create troubleshooting guides for common issues
-   - Document coding standards and best practices
-   - Set up onboarding checklist for new team members
-
-9. **Collaboration and Communication Tools**
-   - Configure team communication channels
-   - Set up code review workflows and tools
-   - Configure issue tracking and project management
-   - Set up shared development resources and services
-   - Configure team calendars and meeting tools
-   - Set up shared documentation and file storage
-
-10. **Validation and Testing**
-    - Verify all tools and dependencies are properly installed
-    - Test development server startup and hot reloading
-    - Validate database connections and data access
-    - Test build processes and deployment workflows
-    - Verify code quality tools are working correctly
-    - Test collaboration workflows and team access
-    - Create development environment health check script
+**Output**: Complete development environment with documented setup process, team configurations, and troubleshooting guides.

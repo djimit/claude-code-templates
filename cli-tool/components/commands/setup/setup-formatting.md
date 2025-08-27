@@ -1,62 +1,37 @@
-# Setup Formatting Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [language] | --javascript | --typescript | --python | --multi-language
+description: Configure comprehensive code formatting tools with consistent style enforcement
+model: sonnet
+---
 
-Configure code formatting tools
+# Setup Code Formatting
 
-## Instructions
+Configure comprehensive code formatting with consistent style enforcement: **$ARGUMENTS**
 
-Setup code formatting following these steps: **$ARGUMENTS**
+## Current Project State
 
-1. **Language-Specific Tools**
+- Languages detected: !`find . -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.rs" | head -5`
+- Existing formatters: @.prettierrc or @pyproject.toml or @rustfmt.toml
+- Package manager: @package.json or @requirements.txt or @Cargo.toml
+- IDE config: @.vscode/settings.json or @.editorconfig
 
-   **JavaScript/TypeScript:**
-   ```bash
-   npm install -D prettier
-   echo '{"semi": true, "singleQuote": true, "tabWidth": 2}' > .prettierrc
-   ```
+## Task
 
-   **Python:**
-   ```bash
-   pip install black isort
-   echo '[tool.black]\nline-length = 88\ntarget-version = ["py38"]' > pyproject.toml
-   ```
+Setup comprehensive code formatting system with automated enforcement and team consistency:
 
-   **Java:**
-   ```bash
-   # Google Java Format or Spotless plugin
-   ```
+**Language Focus**: Use $ARGUMENTS to configure JavaScript/TypeScript, Python, Rust, or multi-language formatting
 
-2. **Configuration Files**
+**Formatting Setup**:
+1. **Tool Installation** - Prettier, Black, rustfmt, language-specific formatters and plugins
+2. **Configuration** - Style rules, line length, indentation, quotes, trailing commas, language-specific options
+3. **IDE Integration** - Editor extensions, format-on-save, keyboard shortcuts, workspace settings
+4. **Automation** - Pre-commit hooks, CI/CD formatting checks, automated formatting scripts
+5. **Team Sync** - Shared configurations, style guides, enforcement policies, onboarding documentation
+6. **Validation** - Formatting verification, CI integration, team compliance monitoring
 
-   **.prettierrc:**
-   ```json
-   {
-     "semi": true,
-     "singleQuote": true,
-     "tabWidth": 2,
-     "trailingComma": "es5",
-     "printWidth": 80
-   }
-   ```
+**Advanced Features**: Custom rules, framework-specific formatting, performance optimization, incremental formatting.
 
-3. **IDE Setup**
-   - Install formatter extensions
-   - Enable format on save
-   - Configure keyboard shortcuts
+**Consistency**: Cross-platform compatibility, team standardization, legacy code migration strategies.
 
-4. **Scripts and Automation**
-   ```json
-   {
-     "scripts": {
-       "format": "prettier --write .",
-       "format:check": "prettier --check ."
-     }
-   }
-   ```
-
-5. **Pre-commit Hooks**
-   ```bash
-   npm install -D husky lint-staged
-   echo '{"*.{js,ts,tsx}": ["prettier --write", "eslint --fix"]}' > .lintstagedrc
-   ```
-
-Remember to run formatting on entire codebase initially and configure team IDE settings consistently.
+**Output**: Complete formatting system with automated enforcement, team configurations, and style compliance monitoring.

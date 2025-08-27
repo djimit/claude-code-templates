@@ -1,76 +1,37 @@
-# Setup Monitoring and Observability
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [monitoring-type] | --metrics | --logging | --tracing | --full-stack
+description: Setup comprehensive monitoring and observability with metrics, logging, tracing, and alerting
+model: sonnet
+---
 
-Setup monitoring and observability tools
+# Setup Monitoring & Observability
 
-## Instructions
+Setup comprehensive monitoring and observability infrastructure: **$ARGUMENTS**
 
-1. **Observability Strategy Planning**
-   - Analyze application architecture and monitoring requirements
-   - Define key performance indicators (KPIs) and service level objectives (SLOs)
-   - Plan monitoring stack architecture and data flow
-   - Assess compliance and retention requirements
-   - Define alerting strategies and escalation procedures
+## Current Application State
 
-2. **Metrics Collection and Monitoring**
-   - Set up application metrics collection (Prometheus, DataDog, New Relic)
-   - Configure infrastructure monitoring for servers, containers, and cloud resources
-   - Set up business metrics and user experience monitoring
-   - Configure custom metrics for application-specific monitoring
-   - Set up metrics aggregation and time-series storage
+- Application type: @package.json or @requirements.txt (detect framework and services)
+- Existing monitoring: !`find . -name "*prometheus*" -o -name "*grafana*" -o -name "*jaeger*" | wc -l`
+- Infrastructure: @docker-compose.yml or @kubernetes/ or cloud platform detection
+- Logging setup: !`grep -r "winston\|logging\|console.log" src/ 2>/dev/null | wc -l`
 
-3. **Logging Infrastructure**
-   - Set up centralized logging system (ELK Stack, Fluentd, Splunk)
-   - Configure structured logging with consistent formats
-   - Set up log aggregation and forwarding from all services
-   - Configure log retention policies and archival strategies
-   - Set up log parsing, enrichment, and indexing
+## Task
 
-4. **Distributed Tracing**
-   - Set up distributed tracing system (Jaeger, Zipkin, AWS X-Ray)
-   - Configure trace instrumentation in application code
-   - Set up trace sampling and collection strategies
-   - Configure trace correlation across service boundaries
-   - Set up trace analysis and performance optimization
+Implement production-ready monitoring and observability with comprehensive insights:
 
-5. **Application Performance Monitoring (APM)**
-   - Configure APM tools for application performance insights
-   - Set up error tracking and exception monitoring
-   - Configure database query monitoring and optimization
-   - Set up real user monitoring (RUM) and synthetic monitoring
-   - Configure performance profiling and bottleneck identification
+**Monitoring Type**: Use $ARGUMENTS to focus on metrics, logging, distributed tracing, or complete observability stack
 
-6. **Infrastructure and System Monitoring**
-   - Set up server and container monitoring (CPU, memory, disk, network)
-   - Configure cloud service monitoring and cost tracking
-   - Set up database monitoring and performance analysis
-   - Configure network monitoring and security scanning
-   - Set up capacity planning and resource optimization
+**Observability Stack**:
+1. **Metrics Collection** - Application metrics, infrastructure monitoring, business KPIs, custom dashboards
+2. **Logging Infrastructure** - Centralized logging, structured logs, log aggregation, search capabilities
+3. **Distributed Tracing** - Request tracing, performance analysis, bottleneck identification, service dependencies
+4. **Alerting System** - Smart alerts, escalation policies, notification channels, incident management
+5. **Performance Monitoring** - APM integration, real-user monitoring, synthetic monitoring, SLA tracking
+6. **Analytics & Reports** - Usage analytics, performance trends, capacity planning, business insights
 
-7. **Alerting and Notification System**
-   - Configure intelligent alerting with proper thresholds
-   - Set up alert routing and escalation procedures
-   - Configure notification channels (email, Slack, PagerDuty)
-   - Set up alert correlation and noise reduction
-   - Configure on-call scheduling and incident management
+**Platform Integration**: Prometheus, Grafana, ELK Stack, Jaeger, DataDog, New Relic, cloud-native solutions.
 
-8. **Dashboards and Visualization**
-   - Create comprehensive monitoring dashboards (Grafana, Kibana)
-   - Set up real-time system health dashboards
-   - Configure business metrics and KPI visualization
-   - Create role-specific dashboards for different teams
-   - Set up mobile-friendly monitoring interfaces
+**Production Features**: High availability, data retention policies, security controls, cost optimization.
 
-9. **Security Monitoring and Compliance**
-   - Set up security event monitoring and SIEM integration
-   - Configure compliance monitoring and audit trails
-   - Set up vulnerability scanning and security alerting
-   - Configure access monitoring and user behavior analytics
-   - Set up data privacy and protection monitoring
-
-10. **Incident Response and Automation**
-    - Set up automated incident detection and response
-    - Configure runbook automation and self-healing systems
-    - Set up incident management and communication workflows
-    - Configure post-incident analysis and improvement processes
-    - Create monitoring maintenance and optimization procedures
-    - Train team on monitoring tools and incident response procedures
+**Output**: Complete observability platform with real-time monitoring, intelligent alerting, and comprehensive analytics dashboards.

@@ -1,76 +1,37 @@
-# Setup Linting Command
+---
+allowed-tools: Read, Write, Edit, Bash
+argument-hint: [language] | --javascript | --typescript | --python | --multi-language
+description: Configure comprehensive code linting and quality analysis tools with automated enforcement
+model: sonnet
+---
 
-Setup code linting and quality tools
+# Setup Code Linting
 
-## Instructions
+Configure comprehensive code linting and quality analysis: **$ARGUMENTS**
 
-Follow this systematic approach to setup linting: **$ARGUMENTS**
+## Current Code Quality State
 
-1. **Project Analysis**
-   - Identify programming languages and frameworks
-   - Check existing linting configuration
-   - Review current code style and patterns
-   - Assess team preferences and requirements
+- Languages detected: !`find . -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.rs" | head -5`
+- Existing linters: @.eslintrc.* or @pyproject.toml or @tslint.json
+- Package manager: @package.json or @requirements.txt or @Cargo.toml
+- Code quality tools: !`which eslint flake8 pylint mypy clippy 2>/dev/null | wc -l`
 
-2. **Tool Selection by Language**
+## Task
 
-   **JavaScript/TypeScript:**
-   ```bash
-   npm install -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
-   npm install -D prettier eslint-config-prettier eslint-plugin-prettier
-   ```
+Setup comprehensive code linting system with quality analysis and automated enforcement:
 
-   **Python:**
-   ```bash
-   pip install flake8 black isort mypy pylint
-   ```
+**Language Focus**: Use $ARGUMENTS to configure JavaScript/TypeScript ESLint, Python linting, or multi-language quality analysis
 
-   **Java:**
-   ```bash
-   # Add to pom.xml or build.gradle
-   # Checkstyle, SpotBugs, PMD
-   ```
+**Linting Configuration**:
+1. **Tool Installation** - ESLint, Flake8, Pylint, MyPy, Clippy, language-specific linters and plugins
+2. **Rule Configuration** - Code style rules, error detection, best practices, security patterns, performance guidelines
+3. **IDE Integration** - Real-time linting, error highlighting, quick fixes, workspace settings
+4. **Quality Gates** - Pre-commit validation, CI/CD integration, pull request checks, quality metrics
+5. **Custom Rules** - Project-specific patterns, architectural constraints, team conventions
+6. **Performance** - Incremental linting, caching strategies, parallel execution, optimization
 
-3. **Configuration Setup**
+**Advanced Features**: Security linting, accessibility checks, performance analysis, dependency analysis, code complexity metrics.
 
-   **ESLint (.eslintrc.json):**
-   ```json
-   {
-     "extends": [
-       "eslint:recommended",
-       "@typescript-eslint/recommended",
-       "prettier"
-     ],
-     "parser": "@typescript-eslint/parser",
-     "plugins": ["@typescript-eslint"],
-     "rules": {
-       "no-console": "warn",
-       "no-unused-vars": "error",
-       "@typescript-eslint/no-explicit-any": "warn"
-     }
-   }
-   ```
+**Team Standards**: Shared configurations, style guides, review guidelines, onboarding documentation.
 
-4. **IDE Integration**
-   - Configure VS Code settings
-   - Setup auto-fix on save
-   - Install relevant extensions
-
-5. **CI/CD Integration**
-   ```yaml
-   - name: Lint code
-     run: npm run lint
-   ```
-
-6. **Package.json Scripts**
-   ```json
-   {
-     "scripts": {
-       "lint": "eslint src --ext .ts,.tsx",
-       "lint:fix": "eslint src --ext .ts,.tsx --fix",
-       "format": "prettier --write src"
-     }
-   }
-   ```
-
-Remember to customize rules based on team preferences and gradually enforce stricter standards.
+**Output**: Complete linting system with automated quality gates, team standards enforcement, and comprehensive code analysis.

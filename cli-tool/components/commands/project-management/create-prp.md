@@ -1,76 +1,37 @@
-YOU MUST READ THESE FILES AND FOLLOW THE INSTRUCTIONS IN THEM.
-Start by reading the concept_library/cc_PRP_flow/README.md to understand what a PRP
-Then read concept_library/cc_PRP_flow/PRPs/base_template_v1 to understand the structure of a PRP.
+---
+allowed-tools: Read, Write, Edit, WebSearch, Grep, Glob
+argument-hint: [feature-description] | --research | --template | --validate
+description: Create comprehensive Product Requirement Prompt (PRP) with research and validation
+model: sonnet
+---
 
-Think hard about the concept
+# Create Product Requirement Prompt
 
-Help the user create a comprehensive Product Requirement Prompt (PRP) for: $ARGUMENTS
+Create comprehensive Product Requirement Prompt (PRP) following structured research process: **$ARGUMENTS**
 
-## Instructions for PRP Creation
+## PRP Foundation
 
-Research and develop a complete PRP based on the feature/product description above. Follow these guidelines:
+- Base template: @concept_library/cc_PRP_flow/PRPs/base_template_v1
+- PRP concept: @concept_library/cc_PRP_flow/README.md
+- Existing PRPs: !`find concept_library/cc_PRP_flow/PRPs/ -name "*.md" | head -5`
+- Documentation: @ai_docs/ directory analysis
 
-## Research Process
+## Task
 
-Begin with thorough research to gather all necessary context:
+Develop comprehensive PRP through systematic research and structured documentation:
 
-1. **Documentation Review**
+**Research Process**:
+1. **Documentation Review** - Analyze existing ai_docs/ and project documentation
+2. **Web Research** - Gather implementation examples, library docs, and best practices
+3. **Template Analysis** - Study base_template_v1 structure and existing PRPs
+4. **Codebase Exploration** - Identify patterns, dependencies, and integration points
+5. **Context Synthesis** - Compile comprehensive implementation context
 
-   - Check for relevant documentation in the `ai_docs/` directory
-   - Identify any documentation gaps that need to be addressed
-   - Ask the user if additional documentation should be referenced
+**PRP Development**:
+- Follow base_template_v1 structure exactly
+- Include specific file references and web resources
+- Provide curated codebase intelligence
+- Define clear validation criteria and success metrics
+- Create production-ready implementation guide
 
-2. **WEB RESEARCH**
-
-   - Use web search to gather additional context
-   - Research the concept of the feature/product
-   - Look into library documentation
-   - Look into example implementations on StackOverflow
-   - Look into example implementations on GitHub
-   - etc...
-   - Ask the user if additional web search should be referenced
-
-3. **Template Analysis**
-
-   - Use `concept_library/cc_PRP_flow/PRPs/base_template_v1` as the structural reference
-   - Ensure understanding of the template requirements before proceeding
-   - Review past templates in the PRPs/ directory for inspiration if there are any
-
-4. **Codebase Exploration**
-
-   - Identify relevant files and directories that provide implementation context
-   - Ask the user about specific areas of the codebase to focus on
-   - Look for patterns that should be followed in the implementation
-
-5. **Implementation Requirements**
-   - Confirm implementation details with the user
-   - Ask about specific patterns or existing features to mirror
-   - Inquire about external dependencies or libraries to consider
-
-## PRP Development
-
-Create a PRP following the template in `concept_library/cc_PRP_flow/PRPs/base_template_v1`, ensuring it includes the same structure as the template.
-
-## Context Prioritization
-
-A successful PRP must include comprehensive context through specific references to:
-
-- Files in the codebase
-- Web search results and URL's
-- Documentation
-- External resources
-- Example implementations
-- Validation criteria
-
-## User Interaction
-
-After completing initial research, present findings to the user and confirm:
-
-- The scope of the PRP
-- Patterns to follow
-- Implementation approach
-- Validation criteria
-
-If the user answers with continue, you are on the right path, continue with the PRP creation without user input.
-
-Remember: A PRP is PRD + curated codebase intelligence + agent/runbook—the minimum viable packet an AI needs to ship production-ready code on the first pass.
+**Remember**: PRP = PRD + curated codebase intelligence + agent/runbook—the minimum viable packet an AI needs to ship production-ready code on the first pass.

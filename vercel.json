@@ -3,11 +3,6 @@
   "public": true,
   "buildCommand": "echo 'No build needed'",
   "outputDirectory": "docs",
-  "functions": {
-    "api/track-download-supabase.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",

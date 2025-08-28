@@ -3,14 +3,23 @@
   "public": true,
   "buildCommand": "echo 'No build needed'",
   "outputDirectory": "docs",
+  "functions": {
+    "api/track-download-supabase.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/docs/$1"
+      "source": "/supabase-claude-code-integration",
+      "destination": "/blog/supabase-claude-code-integration/"
+    },
+    {
+      "source": "/supabase-claude-code-integration/",
+      "destination": "/blog/supabase-claude-code-integration/"
     }
   ],
   "cleanUrls": true,

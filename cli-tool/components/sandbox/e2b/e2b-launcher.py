@@ -100,8 +100,8 @@ def main():
                 if retry_count > 0:
                     print(f"🔄 Retry {retry_count}/{max_retries - 1} - WebSocket connection...")
                 
-                sbx = Sandbox(
-                    "anthropic-claude-code",
+                sbx = Sandbox.create(
+                    template="anthropic-claude-code",
                     api_key=e2b_api_key,
                     envs={
                         'ANTHROPIC_API_KEY': anthropic_api_key,

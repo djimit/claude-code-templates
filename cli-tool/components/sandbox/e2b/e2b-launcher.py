@@ -101,9 +101,9 @@ def main():
                     print(f"🔄 Retry {retry_count}/{max_retries - 1} - WebSocket connection...")
                 
                 sbx = Sandbox(
-                    template="anthropic-claude-code",
+                    "anthropic-claude-code",
                     api_key=e2b_api_key,
-                    env_vars={
+                    envs={
                         'ANTHROPIC_API_KEY': anthropic_api_key,
                     },
                     timeout=30,  # Shorter timeout for connection attempts

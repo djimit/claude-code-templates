@@ -106,8 +106,12 @@ def main():
                     envs={
                         'ANTHROPIC_API_KEY': anthropic_api_key,
                     },
-                    timeout=30,  # Shorter timeout for connection attempts
+                    timeout=600,  # 10 minutes timeout for longer operations
                 )
+                
+                # Keep sandbox alive during operations
+                print(f"🔄 Extending sandbox timeout to prevent early termination...")
+                sbx.set_timeout(900)  # 15 minutes total
                 print(f"✅ Sandbox created: {sbx.sandbox_id}")
                 break
                 
@@ -155,13 +159,48 @@ def main():
         # Execute Claude Code with the prompt
         print(f"🤖 Executing Claude Code with prompt: '{prompt[:50]}{'...' if len(prompt) > 50 else ''}'")
         
-        # Build Claude Code command
-        claude_command = f"echo '{prompt}' | claude -p --dangerously-skip-permissions"
+        # First, check if Claude Code is installed and available
+        print("🔍 Checking Claude Code installation...")
+        check_result = sbx.commands.run("which claude", timeout=10)
+        if check_result.exit_code == 0:
+            print(f"✅ Claude found at: {check_result.stdout.strip()}")
+        else:
+            print("❌ Claude not found, checking PATH...")
+            path_result = sbx.commands.run("echo $PATH", timeout=5)
+            print(f"PATH: {path_result.stdout}")
+            ls_result = sbx.commands.run("ls -la /usr/local/bin/ | grep claude", timeout=5)
+            print(f"Claude binaries: {ls_result.stdout}")
         
+        # Check current directory and permissions
+        print("🔍 Checking sandbox environment...")
+        pwd_result = sbx.commands.run("pwd", timeout=5)
+        print(f"Current directory: {pwd_result.stdout.strip()}")
+        
+        whoami_result = sbx.commands.run("whoami", timeout=5)
+        print(f"Current user: {whoami_result.stdout.strip()}")
+        
+        # Check if we can write to current directory
+        test_write = sbx.commands.run("touch test_write.tmp && rm test_write.tmp", timeout=5)
+        if test_write.exit_code == 0:
+            print("✅ Write permissions OK")
+        else:
+            print("❌ Write permission issue")
+        
+        # Build Claude Code command with better error handling
+        claude_command = f"echo '{prompt}' | claude -p --dangerously-skip-permissions"
+        print(f"🚀 Running command: {claude_command}")
+        
+        # Execute with longer timeout and capture both stdout/stderr
         result = sbx.commands.run(
             claude_command,
-            timeout=0,  # No timeout for Claude Code execution
+            timeout=300,  # 5 minutes timeout instead of no timeout
         )
+        
+        print(f"🔍 Command exit code: {result.exit_code}")
+        if result.stdout:
+            print(f"📤 Command stdout length: {len(result.stdout)} characters")
+        if result.stderr:
+            print(f"📤 Command stderr length: {len(result.stderr)} characters")
         
         print("=" * 60)
         print("🎯 CLAUDE CODE OUTPUT:")
@@ -179,9 +218,41 @@ def main():
         print("📁 GENERATED FILES:")
         print("=" * 60)
         
-        files_result = sbx.commands.run("find . -type f -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.py' -o -name '*.json' -o -name '*.md' | head -20")
+        files_result = sbx.commands.run("find . -type f -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.py' -o -name '*.json' -o -name '*.md' -o -name '*.tsx' -o -name '*.ts' | head -20")
         if files_result.stdout.strip():
             print(files_result.stdout)
+            
+            # Download important files to local machine
+            print("\n" + "=" * 60)
+            print("💾 DOWNLOADING FILES TO LOCAL MACHINE:")
+            print("=" * 60)
+            
+            local_output_dir = "./e2b-output"
+            os.makedirs(local_output_dir, exist_ok=True)
+            
+            files_to_download = files_result.stdout.strip().split('\n')
+            for file_path in files_to_download:
+                file_path = file_path.strip()
+                if file_path and not file_path.startswith('./.claude'):  # Skip Claude internal files
+                    try:
+                        # Read file content from sandbox
+                        file_content = sbx.commands.run(f"cat '{file_path}'", timeout=30)
+                        if file_content.exit_code == 0:
+                            # Create local path
+                            local_file = os.path.join(local_output_dir, os.path.basename(file_path))
+                            
+                            # Write file locally
+                            with open(local_file, 'w', encoding='utf-8') as f:
+                                f.write(file_content.stdout)
+                            
+                            print(f"✅ Downloaded: {file_path} → {local_file}")
+                        else:
+                            print(f"❌ Failed to read: {file_path}")
+                    except Exception as e:
+                        print(f"❌ Error downloading {file_path}: {e}")
+            
+            print(f"\n📁 All files downloaded to: {os.path.abspath(local_output_dir)}")
+            
         else:
             print("No common files generated")
         

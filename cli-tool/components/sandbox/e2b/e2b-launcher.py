@@ -7,12 +7,17 @@ Executes Claude Code prompts in isolated E2B cloud sandbox
 import os
 import sys
 import json
-from dotenv import load_dotenv
 from e2b import Sandbox
 
-def main():
-    # Load environment variables
+# Try to import and use dotenv if available, but don't fail if it's not
+try:
+    from dotenv import load_dotenv
     load_dotenv()
+except ImportError:
+    # dotenv is optional since we can get keys from command line arguments
+    pass
+
+def main():
     
     # Parse command line arguments
     if len(sys.argv) < 2:

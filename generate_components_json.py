@@ -29,8 +29,8 @@ def generate_components_json():
     components_base_path = 'cli-tool/components'
     templates_base_path = 'cli-tool/templates'
     output_path = 'docs/components.json'
-    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'templates': []}
-    component_types = ['agents', 'commands', 'mcps', 'settings', 'hooks']
+    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'sandbox': [], 'templates': []}
+    component_types = ['agents', 'commands', 'mcps', 'settings', 'hooks', 'sandbox']
 
     print(f"Starting scan of {components_base_path} and {templates_base_path}...")
 

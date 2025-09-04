@@ -67,11 +67,14 @@ program
   .option('--setting <setting>', 'install specific setting component (supports comma-separated values)')
   .option('--hook <hook>', 'install specific hook component (supports comma-separated values)')
   .option('--workflow <workflow>', 'install workflow from hash (#hash) OR workflow YAML (base64 encoded) when used with --agent/--command/--mcp')
-  .option('--prompt <prompt>', 'execute the provided prompt in Claude Code after installation')
+  .option('--prompt <prompt>', 'execute the provided prompt in Claude Code after installation or in sandbox')
   .option('--create-agent <agent>', 'create a global agent accessible from anywhere (e.g., customer-support)')
   .option('--list-agents', 'list all installed global agents')
   .option('--remove-agent <agent>', 'remove a global agent')
   .option('--update-agent <agent>', 'update a global agent to the latest version')
+  .option('--sandbox <provider>', 'execute Claude Code in isolated sandbox environment (e.g., e2b)')
+  .option('--e2b-api-key <key>', 'E2B API key for sandbox execution (alternative to environment variable)')
+  .option('--anthropic-api-key <key>', 'Anthropic API key for Claude Code (alternative to environment variable)')
   .action(async (options) => {
     try {
       // Only show banner for non-agent-list commands

@@ -155,6 +155,12 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
+  // Handle sandbox execution
+  if (options.sandbox) {
+    await executeSandbox(options, targetDir);
+    return;
+  }
+  
   // Handle command stats analysis (both singular and plural)
   if (options.commandStats || options.commandsStats) {
     await runCommandStats(options);
@@ -2074,6 +2080,189 @@ async function handlePromptExecution(prompt, targetDir) {
     console.log(chalk.red(`❌ Error executing prompt: ${error.message}`));
     console.log(chalk.blue('💡 You can manually execute this prompt in Claude Code:'));
     console.log(chalk.cyan(`"${prompt}"`));
+  }
+}
+
+async function executeSandbox(options, targetDir) {
+  const { sandbox, prompt, agent, command, mcp, setting, hook, e2bApiKey, anthropicApiKey } = options;
+  
+  // Validate sandbox provider
+  if (sandbox !== 'e2b') {
+    console.log(chalk.red('❌ Error: Only E2B sandbox is currently supported'));
+    console.log(chalk.yellow('💡 Available providers: e2b'));
+    console.log(chalk.gray('   Example: --sandbox e2b --prompt "Create a web app"'));
+    return;
+  }
+  
+  // Validate prompt is provided
+  if (!prompt) {
+    console.log(chalk.red('❌ Error: --prompt is required when using --sandbox'));
+    console.log(chalk.yellow('💡 Example: --sandbox e2b --prompt "Create a React todo app"'));
+    return;
+  }
+  
+  // Check for API keys (either from CLI parameters or environment variables)
+  const e2bKey = e2bApiKey || process.env.E2B_API_KEY;
+  const anthropicKey = anthropicApiKey || process.env.ANTHROPIC_API_KEY;
+  
+  if (!e2bKey) {
+    console.log(chalk.red('❌ Error: E2B API key is required'));
+    console.log(chalk.yellow('💡 Options:'));
+    console.log(chalk.gray('   1. Set environment variable: E2B_API_KEY=your_key'));
+    console.log(chalk.gray('   2. Use CLI parameter: --e2b-api-key your_key'));
+    console.log(chalk.blue('   Get your key at: https://e2b.dev/dashboard'));
+    return;
+  }
+  
+  if (!anthropicKey) {
+    console.log(chalk.red('❌ Error: Anthropic API key is required'));
+    console.log(chalk.yellow('💡 Options:'));
+    console.log(chalk.gray('   1. Set environment variable: ANTHROPIC_API_KEY=your_key'));
+    console.log(chalk.gray('   2. Use CLI parameter: --anthropic-api-key your_key'));
+    console.log(chalk.blue('   Get your key at: https://console.anthropic.com'));
+    return;
+  }
+  
+  try {
+    console.log(chalk.blue('🔮 Setting up E2B sandbox environment...'));
+    
+    // Install E2B sandbox component
+    const spinner = ora('Installing E2B sandbox component...').start();
+    
+    // Create .claude/sandbox directory
+    const sandboxDir = path.join(targetDir, '.claude', 'sandbox');
+    await fs.ensureDir(sandboxDir);
+    
+    // Download E2B component files from new structure
+    const baseUrl = 'https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/sandbox/e2b';
+    
+    // Download launcher script
+    const launcherResponse = await fetch(`${baseUrl}/e2b-launcher.py`);
+    if (!launcherResponse.ok) {
+      throw new Error(`Failed to download e2b-launcher.py: ${launcherResponse.status} ${launcherResponse.statusText}`);
+    }
+    const launcherContent = await launcherResponse.text();
+    await fs.writeFile(path.join(sandboxDir, 'e2b-launcher.py'), launcherContent, { mode: 0o755 });
+    
+    // Download requirements.txt
+    const requirementsResponse = await fetch(`${baseUrl}/requirements.txt`);
+    if (!requirementsResponse.ok) {
+      throw new Error(`Failed to download requirements.txt: ${requirementsResponse.status} ${requirementsResponse.statusText}`);
+    }
+    const requirementsContent = await requirementsResponse.text();
+    await fs.writeFile(path.join(sandboxDir, 'requirements.txt'), requirementsContent);
+    
+    // Download .env.example
+    const envExampleResponse = await fetch(`${baseUrl}/.env.example`);
+    if (!envExampleResponse.ok) {
+      throw new Error(`Failed to download .env.example: ${envExampleResponse.status} ${envExampleResponse.statusText}`);
+    }
+    const envExampleContent = await envExampleResponse.text();
+    await fs.writeFile(path.join(sandboxDir, '.env.example'), envExampleContent);
+    
+    spinner.succeed('E2B sandbox component installed successfully');
+    
+    // Check for Python and install dependencies
+    const pythonSpinner = ora('Checking Python environment...').start();
+    
+    try {
+      const { spawn } = require('child_process');
+      
+      // Check if Python 3 is available
+      const pythonCheck = spawn('python3', ['--version'], { stdio: 'pipe' });
+      
+      pythonCheck.on('error', () => {
+        pythonSpinner.fail('Python 3 not found');
+        console.log(chalk.red('❌ Python 3.11+ is required for E2B sandbox'));
+        console.log(chalk.yellow('💡 Please install Python 3.11+ and try again'));
+        console.log(chalk.blue('   Visit: https://python.org/downloads'));
+        return;
+      });
+      
+      pythonCheck.on('close', async (code) => {
+        if (code === 0) {
+          pythonSpinner.succeed('Python 3 found');
+          
+          // Install Python dependencies
+          const depSpinner = ora('Installing E2B Python SDK...').start();
+          
+          const pipInstall = spawn('pip3', ['install', '-r', path.join(sandboxDir, 'requirements.txt')], {
+            cwd: sandboxDir,
+            stdio: 'inherit'
+          });
+          
+          pipInstall.on('close', async (pipCode) => {
+            if (pipCode === 0) {
+              depSpinner.succeed('E2B Python SDK installed successfully');
+              
+              // Build components string for installation inside sandbox
+              let componentsToInstall = '';
+              if (agent) componentsToInstall += ` --agent ${agent}`;
+              if (command) componentsToInstall += ` --command ${command}`;
+              if (mcp) componentsToInstall += ` --mcp ${mcp}`;
+              if (setting) componentsToInstall += ` --setting ${setting}`;
+              if (hook) componentsToInstall += ` --hook ${hook}`;
+              
+              // Execute sandbox
+              console.log(chalk.blue('🚀 Launching E2B sandbox with Claude Code...'));
+              console.log(chalk.gray(`📝 Prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}"`));
+              
+              if (componentsToInstall) {
+                console.log(chalk.gray(`📦 Components to install:${componentsToInstall}`));
+              }
+              
+              const sandboxExecution = spawn('python3', [
+                path.join(sandboxDir, 'e2b-launcher.py'),
+                prompt,
+                componentsToInstall.trim(),
+                e2bKey,
+                anthropicKey
+              ], {
+                cwd: sandboxDir,
+                stdio: 'inherit',
+                env: { 
+                  ...process.env,
+                  E2B_API_KEY: e2bKey,
+                  ANTHROPIC_API_KEY: anthropicKey
+                }
+              });
+              
+              sandboxExecution.on('close', (sandboxCode) => {
+                if (sandboxCode === 0) {
+                  console.log(chalk.green('🎉 Sandbox execution completed successfully!'));
+                  console.log(chalk.blue('💡 Files were created inside the E2B sandbox environment'));
+                } else {
+                  console.log(chalk.yellow(`⚠️  Sandbox execution finished with exit code ${sandboxCode}`));
+                  console.log(chalk.gray('💡 Check the output above for any error details'));
+                }
+              });
+              
+              sandboxExecution.on('error', (error) => {
+                console.log(chalk.red(`❌ Error executing sandbox: ${error.message}`));
+                console.log(chalk.yellow('💡 Make sure you have set E2B_API_KEY and ANTHROPIC_API_KEY environment variables'));
+                console.log(chalk.gray('   Create a .env file in the .claude/sandbox directory with your API keys'));
+              });
+              
+            } else {
+              depSpinner.fail('Failed to install E2B Python SDK');
+              console.log(chalk.red('❌ Please install dependencies manually:'));
+              console.log(chalk.gray(`   cd ${sandboxDir}`));
+              console.log(chalk.gray('   pip3 install -r requirements.txt'));
+            }
+          });
+        } else {
+          pythonSpinner.fail('Python 3 check failed');
+        }
+      });
+      
+    } catch (error) {
+      pythonSpinner.fail('Failed to check Python environment');
+      console.log(chalk.red(`❌ Error: ${error.message}`));
+    }
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Error setting up sandbox: ${error.message}`));
+    console.log(chalk.yellow('💡 Please check your internet connection and try again'));
   }
 }
 

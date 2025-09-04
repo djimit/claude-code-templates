@@ -2204,30 +2204,9 @@ async function executeSandbox(options, targetDir) {
           
           pipInstall.on('close', async (pipCode) => {
             if (pipCode === 0) {
-              // Verify E2B was actually installed by trying to import it
-              const verifySpinner = ora('Verifying E2B installation...').start();
+              depSpinner.succeed('E2B Python SDK installed successfully');
               
-              const verifyInstall = spawn('python3', ['-c', 'import e2b; print("E2B imported successfully")'], {
-                cwd: sandboxDir,
-                stdio: 'pipe'
-              });
-              
-              let verifyOutput = '';
-              let verifyError = '';
-              
-              verifyInstall.stdout.on('data', (data) => {
-                verifyOutput += data.toString();
-              });
-              
-              verifyInstall.stderr.on('data', (data) => {
-                verifyError += data.toString();
-              });
-              
-              verifyInstall.on('close', async (verifyCode) => {
-                if (verifyCode === 0 && verifyOutput.includes('E2B imported successfully')) {
-                  verifySpinner.succeed('E2B Python SDK installed and verified successfully');
-                  
-                  // Build components string for installation inside sandbox
+              // Build components string for installation inside sandbox
               let componentsToInstall = '';
               if (agent) componentsToInstall += ` --agent ${agent}`;
               if (command) componentsToInstall += ` --command ${command}`;
@@ -2273,19 +2252,6 @@ async function executeSandbox(options, targetDir) {
                 console.log(chalk.red(`❌ Error executing sandbox: ${error.message}`));
                 console.log(chalk.yellow('💡 Make sure you have set E2B_API_KEY and ANTHROPIC_API_KEY environment variables'));
                 console.log(chalk.gray('   Create a .env file in the .claude/sandbox directory with your API keys'));
-              });
-              
-                } else {
-                  verifySpinner.fail('E2B installation verification failed');
-                  console.log(chalk.red(`❌ Cannot import E2B module (exit code ${verifyCode})`));
-                  if (verifyError) {
-                    console.log(chalk.red('Verification error:'));
-                    console.log(chalk.gray(verifyError.trim()));
-                  }
-                  console.log(chalk.yellow('💡 Try installing E2B manually:'));
-                  console.log(chalk.gray(`   cd ${sandboxDir}`));
-                  console.log(chalk.gray('   pip3 install e2b'));
-                }
               });
               
             } else {

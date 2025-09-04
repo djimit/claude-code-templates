@@ -2188,14 +2188,46 @@ async function executeSandbox(options, targetDir) {
           
           const pipInstall = spawn('pip3', ['install', '-r', path.join(sandboxDir, 'requirements.txt')], {
             cwd: sandboxDir,
-            stdio: 'inherit'
+            stdio: 'pipe'
+          });
+          
+          let pipOutput = '';
+          let pipError = '';
+          
+          pipInstall.stdout.on('data', (data) => {
+            pipOutput += data.toString();
+          });
+          
+          pipInstall.stderr.on('data', (data) => {
+            pipError += data.toString();
           });
           
           pipInstall.on('close', async (pipCode) => {
             if (pipCode === 0) {
-              depSpinner.succeed('E2B Python SDK installed successfully');
+              // Verify E2B was actually installed by trying to import it
+              const verifySpinner = ora('Verifying E2B installation...').start();
               
-              // Build components string for installation inside sandbox
+              const verifyInstall = spawn('python3', ['-c', 'import e2b; print("E2B imported successfully")'], {
+                cwd: sandboxDir,
+                stdio: 'pipe'
+              });
+              
+              let verifyOutput = '';
+              let verifyError = '';
+              
+              verifyInstall.stdout.on('data', (data) => {
+                verifyOutput += data.toString();
+              });
+              
+              verifyInstall.stderr.on('data', (data) => {
+                verifyError += data.toString();
+              });
+              
+              verifyInstall.on('close', async (verifyCode) => {
+                if (verifyCode === 0 && verifyOutput.includes('E2B imported successfully')) {
+                  verifySpinner.succeed('E2B Python SDK installed and verified successfully');
+                  
+                  // Build components string for installation inside sandbox
               let componentsToInstall = '';
               if (agent) componentsToInstall += ` --agent ${agent}`;
               if (command) componentsToInstall += ` --command ${command}`;
@@ -2243,11 +2275,34 @@ async function executeSandbox(options, targetDir) {
                 console.log(chalk.gray('   Create a .env file in the .claude/sandbox directory with your API keys'));
               });
               
+                } else {
+                  verifySpinner.fail('E2B installation verification failed');
+                  console.log(chalk.red(`❌ Cannot import E2B module (exit code ${verifyCode})`));
+                  if (verifyError) {
+                    console.log(chalk.red('Verification error:'));
+                    console.log(chalk.gray(verifyError.trim()));
+                  }
+                  console.log(chalk.yellow('💡 Try installing E2B manually:'));
+                  console.log(chalk.gray(`   cd ${sandboxDir}`));
+                  console.log(chalk.gray('   pip3 install e2b'));
+                }
+              });
+              
             } else {
               depSpinner.fail('Failed to install E2B Python SDK');
-              console.log(chalk.red('❌ Please install dependencies manually:'));
+              console.log(chalk.red(`❌ pip install failed with exit code ${pipCode}`));
+              if (pipError) {
+                console.log(chalk.red('Error output:'));
+                console.log(chalk.gray(pipError.trim()));
+              }
+              if (pipOutput) {
+                console.log(chalk.blue('Full output:'));
+                console.log(chalk.gray(pipOutput.trim()));
+              }
+              console.log(chalk.yellow('💡 Please install dependencies manually:'));
               console.log(chalk.gray(`   cd ${sandboxDir}`));
               console.log(chalk.gray('   pip3 install -r requirements.txt'));
+              console.log(chalk.gray('   pip3 install e2b'));
             }
           });
         } else {

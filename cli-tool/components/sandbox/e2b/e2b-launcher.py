@@ -7,7 +7,34 @@ Executes Claude Code prompts in isolated E2B cloud sandbox
 import os
 import sys
 import json
-from e2b import Sandbox
+
+# Debug: Print Python path information
+print(f"Python executable: {sys.executable}")
+print(f"Python version: {sys.version}")
+print(f"Python path: {sys.path[:3]}...")  # Show first 3 paths
+
+try:
+    from e2b import Sandbox
+    print("✓ E2B imported successfully")
+except ImportError as e:
+    print(f"✗ E2B import failed: {e}")
+    print("Trying to install E2B...")
+    import subprocess
+    result = subprocess.run([sys.executable, '-m', 'pip', 'install', 'e2b'], 
+                          capture_output=True, text=True)
+    print(f"Install result: {result.returncode}")
+    if result.stdout:
+        print(f"Install stdout: {result.stdout}")
+    if result.stderr:
+        print(f"Install stderr: {result.stderr}")
+    
+    # Try importing again
+    try:
+        from e2b import Sandbox
+        print("✓ E2B imported successfully after install")
+    except ImportError as e2:
+        print(f"✗ E2B still failed after install: {e2}")
+        sys.exit(1)
 
 # Try to import and use dotenv if available, but don't fail if it's not
 try:

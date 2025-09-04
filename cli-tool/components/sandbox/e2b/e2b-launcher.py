@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.11
 """
 E2B Claude Code Sandbox Launcher
 Executes Claude Code prompts in isolated E2B cloud sandbox
@@ -20,8 +20,26 @@ except ImportError as e:
     print(f"✗ E2B import failed: {e}")
     print("Trying to install E2B...")
     import subprocess
-    result = subprocess.run([sys.executable, '-m', 'pip', 'install', 'e2b'], 
-                          capture_output=True, text=True)
+    # Try different installation methods for different Python environments
+    install_commands = [
+        [sys.executable, '-m', 'pip', 'install', '--user', 'e2b'],  # User install first
+        [sys.executable, '-m', 'pip', 'install', '--break-system-packages', 'e2b'],  # System packages
+        [sys.executable, '-m', 'pip', 'install', 'e2b']  # Default fallback
+    ]
+    
+    result = None
+    for cmd in install_commands:
+        print(f"Trying: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print("✓ Installation successful")
+            break
+        else:
+            print(f"✗ Failed: {result.stderr.strip()[:100]}...")
+    
+    if result is None:
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', 'e2b'], 
+                              capture_output=True, text=True)
     print(f"Install result: {result.returncode}")
     if result.stdout:
         print(f"Install stdout: {result.stdout}")
@@ -69,18 +87,56 @@ def main():
         sys.exit(1)
     
     try:
-        # Create E2B sandbox with Claude Code template
+        # Create E2B sandbox with Claude Code template with retry logic
         print("🚀 Creating E2B sandbox with Claude Code...")
-        sbx = Sandbox(
-            template="anthropic-claude-code",
-            api_key=e2b_api_key,
-            env_vars={
-                'ANTHROPIC_API_KEY': anthropic_api_key,
-            },
-            timeout=60 * 5,  # 5 minutes timeout
-        )
         
-        print(f"✅ Sandbox created: {sbx.sandbox_id}")
+        # Try creating sandbox with retries for WebSocket issues
+        max_retries = 3
+        retry_count = 0
+        sbx = None
+        
+        while retry_count < max_retries and sbx is None:
+            try:
+                if retry_count > 0:
+                    print(f"🔄 Retry {retry_count}/{max_retries - 1} - WebSocket connection...")
+                
+                sbx = Sandbox(
+                    template="anthropic-claude-code",
+                    api_key=e2b_api_key,
+                    env_vars={
+                        'ANTHROPIC_API_KEY': anthropic_api_key,
+                    },
+                    timeout=30,  # Shorter timeout for connection attempts
+                )
+                print(f"✅ Sandbox created: {sbx.sandbox_id}")
+                break
+                
+            except Exception as e:
+                error_msg = str(e).lower()
+                if "websocket" in error_msg or "connection" in error_msg or "timeout" in error_msg:
+                    retry_count += 1
+                    if retry_count < max_retries:
+                        print(f"⚠️  WebSocket connection failed (attempt {retry_count}), retrying in 3 seconds...")
+                        import time
+                        time.sleep(3)
+                        continue
+                    else:
+                        print(f"❌ WebSocket connection failed after {max_retries} attempts")
+                        print("💡 This might be due to:")
+                        print("   • Network/firewall restrictions blocking WebSocket connections")
+                        print("   • Temporary E2B service issues")
+                        print("   • Corporate proxy blocking WebSocket traffic")
+                        print("💡 Try:")
+                        print("   • Running from a different network")
+                        print("   • Checking your firewall/proxy settings")
+                        print("   • Waiting a few minutes and trying again")
+                        raise e
+                else:
+                    # Non-WebSocket error, don't retry
+                    raise e
+        
+        if sbx is None:
+            raise Exception("Failed to create sandbox after all retry attempts")
         
         # Install components if specified
         if components_to_install:

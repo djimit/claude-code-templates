@@ -72,8 +72,9 @@ def main():
         # Create E2B sandbox with Claude Code template
         print("🚀 Creating E2B sandbox with Claude Code...")
         sbx = Sandbox(
-            "anthropic-claude-code",
-            envs={
+            template="anthropic-claude-code",
+            api_key=e2b_api_key,
+            env_vars={
                 'ANTHROPIC_API_KEY': anthropic_api_key,
             },
             timeout=60 * 5,  # 5 minutes timeout

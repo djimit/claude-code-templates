@@ -190,10 +190,10 @@ def main():
         claude_command = f"echo '{prompt}' | claude -p --dangerously-skip-permissions"
         print(f"🚀 Running command: {claude_command}")
         
-        # Execute with longer timeout and capture both stdout/stderr
+        # Execute with extended timeout for complex operations
         result = sbx.commands.run(
             claude_command,
-            timeout=300,  # 5 minutes timeout instead of no timeout
+            timeout=600,  # 10 minutes timeout for complex operations
         )
         
         print(f"🔍 Command exit code: {result.exit_code}")

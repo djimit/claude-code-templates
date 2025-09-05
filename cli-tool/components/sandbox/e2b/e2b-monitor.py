@@ -14,7 +14,7 @@ def log_with_timestamp(message, level="INFO"):
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {level}: {message}")
 
-def monitor_sandbox_execution(sbx, command, timeout=300):
+def monitor_sandbox_execution(sbx, command, timeout=600):
     """
     Monitor sandbox command execution with real-time feedback
     """
@@ -172,7 +172,7 @@ def enhanced_sandbox_execution(prompt, components_to_install="", e2b_api_key=Non
         log_with_timestamp("🤖 Executing Claude Code with monitoring")
         claude_command = f"echo '{prompt}' | claude -p --dangerously-skip-permissions"
         
-        result = monitor_sandbox_execution(sbx, claude_command, timeout=300)
+        result = monitor_sandbox_execution(sbx, claude_command, timeout=600)
         
         # Final file system check
         monitor_file_system(sbx, "Final file system state")

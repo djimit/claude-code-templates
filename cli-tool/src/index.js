@@ -2086,7 +2086,8 @@ async function handlePromptExecution(prompt, targetDir) {
 }
 
 async function executeSandbox(options, targetDir) {
-  const { sandbox, prompt, agent, command, mcp, setting, hook, e2bApiKey, anthropicApiKey } = options;
+  const { sandbox, agent, command, mcp, setting, hook, e2bApiKey, anthropicApiKey } = options;
+  let { prompt } = options;
   
   // Validate sandbox provider
   if (sandbox !== 'e2b') {

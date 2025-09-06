@@ -2096,11 +2096,30 @@ async function executeSandbox(options, targetDir) {
     return;
   }
   
-  // Validate prompt is provided
+  // Get prompt from user if not provided
   if (!prompt) {
-    console.log(chalk.red('❌ Error: --prompt is required when using --sandbox'));
-    console.log(chalk.yellow('💡 Example: --sandbox e2b --prompt "Create a React todo app"'));
-    return;
+    console.log(chalk.blue('\n📝 Project Requirements'));
+    console.log(chalk.cyan('═══════════════════════════════════════'));
+    console.log(chalk.gray('Describe what you want to create in detail. The more specific you are,'));
+    console.log(chalk.gray('the better Claude Code will understand your requirements.\n'));
+    
+    const inquirer = require('inquirer');
+    
+    const { userPrompt } = await inquirer.prompt([{
+      type: 'editor',
+      name: 'userPrompt',
+      message: 'What would you like to create?',
+      default: 'Create a web application with:\n- Feature 1 (describe what it should do)\n- Feature 2 (describe what it should do)\n- Feature 3 (describe what it should do)\n\nTechnical Requirements:\n- Technology stack (React, Vue, vanilla JS, etc.)\n- Styling approach (CSS, Tailwind, styled-components)\n- Additional features (authentication, database, API integration)\n\nDesign Requirements:\n- Color scheme and theme\n- Layout structure\n- User interface style\n\nExample: Create a modern todo application with drag-and-drop functionality, dark/light mode toggle, priority levels, and local storage persistence.',
+      validate: (input) => {
+        if (!input || input.trim().length < 10) {
+          return 'Please provide a more detailed description (at least 10 characters)';
+        }
+        return true;
+      }
+    }]);
+    
+    prompt = userPrompt.trim();
+    console.log(chalk.green('✅ Project requirements captured!'));
   }
   
   // Load .env file if it exists (for API keys)

@@ -103,6 +103,13 @@ class DataService {
     }
   }
 
+  /**
+   * Clear all cached data
+   */
+  clearCache() {
+    this.cache.clear();
+    console.log('🔥 Frontend cache cleared');
+  }
 
   /**
    * Get conversations data

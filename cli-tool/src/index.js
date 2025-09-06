@@ -2106,10 +2106,10 @@ async function executeSandbox(options, targetDir) {
     const inquirer = require('inquirer');
     
     const { userPrompt } = await inquirer.prompt([{
-      type: 'editor',
+      type: 'input',
       name: 'userPrompt',
       message: 'What would you like to create?',
-      default: 'Create a web application with:\n- Feature 1 (describe what it should do)\n- Feature 2 (describe what it should do)\n- Feature 3 (describe what it should do)\n\nTechnical Requirements:\n- Technology stack (React, Vue, vanilla JS, etc.)\n- Styling approach (CSS, Tailwind, styled-components)\n- Additional features (authentication, database, API integration)\n\nDesign Requirements:\n- Color scheme and theme\n- Layout structure\n- User interface style\n\nExample: Create a modern todo application with drag-and-drop functionality, dark/light mode toggle, priority levels, and local storage persistence.',
+      default: 'Create a modern todo application with React, TypeScript, and Tailwind CSS',
       validate: (input) => {
         if (!input || input.trim().length < 10) {
           return 'Please provide a more detailed description (at least 10 characters)';

@@ -447,6 +447,10 @@ class DashboardPage {
           activityHeatmapContainer,
           this.dataService
         );
+        
+        // Make globally accessible for debugging
+        window.activityHeatmap = this.components.activityHeatmap;
+        
         await this.components.activityHeatmap.initialize();
       } catch (error) {
         console.warn('ActivityHeatmap initialization failed:', error);

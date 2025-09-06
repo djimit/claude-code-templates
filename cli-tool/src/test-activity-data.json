@@ -1,0 +1,1094 @@
+[
+  {
+    "date": "2025-04-01",
+    "conversations": 4,
+    "tokens": 46800,
+    "messages": 104,
+    "tools": 37
+  },
+  {
+    "date": "2025-04-02",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-04-03",
+    "conversations": 11,
+    "tokens": 52104,
+    "messages": 156,
+    "tools": 97
+  },
+  {
+    "date": "2025-04-04",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-04-05",
+    "conversations": 3,
+    "tokens": 21300,
+    "messages": 60,
+    "tools": 24
+  },
+  {
+    "date": "2025-04-06",
+    "conversations": 0,
+    "tokens": 1925,
+    "messages": 7,
+    "tools": 7
+  },
+  {
+    "date": "2025-04-07",
+    "conversations": 1,
+    "tokens": 8526,
+    "messages": 21,
+    "tools": 13
+  },
+  {
+    "date": "2025-04-08",
+    "conversations": 10,
+    "tokens": 82820,
+    "messages": 205,
+    "tools": 101
+  },
+  {
+    "date": "2025-04-09",
+    "conversations": 6,
+    "tokens": 19703,
+    "messages": 61,
+    "tools": 50
+  },
+  {
+    "date": "2025-04-10",
+    "conversations": 4,
+    "tokens": 35511,
+    "messages": 133,
+    "tools": 47
+  },
+  {
+    "date": "2025-04-11",
+    "conversations": 11,
+    "tokens": 74727,
+    "messages": 171,
+    "tools": 127
+  },
+  {
+    "date": "2025-04-12",
+    "conversations": 2,
+    "tokens": 8878,
+    "messages": 23,
+    "tools": 31
+  },
+  {
+    "date": "2025-04-13",
+    "conversations": 0,
+    "tokens": 4224,
+    "messages": 12,
+    "tools": 6
+  },
+  {
+    "date": "2025-04-14",
+    "conversations": 7,
+    "tokens": 19028,
+    "messages": 71,
+    "tools": 79
+  },
+  {
+    "date": "2025-04-15",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-04-16",
+    "conversations": 10,
+    "tokens": 48888,
+    "messages": 168,
+    "tools": 102
+  },
+  {
+    "date": "2025-04-17",
+    "conversations": 9,
+    "tokens": 78554,
+    "messages": 217,
+    "tools": 87
+  },
+  {
+    "date": "2025-04-18",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-04-19",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-04-20",
+    "conversations": 0,
+    "tokens": 11340,
+    "messages": 27,
+    "tools": 4
+  },
+  {
+    "date": "2025-04-21",
+    "conversations": 6,
+    "tokens": 48768,
+    "messages": 127,
+    "tools": 71
+  },
+  {
+    "date": "2025-04-22",
+    "conversations": 3,
+    "tokens": 11352,
+    "messages": 33,
+    "tools": 5
+  },
+  {
+    "date": "2025-04-23",
+    "conversations": 7,
+    "tokens": 47674,
+    "messages": 121,
+    "tools": 70
+  },
+  {
+    "date": "2025-04-24",
+    "conversations": 5,
+    "tokens": 32160,
+    "messages": 96,
+    "tools": 50
+  },
+  {
+    "date": "2025-04-25",
+    "conversations": 1,
+    "tokens": 13736,
+    "messages": 34,
+    "tools": 9
+  },
+  {
+    "date": "2025-04-26",
+    "conversations": 0,
+    "tokens": 21052,
+    "messages": 76,
+    "tools": 13
+  },
+  {
+    "date": "2025-04-27",
+    "conversations": 0,
+    "tokens": 4225,
+    "messages": 13,
+    "tools": 3
+  },
+  {
+    "date": "2025-04-28",
+    "conversations": 2,
+    "tokens": 8820,
+    "messages": 21,
+    "tools": 18
+  },
+  {
+    "date": "2025-04-29",
+    "conversations": 6,
+    "tokens": 37730,
+    "messages": 110,
+    "tools": 60
+  },
+  {
+    "date": "2025-04-30",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-01",
+    "conversations": 7,
+    "tokens": 36462,
+    "messages": 103,
+    "tools": 72
+  },
+  {
+    "date": "2025-05-02",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-03",
+    "conversations": 3,
+    "tokens": 13860,
+    "messages": 36,
+    "tools": 21
+  },
+  {
+    "date": "2025-05-04",
+    "conversations": 1,
+    "tokens": 7560,
+    "messages": 24,
+    "tools": 24
+  },
+  {
+    "date": "2025-05-05",
+    "conversations": 8,
+    "tokens": 53268,
+    "messages": 138,
+    "tools": 34
+  },
+  {
+    "date": "2025-05-06",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-07",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-08",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-09",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-10",
+    "conversations": 1,
+    "tokens": 25320,
+    "messages": 60,
+    "tools": 38
+  },
+  {
+    "date": "2025-05-11",
+    "conversations": 0,
+    "tokens": 3672,
+    "messages": 9,
+    "tools": 13
+  },
+  {
+    "date": "2025-05-12",
+    "conversations": 3,
+    "tokens": 12672,
+    "messages": 33,
+    "tools": 22
+  },
+  {
+    "date": "2025-05-13",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-14",
+    "conversations": 8,
+    "tokens": 57540,
+    "messages": 140,
+    "tools": 59
+  },
+  {
+    "date": "2025-05-15",
+    "conversations": 6,
+    "tokens": 25038,
+    "messages": 78,
+    "tools": 75
+  },
+  {
+    "date": "2025-05-16",
+    "conversations": 6,
+    "tokens": 45689,
+    "messages": 107,
+    "tools": 74
+  },
+  {
+    "date": "2025-05-17",
+    "conversations": 0,
+    "tokens": 4260,
+    "messages": 15,
+    "tools": 7
+  },
+  {
+    "date": "2025-05-18",
+    "conversations": 4,
+    "tokens": 11426,
+    "messages": 29,
+    "tools": 12
+  },
+  {
+    "date": "2025-05-19",
+    "conversations": 7,
+    "tokens": 31354,
+    "messages": 122,
+    "tools": 61
+  },
+  {
+    "date": "2025-05-20",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-21",
+    "conversations": 12,
+    "tokens": 45650,
+    "messages": 166,
+    "tools": 112
+  },
+  {
+    "date": "2025-05-22",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-23",
+    "conversations": 11,
+    "tokens": 48516,
+    "messages": 156,
+    "tools": 92
+  },
+  {
+    "date": "2025-05-24",
+    "conversations": 0,
+    "tokens": 7224,
+    "messages": 21,
+    "tools": 4
+  },
+  {
+    "date": "2025-05-25",
+    "conversations": 6,
+    "tokens": 19800,
+    "messages": 44,
+    "tools": 33
+  },
+  {
+    "date": "2025-05-26",
+    "conversations": 3,
+    "tokens": 12580,
+    "messages": 37,
+    "tools": 13
+  },
+  {
+    "date": "2025-05-27",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-05-28",
+    "conversations": 4,
+    "tokens": 29714,
+    "messages": 83,
+    "tools": 64
+  },
+  {
+    "date": "2025-05-29",
+    "conversations": 2,
+    "tokens": 4662,
+    "messages": 18,
+    "tools": 21
+  },
+  {
+    "date": "2025-05-30",
+    "conversations": 10,
+    "tokens": 63150,
+    "messages": 150,
+    "tools": 107
+  },
+  {
+    "date": "2025-05-31",
+    "conversations": 1,
+    "tokens": 6368,
+    "messages": 16,
+    "tools": 9
+  },
+  {
+    "date": "2025-06-01",
+    "conversations": 4,
+    "tokens": 16284,
+    "messages": 46,
+    "tools": 24
+  },
+  {
+    "date": "2025-06-02",
+    "conversations": 14,
+    "tokens": 82288,
+    "messages": 296,
+    "tools": 151
+  },
+  {
+    "date": "2025-06-03",
+    "conversations": 6,
+    "tokens": 41688,
+    "messages": 108,
+    "tools": 44
+  },
+  {
+    "date": "2025-06-04",
+    "conversations": 14,
+    "tokens": 71253,
+    "messages": 273,
+    "tools": 142
+  },
+  {
+    "date": "2025-06-05",
+    "conversations": 11,
+    "tokens": 45156,
+    "messages": 159,
+    "tools": 115
+  },
+  {
+    "date": "2025-06-06",
+    "conversations": 12,
+    "tokens": 56066,
+    "messages": 194,
+    "tools": 123
+  },
+  {
+    "date": "2025-06-07",
+    "conversations": 6,
+    "tokens": 20216,
+    "messages": 76,
+    "tools": 40
+  },
+  {
+    "date": "2025-06-08",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-06-09",
+    "conversations": 2,
+    "tokens": 9310,
+    "messages": 35,
+    "tools": 25
+  },
+  {
+    "date": "2025-06-10",
+    "conversations": 9,
+    "tokens": 44548,
+    "messages": 172,
+    "tools": 114
+  },
+  {
+    "date": "2025-06-11",
+    "conversations": 4,
+    "tokens": 40560,
+    "messages": 130,
+    "tools": 53
+  },
+  {
+    "date": "2025-06-12",
+    "conversations": 15,
+    "tokens": 99200,
+    "messages": 320,
+    "tools": 147
+  },
+  {
+    "date": "2025-06-13",
+    "conversations": 2,
+    "tokens": 8441,
+    "messages": 23,
+    "tools": 12
+  },
+  {
+    "date": "2025-06-14",
+    "conversations": 0,
+    "tokens": 3850,
+    "messages": 11,
+    "tools": 3
+  },
+  {
+    "date": "2025-06-15",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-06-16",
+    "conversations": 2,
+    "tokens": 10248,
+    "messages": 24,
+    "tools": 16
+  },
+  {
+    "date": "2025-06-17",
+    "conversations": 3,
+    "tokens": 12441,
+    "messages": 33,
+    "tools": 17
+  },
+  {
+    "date": "2025-06-18",
+    "conversations": 4,
+    "tokens": 35322,
+    "messages": 87,
+    "tools": 69
+  },
+  {
+    "date": "2025-06-19",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-06-20",
+    "conversations": 5,
+    "tokens": 46852,
+    "messages": 106,
+    "tools": 46
+  },
+  {
+    "date": "2025-06-21",
+    "conversations": 6,
+    "tokens": 30192,
+    "messages": 68,
+    "tools": 72
+  },
+  {
+    "date": "2025-06-22",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-06-23",
+    "conversations": 6,
+    "tokens": 37752,
+    "messages": 121,
+    "tools": 64
+  },
+  {
+    "date": "2025-06-24",
+    "conversations": 2,
+    "tokens": 6570,
+    "messages": 18,
+    "tools": 5
+  },
+  {
+    "date": "2025-06-25",
+    "conversations": 9,
+    "tokens": 62418,
+    "messages": 206,
+    "tools": 97
+  },
+  {
+    "date": "2025-06-26",
+    "conversations": 8,
+    "tokens": 33704,
+    "messages": 88,
+    "tools": 57
+  },
+  {
+    "date": "2025-06-27",
+    "conversations": 14,
+    "tokens": 99328,
+    "messages": 256,
+    "tools": 167
+  },
+  {
+    "date": "2025-06-28",
+    "conversations": 0,
+    "tokens": 3555,
+    "messages": 9,
+    "tools": 7
+  },
+  {
+    "date": "2025-06-29",
+    "conversations": 2,
+    "tokens": 14586,
+    "messages": 33,
+    "tools": 21
+  },
+  {
+    "date": "2025-06-30",
+    "conversations": 6,
+    "tokens": 50120,
+    "messages": 140,
+    "tools": 56
+  },
+  {
+    "date": "2025-07-01",
+    "conversations": 12,
+    "tokens": 67275,
+    "messages": 195,
+    "tools": 89
+  },
+  {
+    "date": "2025-07-02",
+    "conversations": 6,
+    "tokens": 22508,
+    "messages": 68,
+    "tools": 44
+  },
+  {
+    "date": "2025-07-03",
+    "conversations": 10,
+    "tokens": 62726,
+    "messages": 158,
+    "tools": 107
+  },
+  {
+    "date": "2025-07-04",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-07-05",
+    "conversations": 6,
+    "tokens": 17544,
+    "messages": 51,
+    "tools": 19
+  },
+  {
+    "date": "2025-07-06",
+    "conversations": 10,
+    "tokens": 18323,
+    "messages": 73,
+    "tools": 61
+  },
+  {
+    "date": "2025-07-07",
+    "conversations": 5,
+    "tokens": 52000,
+    "messages": 130,
+    "tools": 80
+  },
+  {
+    "date": "2025-07-08",
+    "conversations": 7,
+    "tokens": 35435,
+    "messages": 95,
+    "tools": 43
+  },
+  {
+    "date": "2025-07-09",
+    "conversations": 1,
+    "tokens": 9019,
+    "messages": 29,
+    "tools": 9
+  },
+  {
+    "date": "2025-07-10",
+    "conversations": 2,
+    "tokens": 9889,
+    "messages": 31,
+    "tools": 8
+  },
+  {
+    "date": "2025-07-11",
+    "conversations": 3,
+    "tokens": 4848,
+    "messages": 16,
+    "tools": 19
+  },
+  {
+    "date": "2025-07-12",
+    "conversations": 0,
+    "tokens": 3542,
+    "messages": 11,
+    "tools": 14
+  },
+  {
+    "date": "2025-07-13",
+    "conversations": 10,
+    "tokens": 58240,
+    "messages": 140,
+    "tools": 46
+  },
+  {
+    "date": "2025-07-14",
+    "conversations": 11,
+    "tokens": 71001,
+    "messages": 161,
+    "tools": 118
+  },
+  {
+    "date": "2025-07-15",
+    "conversations": 12,
+    "tokens": 74847,
+    "messages": 183,
+    "tools": 94
+  },
+  {
+    "date": "2025-07-16",
+    "conversations": 10,
+    "tokens": 82543,
+    "messages": 197,
+    "tools": 129
+  },
+  {
+    "date": "2025-07-17",
+    "conversations": 3,
+    "tokens": 12013,
+    "messages": 41,
+    "tools": 21
+  },
+  {
+    "date": "2025-07-18",
+    "conversations": 4,
+    "tokens": 23596,
+    "messages": 68,
+    "tools": 62
+  },
+  {
+    "date": "2025-07-19",
+    "conversations": 2,
+    "tokens": 14256,
+    "messages": 54,
+    "tools": 38
+  },
+  {
+    "date": "2025-07-20",
+    "conversations": 0,
+    "tokens": 13072,
+    "messages": 43,
+    "tools": 15
+  },
+  {
+    "date": "2025-07-21",
+    "conversations": 4,
+    "tokens": 36414,
+    "messages": 102,
+    "tools": 64
+  },
+  {
+    "date": "2025-07-22",
+    "conversations": 8,
+    "tokens": 40836,
+    "messages": 123,
+    "tools": 34
+  },
+  {
+    "date": "2025-07-23",
+    "conversations": 3,
+    "tokens": 10920,
+    "messages": 39,
+    "tools": 12
+  },
+  {
+    "date": "2025-07-24",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-07-25",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-07-26",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-07-27",
+    "conversations": 8,
+    "tokens": 41783,
+    "messages": 127,
+    "tools": 37
+  },
+  {
+    "date": "2025-07-28",
+    "conversations": 5,
+    "tokens": 35916,
+    "messages": 123,
+    "tools": 44
+  },
+  {
+    "date": "2025-07-29",
+    "conversations": 8,
+    "tokens": 31200,
+    "messages": 80,
+    "tools": 80
+  },
+  {
+    "date": "2025-07-30",
+    "conversations": 7,
+    "tokens": 24448,
+    "messages": 64,
+    "tools": 39
+  },
+  {
+    "date": "2025-07-31",
+    "conversations": 8,
+    "tokens": 36127,
+    "messages": 91,
+    "tools": 67
+  },
+  {
+    "date": "2025-08-01",
+    "conversations": 4,
+    "tokens": 25200,
+    "messages": 84,
+    "tools": 70
+  },
+  {
+    "date": "2025-08-02",
+    "conversations": 8,
+    "tokens": 19941,
+    "messages": 69,
+    "tools": 47
+  },
+  {
+    "date": "2025-08-03",
+    "conversations": 6,
+    "tokens": 37492,
+    "messages": 103,
+    "tools": 33
+  },
+  {
+    "date": "2025-08-04",
+    "conversations": 8,
+    "tokens": 32890,
+    "messages": 115,
+    "tools": 69
+  },
+  {
+    "date": "2025-08-05",
+    "conversations": 9,
+    "tokens": 49082,
+    "messages": 194,
+    "tools": 104
+  },
+  {
+    "date": "2025-08-06",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-08-07",
+    "conversations": 12,
+    "tokens": 69020,
+    "messages": 170,
+    "tools": 106
+  },
+  {
+    "date": "2025-08-08",
+    "conversations": 5,
+    "tokens": 26500,
+    "messages": 100,
+    "tools": 67
+  },
+  {
+    "date": "2025-08-09",
+    "conversations": 0,
+    "tokens": 2429,
+    "messages": 7,
+    "tools": 6
+  },
+  {
+    "date": "2025-08-10",
+    "conversations": 9,
+    "tokens": 20867,
+    "messages": 77,
+    "tools": 76
+  },
+  {
+    "date": "2025-08-11",
+    "conversations": 2,
+    "tokens": 6600,
+    "messages": 25,
+    "tools": 22
+  },
+  {
+    "date": "2025-08-12",
+    "conversations": 10,
+    "tokens": 80180,
+    "messages": 190,
+    "tools": 128
+  },
+  {
+    "date": "2025-08-13",
+    "conversations": 10,
+    "tokens": 49632,
+    "messages": 176,
+    "tools": 92
+  },
+  {
+    "date": "2025-08-14",
+    "conversations": 3,
+    "tokens": 17010,
+    "messages": 45,
+    "tools": 11
+  },
+  {
+    "date": "2025-08-15",
+    "conversations": 6,
+    "tokens": 43802,
+    "messages": 121,
+    "tools": 31
+  },
+  {
+    "date": "2025-08-16",
+    "conversations": 6,
+    "tokens": 35462,
+    "messages": 119,
+    "tools": 57
+  },
+  {
+    "date": "2025-08-17",
+    "conversations": 1,
+    "tokens": 26390,
+    "messages": 65,
+    "tools": 40
+  },
+  {
+    "date": "2025-08-18",
+    "conversations": 7,
+    "tokens": 48174,
+    "messages": 111,
+    "tools": 50
+  },
+  {
+    "date": "2025-08-19",
+    "conversations": 5,
+    "tokens": 40936,
+    "messages": 119,
+    "tools": 37
+  },
+  {
+    "date": "2025-08-20",
+    "conversations": 11,
+    "tokens": 60606,
+    "messages": 182,
+    "tools": 121
+  },
+  {
+    "date": "2025-08-21",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-08-22",
+    "conversations": 6,
+    "tokens": 31920,
+    "messages": 114,
+    "tools": 77
+  },
+  {
+    "date": "2025-08-23",
+    "conversations": 0,
+    "tokens": 4862,
+    "messages": 13,
+    "tools": 9
+  },
+  {
+    "date": "2025-08-24",
+    "conversations": 0,
+    "tokens": 6912,
+    "messages": 16,
+    "tools": 12
+  },
+  {
+    "date": "2025-08-25",
+    "conversations": 8,
+    "tokens": 33372,
+    "messages": 81,
+    "tools": 38
+  },
+  {
+    "date": "2025-08-26",
+    "conversations": 6,
+    "tokens": 61513,
+    "messages": 137,
+    "tools": 57
+  },
+  {
+    "date": "2025-08-27",
+    "conversations": 10,
+    "tokens": 69388,
+    "messages": 166,
+    "tools": 107
+  },
+  {
+    "date": "2025-08-28",
+    "conversations": 0,
+    "tokens": 0,
+    "messages": 0,
+    "tools": 0
+  },
+  {
+    "date": "2025-08-29",
+    "conversations": 8,
+    "tokens": 40875,
+    "messages": 109,
+    "tools": 63
+  },
+  {
+    "date": "2025-08-30",
+    "conversations": 0,
+    "tokens": 6864,
+    "messages": 16,
+    "tools": 6
+  },
+  {
+    "date": "2025-08-31",
+    "conversations": 5,
+    "tokens": 32109,
+    "messages": 77,
+    "tools": 31
+  },
+  {
+    "date": "2025-09-01",
+    "conversations": 4,
+    "tokens": 31806,
+    "messages": 114,
+    "tools": 31
+  },
+  {
+    "date": "2025-09-02",
+    "conversations": 3,
+    "tokens": 8040,
+    "messages": 30,
+    "tools": 17
+  },
+  {
+    "date": "2025-09-03",
+    "conversations": 1,
+    "tokens": 5382,
+    "messages": 18,
+    "tools": 19
+  }
+]

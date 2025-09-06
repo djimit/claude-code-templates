@@ -1191,11 +1191,74 @@ class ClaudeAnalytics {
       }
     });
 
+    // Clear cache endpoint
+    this.app.post('/api/clear-cache', async (req, res) => {
+      try {
+        console.log('🔥 Clear cache request received');
+        
+        // Clear DataCache
+        if (this.dataCache && typeof this.dataCache.clear === 'function') {
+          this.dataCache.clear();
+          console.log('🔥 Server DataCache cleared');
+        } else {
+          console.log('⚠️ DataCache not available or no clear method');
+        }
+        
+        // Also clear ConversationAnalyzer cache if available
+        if (this.conversationAnalyzer && typeof this.conversationAnalyzer.clearCache === 'function') {
+          this.conversationAnalyzer.clearCache();
+          console.log('🔥 ConversationAnalyzer cache cleared');
+        }
+        
+        res.json({ 
+          success: true, 
+          message: 'Cache cleared successfully',
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('❌ Error clearing cache:', error);
+        res.status(500).json({ 
+          error: 'Failed to clear cache', 
+          details: error.message 
+        });
+      }
+    });
+
     // Activity heatmap data endpoint - needs full conversation history
     this.app.get('/api/activity', async (req, res) => {
       try {
+        // TEMPORARY: Use test data for demo/screenshots
+        console.log(`🔥 /api/activity called - using test data for demo...`);
+        const fs = require('fs');
+        const path = require('path');
+        const testDataPath = path.join(__dirname, 'test-activity-data.json');
+        
+        if (fs.existsSync(testDataPath)) {
+          const testData = JSON.parse(fs.readFileSync(testDataPath, 'utf8'));
+          
+          // Calculate totals
+          const totalContributions = testData.reduce((sum, day) => sum + day.conversations, 0);
+          const totalTools = testData.reduce((sum, day) => sum + day.tools, 0);
+          const totalMessages = testData.reduce((sum, day) => sum + day.messages, 0);
+          const totalTokens = testData.reduce((sum, day) => sum + day.tokens, 0);
+          
+          const activityData = {
+            dailyActivity: testData,
+            totalContributions,
+            activeDays: testData.length,
+            longestStreak: 7, // Sample streak
+            currentStreak: 3,  // Sample current streak
+            totalTools,
+            totalMessages,
+            totalTokens,
+            timestamp: new Date().toISOString()
+          };
+          
+          return res.json(activityData);
+        }
+        
+        // Fallback to real data if test file doesn't exist
         console.log(`🔥 /api/activity called - loading all conversations...`);
-        // Get all conversations without the 150 limit for accurate heatmap data
         const allConversations = await this.conversationAnalyzer.loadConversations(this.stateCalculator);
         console.log(`🔥 Loaded ${allConversations.length} conversations from server`);
         
@@ -2066,33 +2129,17 @@ class ClaudeAnalytics {
     oneYearAgo.setHours(0, 0, 0, 0);
 
     const today = new Date();
-    today.setHours(23, 59, 59, 999);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     console.log(`🔥 Generating activity data for ${conversations.length} conversations (FULL DATASET)...`);
-    
-    // Show date range of conversations
-    if (conversations.length > 0) {
-      const dates = conversations.map(c => c.lastModified ? new Date(c.lastModified) : null).filter(Boolean);
-      dates.sort((a, b) => a - b);
-      console.log(`🔥 Server conversation date range: ${dates[0]?.toLocaleDateString()} to ${dates[dates.length - 1]?.toLocaleDateString()}`);
-      
-      // Show some sample conversations with dates
-      console.log(`🔥 First 3 conversations by date:`);
-      const sortedConversations = conversations
-        .filter(c => c.lastModified)
-        .sort((a, b) => new Date(a.lastModified) - new Date(b.lastModified))
-        .slice(0, 3);
-      sortedConversations.forEach((conv, i) => {
-        console.log(`  ${i+1}: ${conv.filename} - ${new Date(conv.lastModified).toLocaleDateString()}`);
-      });
-    }
 
     // Process conversations for daily activity
     conversations.forEach(conversation => {
       if (!conversation.lastModified) return;
       
       const date = new Date(conversation.lastModified);
-      if (date < oneYearAgo || date > today) return;
+      if (date < oneYearAgo || date > todayEnd) return;
 
       const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
       

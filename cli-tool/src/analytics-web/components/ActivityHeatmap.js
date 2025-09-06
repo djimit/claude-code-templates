@@ -353,6 +353,9 @@ class ActivityHeatmap {
    */
   generateCalendarData(dailyActivity) {
     const today = new Date();
+    const todayEnd = new Date(today);
+    todayEnd.setHours(23, 59, 59, 999); // End of today
+    
     const oneYearAgo = new Date(today);
     oneYearAgo.setFullYear(today.getFullYear() - 1);
     oneYearAgo.setDate(today.getDate() + 1);
@@ -365,13 +368,14 @@ class ActivityHeatmap {
     const months = [];
     const current = new Date(startDate);
     
-    // Generate weeks first
-    while (current <= today) {
+    // Generate weeks first - include today completely
+    while (current <= todayEnd) {
       const week = [];
       
       for (let day = 0; day < 7; day++) {
-        if (current <= today) {
-          week.push(new Date(current));
+        if (current <= todayEnd) {
+          const dayDate = new Date(current);
+          week.push(dayDate);
         } else {
           week.push(null);
         }
@@ -420,6 +424,7 @@ class ActivityHeatmap {
       const activity = dailyActivity.get(dateKey);
       const level = this.getActivityLevel(activity);
       const modeClass = this.currentMetric === 'tools' ? 'tools-mode' : '';
+      
       
       return `
         <div class="heatmap-day level-${level} ${modeClass}" 
@@ -606,7 +611,9 @@ class ActivityHeatmap {
     
     if (!date) return;
 
-    const dateObj = new Date(date);
+    // Fix timezone issue: parse date as local instead of UTC
+    const [year, month, dayNum] = date.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, dayNum); // month is 0-indexed
     const formattedDate = dateObj.toLocaleDateString('en-US', { 
       weekday: 'short', 
       month: 'short', 
@@ -677,7 +684,16 @@ class ActivityHeatmap {
     const titleElement = document.getElementById('activity-total');
     
     if (titleElement) {
-      titleElement.textContent = `${this.formatNumber(totalActivity)} ${this.currentMetric} in the last year`;
+      // Ensure totalActivity is a number
+      const activityCount = totalActivity || 0;
+      
+      if (this.currentMetric === 'messages') {
+        titleElement.innerHTML = `${this.formatNumber(activityCount)} <span style="color: #ff7f50;">Claude Code</span> ${this.currentMetric} in the last year`;
+      } else if (this.currentMetric === 'tools') {
+        titleElement.innerHTML = `${this.formatNumber(activityCount)} <span style="color: #ff7f50;">Claude Code</span> ${this.currentMetric} in the last year`;
+      } else {
+        titleElement.innerHTML = `${this.formatNumber(activityCount)} ${this.currentMetric} in the last year`;
+      }
     }
   }
 
@@ -685,6 +701,11 @@ class ActivityHeatmap {
    * Format large numbers with commas
    */
   formatNumber(num) {
+    // Handle undefined, null, or non-numeric values
+    if (num == null || typeof num !== 'number' || isNaN(num)) {
+      return '0';
+    }
+    
     if (num >= 1000) {
       return (num / 1000).toFixed(1) + 'k';
     }
@@ -703,6 +724,29 @@ class ActivityHeatmap {
         <div class="heatmap-empty-subtext">Please try refreshing the page</div>
       </div>
     `;
+  }
+
+  /**
+   * Clear cache and refresh the heatmap data
+   */
+  async clearCacheAndRefresh() {
+    try {
+      console.log('🔥 Clearing cache and refreshing heatmap data...');
+      
+      // Clear frontend cache
+      this.dataService.clearCache();
+      
+      // Clear backend cache
+      await fetch('/api/clear-cache', { method: 'POST' });
+      
+      // Force reload activity data
+      await this.loadActivityData();
+      this.positionMonthLabels();
+      
+      console.log('✅ Cache cleared and data refreshed');
+    } catch (error) {
+      console.error('❌ Error clearing cache:', error);
+    }
   }
 
   /**

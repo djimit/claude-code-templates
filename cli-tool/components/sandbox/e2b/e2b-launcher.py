@@ -229,17 +229,10 @@ def main():
             print("💾 DOWNLOADING FILES TO LOCAL MACHINE:")
             print("=" * 60)
             
-            # Create unique folder for this execution in project root
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            clean_prompt = re.sub(r'[^\w\s-]', '', prompt).strip()
-            clean_prompt = re.sub(r'[-\s]+', '-', clean_prompt)[:30]
-            folder_name = f"{timestamp}_{clean_prompt}"
+            # Download files directly to project root
+            local_output_dir = "./"
             
-            # Create output directory in project root (not inside .claude)
-            local_output_dir = f"./e2b-outputs/{folder_name}"
-            os.makedirs(local_output_dir, exist_ok=True)
-            
-            print(f"📂 Output folder: {local_output_dir}")
+            print(f"📂 Downloading files to project root: {os.path.abspath(local_output_dir)}")
             
             files_to_download = files_result.stdout.strip().split('\n')
             for file_path in files_to_download:

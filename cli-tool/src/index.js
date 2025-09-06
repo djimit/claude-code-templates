@@ -115,6 +115,12 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
+  // Handle sandbox execution FIRST (before individual components)
+  if (options.sandbox) {
+    await executeSandbox(options, targetDir);
+    return;
+  }
+  
   // Handle multiple components installation (new approach)
   if (options.agent || options.command || options.mcp || options.setting || options.hook) {
     // If --workflow is used with components, treat it as YAML
@@ -155,11 +161,7 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
-  // Handle sandbox execution
-  if (options.sandbox) {
-    await executeSandbox(options, targetDir);
-    return;
-  }
+  // (Sandbox execution handled earlier)
   
   // Handle command stats analysis (both singular and plural)
   if (options.commandStats || options.commandsStats) {
@@ -2101,6 +2103,36 @@ async function executeSandbox(options, targetDir) {
     return;
   }
   
+  // Load .env file if it exists (for API keys)
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(targetDir, '.env');
+    
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const envVars = envContent.split('\n')
+        .filter(line => line.trim() && !line.startsWith('#'))
+        .reduce((acc, line) => {
+          const [key, ...valueParts] = line.split('=');
+          if (key && valueParts.length > 0) {
+            const value = valueParts.join('=').trim();
+            acc[key.trim()] = value;
+          }
+          return acc;
+        }, {});
+      
+      // Set environment variables if not already set
+      Object.keys(envVars).forEach(key => {
+        if (!process.env[key]) {
+          process.env[key] = envVars[key];
+        }
+      });
+    }
+  } catch (error) {
+    // Ignore .env loading errors
+  }
+  
   // Check for API keys (either from CLI parameters or environment variables)
   const e2bKey = e2bApiKey || process.env.E2B_API_KEY;
   const anthropicKey = anthropicApiKey || process.env.ANTHROPIC_API_KEY;
@@ -2132,7 +2164,7 @@ async function executeSandbox(options, targetDir) {
   console.log(chalk.white(`🌐 Provider: ${chalk.green('E2B Cloud')}`));
   console.log(chalk.gray('\n🔧 Execution details:'));
   console.log(chalk.gray('   • Execution logs will be displayed in real-time'));
-  console.log(chalk.gray('   • Files will be downloaded to ./e2b-outputs/ folder'));  
+  console.log(chalk.gray('   • Files will be downloaded to project root directory'));  
   console.log(chalk.gray('   • Extended timeout: 15 minutes for complex operations'));
   console.log(chalk.yellow('   • Press ESC anytime to cancel execution\n'));
   

@@ -2123,6 +2123,33 @@ async function executeSandbox(options, targetDir) {
     return;
   }
   
+  // Sandbox execution confirmation
+  console.log(chalk.blue('\n☁️ E2B Sandbox Execution'));
+  console.log(chalk.cyan('═══════════════════════════════════════'));
+  console.log(chalk.white(`📋 Agent: ${chalk.yellow(agent || 'default')}`));
+  const truncatedPrompt = prompt.length > 80 ? prompt.substring(0, 80) + '...' : prompt;
+  console.log(chalk.white(`💭 Prompt: ${chalk.cyan('"' + truncatedPrompt + '"')}`));
+  console.log(chalk.white(`🌐 Provider: ${chalk.green('E2B Cloud')}`));
+  console.log(chalk.gray('\n🔧 Execution details:'));
+  console.log(chalk.gray('   • Execution logs will be displayed in real-time'));
+  console.log(chalk.gray('   • Files will be downloaded to ./e2b-outputs/ folder'));  
+  console.log(chalk.gray('   • Extended timeout: 15 minutes for complex operations'));
+  console.log(chalk.yellow('   • Press ESC anytime to cancel execution\n'));
+  
+  const inquirer = require('inquirer');
+  
+  const { shouldExecuteSandbox } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'shouldExecuteSandbox',
+    message: `Execute this agent in E2B sandbox?`,
+    default: true
+  }]);
+  
+  if (!shouldExecuteSandbox) {
+    console.log(chalk.yellow('⏹️  E2B sandbox execution cancelled by user.'));
+    return;
+  }
+  
   try {
     console.log(chalk.blue('🔮 Setting up E2B sandbox environment...'));
     
@@ -2240,6 +2267,9 @@ async function executeSandbox(options, targetDir) {
           }
           
           // Execute sandbox and wait for completion
+          console.log(chalk.blue('🚀 Starting E2B sandbox execution...'));
+          console.log(chalk.yellow('💡 Press ESC anytime to cancel the execution'));
+          
           await new Promise((resolve, reject) => {
             const sandboxExecution = spawn(pythonCmd, [
               path.join(sandboxDir, 'e2b-launcher.py'),
@@ -2258,10 +2288,40 @@ async function executeSandbox(options, targetDir) {
               }
             });
             
+            // Setup ESC key listener for cancellation
+            process.stdin.setRawMode(true);
+            process.stdin.resume();
+            process.stdin.setEncoding('utf8');
+            
+            const keyListener = (key) => {
+              // ESC key (ASCII 27)
+              if (key === '\u001b') {
+                console.log(chalk.yellow('\n⏹️  Cancelling E2B sandbox execution...'));
+                sandboxExecution.kill('SIGTERM');
+                
+                // Cleanup
+                process.stdin.setRawMode(false);
+                process.stdin.pause();
+                process.stdin.removeListener('data', keyListener);
+                
+                resolve(); // Resolve to prevent hanging
+              }
+            };
+            
+            process.stdin.on('data', keyListener);
+            
             sandboxExecution.on('close', (sandboxCode) => {
+              // Cleanup stdin listener
+              process.stdin.setRawMode(false);
+              process.stdin.pause();
+              process.stdin.removeListener('data', keyListener);
+              
               if (sandboxCode === 0) {
                 console.log(chalk.green('🎉 Sandbox execution completed successfully!'));
                 console.log(chalk.blue('💡 Files were created inside the E2B sandbox environment'));
+                resolve();
+              } else if (sandboxCode === null) {
+                console.log(chalk.yellow('⏹️  Sandbox execution was cancelled'));
                 resolve();
               } else {
                 console.log(chalk.yellow(`⚠️  Sandbox execution finished with exit code ${sandboxCode}`));
@@ -2271,6 +2331,11 @@ async function executeSandbox(options, targetDir) {
             });
             
             sandboxExecution.on('error', (error) => {
+              // Cleanup stdin listener
+              process.stdin.setRawMode(false);
+              process.stdin.pause();
+              process.stdin.removeListener('data', keyListener);
+              
               if (error.code === 'TIMEOUT') {
                 console.log(chalk.yellow('⏱️  Sandbox execution timed out after 15 minutes'));
                 console.log(chalk.gray('💡 This may happen with very complex prompts or large projects'));

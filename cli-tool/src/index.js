@@ -2109,7 +2109,6 @@ async function executeSandbox(options, targetDir) {
       type: 'input',
       name: 'userPrompt',
       message: 'What would you like to create?',
-      default: 'Create a modern todo application with React, TypeScript, and Tailwind CSS',
       validate: (input) => {
         if (!input || input.trim().length < 10) {
           return 'Please provide a more detailed description (at least 10 characters)';

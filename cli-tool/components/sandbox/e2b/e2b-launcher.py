@@ -7,6 +7,8 @@ Executes Claude Code prompts in isolated E2B cloud sandbox
 import os
 import sys
 import json
+import datetime
+import re
 
 # Debug: Print Python path information
 print(f"Python executable: {sys.executable}")
@@ -218,7 +220,7 @@ def main():
         print("📁 GENERATED FILES:")
         print("=" * 60)
         
-        files_result = sbx.commands.run("find . -type f -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.py' -o -name '*.json' -o -name '*.md' -o -name '*.tsx' -o -name '*.ts' | head -20")
+        files_result = sbx.commands.run("find . -type f \\( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.py' -o -name '*.json' -o -name '*.md' -o -name '*.tsx' -o -name '*.ts' \\) ! -path '*/.claude/*' ! -path '*/node_modules/*' | head -20")
         if files_result.stdout.strip():
             print(files_result.stdout)
             
@@ -227,13 +229,22 @@ def main():
             print("💾 DOWNLOADING FILES TO LOCAL MACHINE:")
             print("=" * 60)
             
-            local_output_dir = "./e2b-output"
+            # Create unique folder for this execution in project root
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            clean_prompt = re.sub(r'[^\w\s-]', '', prompt).strip()
+            clean_prompt = re.sub(r'[-\s]+', '-', clean_prompt)[:30]
+            folder_name = f"{timestamp}_{clean_prompt}"
+            
+            # Create output directory in project root (not inside .claude)
+            local_output_dir = f"./e2b-outputs/{folder_name}"
             os.makedirs(local_output_dir, exist_ok=True)
+            
+            print(f"📂 Output folder: {local_output_dir}")
             
             files_to_download = files_result.stdout.strip().split('\n')
             for file_path in files_to_download:
                 file_path = file_path.strip()
-                if file_path and not file_path.startswith('./.claude'):  # Skip Claude internal files
+                if file_path:  # Already filtered out .claude and node_modules in find command
                     try:
                         # Read file content from sandbox
                         file_content = sbx.commands.run(f"cat '{file_path}'", timeout=30)

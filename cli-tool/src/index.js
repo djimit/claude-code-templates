@@ -368,8 +368,8 @@ async function createClaudeConfig(options = {}) {
     await runPostInstallationValidation(targetDir, templateConfig);
   }
   
-  // Handle prompt execution if provided
-  if (options.prompt) {
+  // Handle prompt execution if provided (but not in sandbox mode)
+  if (options.prompt && !options.sandbox) {
     await handlePromptExecution(options.prompt, targetDir);
   }
 }
@@ -1450,8 +1450,8 @@ async function installMultipleComponents(options, targetDir) {
     
     // Note: Individual components are already tracked separately in their installation functions
     
-    // Handle prompt execution if provided
-    if (options.prompt) {
+    // Handle prompt execution if provided (but not in sandbox mode)
+    if (options.prompt && !options.sandbox) {
       await handlePromptExecution(options.prompt, targetDir);
     }
     
@@ -1619,8 +1619,8 @@ async function installWorkflow(workflowHash, targetDir, options) {
       target_directory: path.relative(process.cwd(), targetDir)
     });
     
-    // Handle prompt execution if provided
-    if (options.prompt) {
+    // Handle prompt execution if provided (but not in sandbox mode)
+    if (options.prompt && !options.sandbox) {
       await handlePromptExecution(options.prompt, targetDir);
     }
     
@@ -2239,43 +2239,49 @@ async function executeSandbox(options, targetDir) {
             console.log(chalk.gray(`📦 Components to install:${componentsToInstall}`));
           }
           
-          const sandboxExecution = spawn(pythonCmd, [
-            path.join(sandboxDir, 'e2b-launcher.py'),
-            prompt,
-            componentsToInstall.trim(),
-            e2bKey,
-            anthropicKey
-          ], {
-            cwd: sandboxDir,
-            stdio: 'inherit',
-            timeout: 900000, // 15 minutes timeout for complex operations
-            env: { 
-              ...process.env,
-              E2B_API_KEY: e2bKey,
-              ANTHROPIC_API_KEY: anthropicKey
-            }
-          });
-          
-          sandboxExecution.on('close', (sandboxCode) => {
-            if (sandboxCode === 0) {
-              console.log(chalk.green('🎉 Sandbox execution completed successfully!'));
-              console.log(chalk.blue('💡 Files were created inside the E2B sandbox environment'));
-            } else {
-              console.log(chalk.yellow(`⚠️  Sandbox execution finished with exit code ${sandboxCode}`));
-              console.log(chalk.gray('💡 Check the output above for any error details'));
-            }
-          });
-          
-          sandboxExecution.on('error', (error) => {
-            if (error.code === 'TIMEOUT') {
-              console.log(chalk.yellow('⏱️  Sandbox execution timed out after 15 minutes'));
-              console.log(chalk.gray('💡 This may happen with very complex prompts or large projects'));
-              console.log(chalk.blue('💡 Try breaking down your prompt into smaller, more specific requests'));
-            } else {
-              console.log(chalk.red(`❌ Error executing sandbox: ${error.message}`));
-              console.log(chalk.yellow('💡 Make sure you have set E2B_API_KEY and ANTHROPIC_API_KEY environment variables'));
-              console.log(chalk.gray('   Create a .env file in the .claude/sandbox directory with your API keys'));
-            }
+          // Execute sandbox and wait for completion
+          await new Promise((resolve, reject) => {
+            const sandboxExecution = spawn(pythonCmd, [
+              path.join(sandboxDir, 'e2b-launcher.py'),
+              prompt,
+              componentsToInstall.trim(),
+              e2bKey,
+              anthropicKey
+            ], {
+              cwd: sandboxDir,
+              stdio: 'inherit',
+              timeout: 900000, // 15 minutes timeout for complex operations
+              env: { 
+                ...process.env,
+                E2B_API_KEY: e2bKey,
+                ANTHROPIC_API_KEY: anthropicKey
+              }
+            });
+            
+            sandboxExecution.on('close', (sandboxCode) => {
+              if (sandboxCode === 0) {
+                console.log(chalk.green('🎉 Sandbox execution completed successfully!'));
+                console.log(chalk.blue('💡 Files were created inside the E2B sandbox environment'));
+                resolve();
+              } else {
+                console.log(chalk.yellow(`⚠️  Sandbox execution finished with exit code ${sandboxCode}`));
+                console.log(chalk.gray('💡 Check the output above for any error details'));
+                resolve(); // Still resolve even with non-zero exit code
+              }
+            });
+            
+            sandboxExecution.on('error', (error) => {
+              if (error.code === 'TIMEOUT') {
+                console.log(chalk.yellow('⏱️  Sandbox execution timed out after 15 minutes'));
+                console.log(chalk.gray('💡 This may happen with very complex prompts or large projects'));
+                console.log(chalk.blue('💡 Try breaking down your prompt into smaller, more specific requests'));
+              } else {
+                console.log(chalk.red(`❌ Error executing sandbox: ${error.message}`));
+                console.log(chalk.yellow('💡 Make sure you have set E2B_API_KEY and ANTHROPIC_API_KEY environment variables'));
+                console.log(chalk.gray('   Create a .env file in the .claude/sandbox directory with your API keys'));
+              }
+              reject(error);
+            });
           });
           
         } else {

@@ -229,10 +229,14 @@ def main():
             print("💾 DOWNLOADING FILES TO LOCAL MACHINE:")
             print("=" * 60)
             
-            # Download files directly to project root
-            local_output_dir = "./"
+            # Create project directory with sandbox ID
+            project_dir = f"sandbox-{sbx.sandbox_id[:8]}"  # Use first 8 chars of sandbox ID
+            local_output_dir = os.path.join("../../", project_dir)  # Go up from .claude/sandbox to project root
             
-            print(f"📂 Downloading files to project root: {os.path.abspath(local_output_dir)}")
+            # Ensure the project directory exists
+            os.makedirs(local_output_dir, exist_ok=True)
+            
+            print(f"📂 Downloading files to project directory: {os.path.abspath(local_output_dir)}")
             
             files_to_download = files_result.stdout.strip().split('\n')
             for file_path in files_to_download:
@@ -242,8 +246,12 @@ def main():
                         # Read file content from sandbox
                         file_content = sbx.commands.run(f"cat '{file_path}'", timeout=30)
                         if file_content.exit_code == 0:
-                            # Create local path
-                            local_file = os.path.join(local_output_dir, os.path.basename(file_path))
+                            # Preserve directory structure by removing leading ./
+                            relative_path = file_path.lstrip('./')
+                            local_file = os.path.join(local_output_dir, relative_path)
+                            
+                            # Create directory structure if needed
+                            os.makedirs(os.path.dirname(local_file), exist_ok=True)
                             
                             # Write file locally
                             with open(local_file, 'w', encoding='utf-8') as f:

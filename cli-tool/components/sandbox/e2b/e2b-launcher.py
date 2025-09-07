@@ -9,6 +9,8 @@ import sys
 import json
 import datetime
 import re
+import time
+import threading
 
 # Debug: Print Python path information
 print(f"Python executable: {sys.executable}")
@@ -252,8 +254,18 @@ Now, please execute this request and create all necessary files."""
         print("    🔒 Isolated E2B environment active")
         print("    ⏱️  This may take 30-60 seconds")
         print("")
-        print("    [■□□□□□□□□□] Processing...")
-        print("")
+        
+        # Show animated dots while executing
+        sys.stdout.write("    🔄 Processing")
+        sys.stdout.flush()
+        
+        # Quick animation before execution (non-blocking)
+        for _ in range(3):
+            time.sleep(0.3)
+            sys.stdout.write(".")
+            sys.stdout.flush()
+        
+        print("\n")
         print("-" * 60)
         
         # Execute with extended timeout for complex operations

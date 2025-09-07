@@ -1248,8 +1248,6 @@ async function getAvailableAgentsFromGitHub() {
     }
     
     // Fallback to aitmpl.com API if local file not found
-    console.log(chalk.yellow('⚠️  Local components.json not found, fetching from aitmpl.com...'));
-    
     try {
       // Try aitmpl.com API first
       const apiResponse = await fetch('https://aitmpl.com/api/agents.json');

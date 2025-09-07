@@ -9,6 +9,8 @@ import sys
 import json
 import datetime
 import re
+import threading
+import time
 
 # Debug: Print Python path information
 print(f"Python executable: {sys.executable}")
@@ -248,36 +250,105 @@ Now, please execute this request and create all necessary files."""
         print("☁️  EXECUTING CLAUDE CODE IN SECURE CLOUD SANDBOX")
         print("=" * 60)
         print("")
-        print("    ⏳ Executing... Please wait")
+        print("    ⏳ Starting execution...")
         print("    🔒 Isolated E2B environment active")
-        print("    ⏱️  This may take a few minutes")
-        print("")
-        print("    ⣾⣿⣷ Processing...")
+        print("    📡 Streaming real-time output below:")
         print("")
         print("-" * 60)
+        print("📝 LIVE OUTPUT:")
+        print("-" * 60)
         
-        # Execute with extended timeout for complex operations
-        result = sbx.commands.run(
-            claude_command,
-            timeout=600,  # 10 minutes timeout for complex operations
-        )
+        # Collect output for later use
+        stdout_buffer = []
+        stderr_buffer = []
         
+        # Track if we've received any output and last activity time
+        has_output = [False]  # Use list to allow modification in nested function
+        last_activity = [time.time()]
+        execution_complete = [False]
+        
+        # Progress indicator thread
+        def show_progress():
+            """Show periodic progress updates if no output for a while"""
+            progress_messages = [
+                "⏳ Still processing...",
+                "🔄 Claude Code is working on your request...",
+                "⚙️  Analyzing requirements...",
+                "🛠️  Building solution...",
+                "📝 Generating code...",
+                "🔍 Reviewing implementation..."
+            ]
+            message_index = 0
+            
+            while not execution_complete[0]:
+                time.sleep(5)  # Check every 5 seconds
+                
+                # If no activity for 10 seconds and no output yet
+                if not has_output[0] and (time.time() - last_activity[0]) > 10:
+                    print(f"\n    {progress_messages[message_index % len(progress_messages)]}")
+                    message_index += 1
+                    last_activity[0] = time.time()
+        
+        # Start progress thread
+        progress_thread = threading.Thread(target=show_progress, daemon=True)
+        progress_thread.start()
+        
+        # Define callbacks for streaming output
+        def on_stdout(data):
+            """Handle stdout output in real-time"""
+            if data:
+                # Mark that we've received output and update activity time
+                if not has_output[0]:
+                    has_output[0] = True
+                    print("\n🎯 Claude Code started responding:\n")
+                
+                last_activity[0] = time.time()
+                
+                # Print the data as it comes
+                print(data, end='', flush=True)
+                stdout_buffer.append(data)
+        
+        def on_stderr(data):
+            """Handle stderr output in real-time"""
+            if data:
+                # Mark that we've received output and update activity time
+                if not has_output[0]:
+                    has_output[0] = True
+                    print("\n🎯 Claude Code started responding:\n")
+                
+                last_activity[0] = time.time()
+                
+                # Print stderr with warning prefix
+                if data.strip():
+                    print(f"⚠️  {data}", end='', flush=True)
+                stderr_buffer.append(data)
+        
+        # Execute with streaming output and extended timeout
+        try:
+            result = sbx.commands.run(
+                claude_command,
+                timeout=600,  # 10 minutes timeout for complex operations
+                on_stdout=on_stdout,
+                on_stderr=on_stderr
+            )
+        finally:
+            # Mark execution as complete to stop progress thread
+            execution_complete[0] = True
+        
+        # Join collected output
+        full_stdout = ''.join(stdout_buffer)
+        full_stderr = ''.join(stderr_buffer)
+        
+        # Print execution summary
+        print("")
+        print("-" * 60)
         print(f"🔍 Command exit code: {result.exit_code}")
-        if result.stdout:
-            print(f"📤 Command stdout length: {len(result.stdout)} characters")
-        if result.stderr:
-            print(f"📤 Command stderr length: {len(result.stderr)} characters")
         
-        print("=" * 60)
-        print("🎯 CLAUDE CODE OUTPUT:")
-        print("=" * 60)
-        print(result.stdout)
-        
-        if result.stderr:
-            print("=" * 60)
-            print("⚠️  STDERR:")
-            print("=" * 60)
-            print(result.stderr)
+        # Since we already streamed the output, just show summary
+        if full_stdout:
+            print(f"📤 Total stdout: {len(full_stdout)} characters")
+        if full_stderr:
+            print(f"⚠️  Total stderr: {len(full_stderr)} characters")
         
         # List generated files
         print("=" * 60)

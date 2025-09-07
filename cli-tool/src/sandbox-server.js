@@ -194,7 +194,16 @@ async function executeE2BTask(task) {
             } else {
                 task.status = 'failed';
                 task.endTime = new Date();
-                task.output.push(`❌ Process exited with code: ${code}`);
+                
+                // Check if it's an API key error
+                const outputText = task.output.join(' ');
+                if (outputText.includes('E2B API key is required') || outputText.includes('Anthropic API key is required')) {
+                    task.output.push('❌ Missing API keys! Please add E2B_API_KEY and ANTHROPIC_API_KEY to your .env file');
+                    task.output.push('🔑 Get E2B key: https://e2b.dev/dashboard');
+                    task.output.push('🔑 Get Anthropic key: https://console.anthropic.com');
+                } else {
+                    task.output.push(`❌ Process exited with code: ${code}`);
+                }
             }
         });
         

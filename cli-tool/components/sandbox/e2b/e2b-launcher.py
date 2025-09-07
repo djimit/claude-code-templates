@@ -238,8 +238,9 @@ Now, please execute this request and create all necessary files."""
         escaped_prompt = enhanced_prompt.replace("'", "'\\''")
         claude_command = f"echo '{escaped_prompt}' | claude -p --dangerously-skip-permissions"
         
-        # Show simplified command for logging (not the full enhanced prompt)
-        print(f"🚀 Running command: echo '[enhanced prompt]' | claude -p --dangerously-skip-permissions")
+        # Show the original user prompt in the command display (not the enhanced version)
+        display_prompt = prompt[:100] + '...' if len(prompt) > 100 else prompt
+        print(f"🚀 Running command: echo '{display_prompt}' | claude -p --dangerously-skip-permissions")
         
         # Show loading message with visual separation
         print("")

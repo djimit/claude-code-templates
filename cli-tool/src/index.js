@@ -115,6 +115,12 @@ async function createClaudeConfig(options = {}) {
     return;
   }
   
+  // Handle Claude Code Studio launch
+  if (options.studio) {
+    await launchClaudeCodeStudio(options, targetDir);
+    return;
+  }
+
   // Handle sandbox execution FIRST (before individual components)
   if (options.sandbox) {
     await executeSandbox(options, targetDir);
@@ -2083,6 +2089,43 @@ async function handlePromptExecution(prompt, targetDir) {
     console.log(chalk.blue('💡 You can manually execute this prompt in Claude Code:'));
     console.log(chalk.cyan(`"${prompt}"`));
   }
+}
+
+async function launchClaudeCodeStudio(options, targetDir) {
+  console.log(chalk.blue('\n🎨 Claude Code Studio'));
+  console.log(chalk.cyan('═══════════════════════════════════════'));
+  console.log(chalk.white('🚀 Starting Claude Code Studio interface...'));
+  console.log(chalk.gray('💡 This interface supports both local and cloud execution'));
+  
+  const { spawn } = require('child_process');
+  const open = require('open');
+  const path = require('path');
+  
+  // Start the studio server
+  const serverPath = path.join(__dirname, 'sandbox-server.js');
+  const serverProcess = spawn('node', [serverPath], {
+    stdio: 'inherit'
+  });
+  
+  // Wait a moment for server to start, then open browser
+  setTimeout(async () => {
+    try {
+      await open('http://localhost:3444');
+      console.log(chalk.green('✅ Claude Code Studio launched at http://localhost:3444'));
+      console.log(chalk.gray('💡 Choose between Local Machine or E2B Cloud execution'));
+    } catch (error) {
+      console.log(chalk.yellow('💡 Please manually open: http://localhost:3444'));
+    }
+  }, 2000);
+  
+  // Handle process cleanup
+  process.on('SIGINT', () => {
+    console.log(chalk.yellow('\n🛑 Shutting down Claude Code Studio...'));
+    serverProcess.kill();
+    process.exit(0);
+  });
+  
+  return;
 }
 
 async function executeSandbox(options, targetDir) {

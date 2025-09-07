@@ -72,6 +72,7 @@ program
   .option('--list-agents', 'list all installed global agents')
   .option('--remove-agent <agent>', 'remove a global agent')
   .option('--update-agent <agent>', 'update a global agent to the latest version')
+  .option('--studio', 'launch Claude Code Studio interface for local and cloud execution')
   .option('--sandbox <provider>', 'execute Claude Code in isolated sandbox environment (e.g., e2b)')
   .option('--e2b-api-key <key>', 'E2B API key for sandbox execution (alternative to environment variable)')
   .option('--anthropic-api-key <key>', 'Anthropic API key for Claude Code (alternative to environment variable)')

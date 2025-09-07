@@ -75,9 +75,9 @@ app.use('/css', express.static(path.join(__dirname, '../../docs/css')));
 app.use('/js', express.static(path.join(__dirname, '../../docs/js')));
 app.use('/assets', express.static(path.join(__dirname, '../../docs/assets')));
 
-// API endpoint to execute sandbox task
+// API endpoint to execute task (local or cloud)
 app.post('/api/execute', async (req, res) => {
-    const { prompt, agent = 'development-team/frontend-developer' } = req.body;
+    const { prompt, mode = 'local', agent = 'development-team/frontend-developer' } = req.body;
     
     if (!prompt || prompt.trim().length < 10) {
         return res.status(400).json({
@@ -94,6 +94,7 @@ app.post('/api/execute', async (req, res) => {
         title: prompt.substring(0, 60) + (prompt.length > 60 ? '...' : ''),
         prompt: prompt.trim(),
         agent: agent,
+        mode: mode,
         status: 'running',
         startTime: new Date(),
         progress: 0,
@@ -103,8 +104,12 @@ app.post('/api/execute', async (req, res) => {
     
     activeTasks.set(taskId, task);
     
-    // Start the sandbox execution
-    executeE2BTask(task);
+    // Execute based on mode
+    if (mode === 'cloud') {
+        executeE2BTask(task);
+    } else {
+        executeLocalTask(task);
+    }
     
     res.json({
         success: true,
@@ -264,12 +269,103 @@ async function executeE2BTask(task) {
     }
 }
 
+async function executeLocalTask(task) {
+    try {
+        task.output.push('🖥️  Executing Claude Code locally...');
+        task.progress = 10;
+        
+        task.output.push('🔍 Checking if Claude Code CLI is available...');
+        
+        // Execute Claude Code locally
+        const child = spawn('claude', [task.prompt], {
+            cwd: process.cwd(),
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: {
+                ...process.env,
+                PATH: process.env.PATH
+            },
+            shell: true // Use shell to find claude command
+        });
+        
+        task.output.push('🚀 Claude Code execution started');
+        task.progress = 30;
+        
+        // Handle stdout
+        child.stdout.on('data', (data) => {
+            const lines = data.toString().split('\\n').filter(line => line.trim());
+            lines.forEach(line => {
+                task.output.push(line);
+                
+                // Update progress based on output patterns
+                if (line.includes('Reading') || line.includes('Analyzing')) {
+                    task.progress = Math.min(task.progress + 5, 60);
+                } else if (line.includes('Writing') || line.includes('Creating')) {
+                    task.progress = Math.min(task.progress + 10, 90);
+                } else if (line.includes('Done') || line.includes('Complete')) {
+                    task.progress = 95;
+                }
+            });
+        });
+        
+        // Handle stderr
+        child.stderr.on('data', (data) => {
+            const lines = data.toString().split('\\n').filter(line => line.trim());
+            lines.forEach(line => {
+                task.output.push(`⚠️ ${line}`);
+            });
+        });
+        
+        // Handle process exit
+        child.on('close', (code) => {
+            if (code === 0) {
+                task.status = 'completed';
+                task.endTime = new Date();
+                task.progress = 100;
+                task.output.push('✅ Claude Code execution completed successfully!');
+                task.output.push('📂 Files were created/modified in your current directory');
+            } else {
+                task.status = 'failed';
+                task.endTime = new Date();
+                
+                const outputText = task.output.join(' ');
+                if (outputText.includes('claude: command not found') || outputText.includes('not recognized')) {
+                    task.output.push('❌ Claude Code CLI not found!');
+                    task.output.push('💡 Please install Claude Code CLI first:');
+                    task.output.push('🔗 Visit: https://claude.ai/code');
+                } else {
+                    task.output.push(`❌ Process exited with code: ${code}`);
+                }
+            }
+        });
+        
+        // Handle process error
+        child.on('error', (error) => {
+            task.status = 'failed';
+            task.endTime = new Date();
+            
+            if (error.code === 'ENOENT') {
+                task.output.push('❌ Claude Code CLI not found in PATH!');
+                task.output.push('💡 Please install Claude Code CLI first:');
+                task.output.push('🔗 Visit: https://claude.ai/code');
+                task.output.push('🔗 Documentation: https://docs.anthropic.com/claude-code');
+            } else {
+                task.output.push(`❌ Execution error: ${error.message}`);
+            }
+        });
+        
+    } catch (error) {
+        task.status = 'failed';
+        task.endTime = new Date();
+        task.output.push(`❌ Failed to start local execution: ${error.message}`);
+    }
+}
+
 // Start server
 app.listen(PORT, () => {
-    console.log(chalk.blue('\\n☁️ AITMPL Cloud Agent Server'));
+    console.log(chalk.blue('\\n🎨 Claude Code Studio Server'));
     console.log(chalk.cyan('═══════════════════════════════════════'));
     console.log(chalk.green(`🚀 Server running on http://localhost:${PORT}`));
-    console.log(chalk.gray('💡 E2B sandbox management interface ready'));
+    console.log(chalk.gray('💡 Local and cloud execution interface ready'));
     
     if (hasApiKeys) {
         console.log(chalk.green('\\n✅ All API keys are configured and ready!'));

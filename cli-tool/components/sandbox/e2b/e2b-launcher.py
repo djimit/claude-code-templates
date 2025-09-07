@@ -229,14 +229,15 @@ def main():
             print("💾 DOWNLOADING FILES TO LOCAL MACHINE:")
             print("=" * 60)
             
-            # Create project directory with sandbox ID
+            # Create project directory with sandbox ID in current working directory
             project_dir = f"sandbox-{sbx.sandbox_id[:8]}"  # Use first 8 chars of sandbox ID
-            local_output_dir = os.path.join("../../", project_dir)  # Go up from .claude/sandbox to project root
+            local_output_dir = os.path.join(os.getcwd(), project_dir)  # Use current working directory
             
             # Ensure the project directory exists
             os.makedirs(local_output_dir, exist_ok=True)
             
-            print(f"📂 Downloading files to project directory: {os.path.abspath(local_output_dir)}")
+            print(f"📂 Downloading files to project directory: {local_output_dir}")
+            print(f"📍 Current working directory: {os.getcwd()}")
             
             files_to_download = files_result.stdout.strip().split('\n')
             for file_path in files_to_download:

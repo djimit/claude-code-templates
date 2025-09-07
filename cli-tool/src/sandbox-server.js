@@ -2,15 +2,25 @@
 
 const express = require('express');
 const path = require('path');
-const cors = require('cors');
 const { spawn } = require('child_process');
 const chalk = require('chalk');
 
 const app = express();
 const PORT = process.env.PORT || 3444;
 
-// Middleware
-app.use(cors());
+// Simple CORS middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
+// JSON parsing middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../docs')));
 

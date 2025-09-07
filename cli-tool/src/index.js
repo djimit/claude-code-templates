@@ -2233,19 +2233,17 @@ async function executeSandbox(options, targetDir) {
         name: 'selectedAgents',
         message: 'Select agents (use SPACE to select, ENTER when done):',
         choices: agentChoices,
-        pageSize: 15,
-        validate: (answers) => {
-          if (answers.length === 0) {
-            return 'Please select at least one agent, or choose No when asked about selecting agents';
-          }
-          return true;
-        }
+        pageSize: 15
+        // Removed validation - allow empty selection
       }]);
       
       if (selectedAgents && selectedAgents.length > 0) {
         // Join multiple agents with comma
         agent = selectedAgents.join(',');
         console.log(chalk.green(`✅ Selected agents: ${chalk.cyan(selectedAgents.join(', '))}`));
+      } else {
+        // User didn't select any agents but pressed Enter
+        console.log(chalk.yellow('⚠️ Continuing without specific agents'));
       }
     } else {
       console.log(chalk.yellow('⚠️ Continuing without specific agents'));

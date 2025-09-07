@@ -1247,9 +1247,26 @@ async function getAvailableAgentsFromGitHub() {
       }
     }
     
-    // Fallback to GitHub API if local file not found
-    console.log(chalk.yellow('⚠️  Local components.json not found, using GitHub API...'));
+    // Fallback to aitmpl.com API if local file not found
+    console.log(chalk.yellow('⚠️  Local components.json not found, fetching from aitmpl.com...'));
     
+    try {
+      // Try aitmpl.com API first
+      const apiResponse = await fetch('https://aitmpl.com/api/agents.json');
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        
+        if (apiData.agents && Array.isArray(apiData.agents)) {
+          console.log(chalk.green(`✅ Loaded ${apiData.agents.length} agents from aitmpl.com API`));
+          return apiData.agents;
+        }
+      }
+    } catch (apiError) {
+      console.warn('Could not fetch from aitmpl.com, trying GitHub API...');
+    }
+    
+    // If aitmpl.com API fails, try GitHub API as secondary fallback
+    console.log(chalk.yellow('⚠️  Falling back to GitHub API...'));
     const response = await fetch('https://api.github.com/repos/davila7/claude-code-templates/contents/cli-tool/components/agents');
     if (!response.ok) {
       // Check for rate limit error

@@ -158,8 +158,53 @@ def main():
             else:
                 print("✅ Components installed successfully")
         
-        # Execute Claude Code with the prompt
+        # Build enhanced prompt with instructions
+        # Parse components to extract agents
+        agents = []
+        if components_to_install:
+            # Split by '--' to get individual component types
+            parts = components_to_install.split('--')
+            for part in parts:
+                part = part.strip()
+                if part.startswith('agent '):
+                    # Extract agent names after 'agent ' prefix
+                    agent_names = part[6:].strip()  # Remove 'agent ' prefix
+                    if agent_names:
+                        # Split by comma if multiple agents
+                        agents.extend([a.strip() for a in agent_names.split(',')])
+        
+        # Create enhanced prompt with proper instructions
+        if agents:
+            agent_list = ', '.join(agents)
+            enhanced_prompt = f"""You are Claude Code, an AI assistant specialized in software development. 
+
+IMPORTANT INSTRUCTIONS:
+1. Execute the user's request immediately and create the requested code/files
+2. You have access to the following specialized agents: {agent_list}
+3. Use these agents in the order you deem most appropriate for completing the task
+4. Generate all necessary files and code to fulfill the request
+5. Be proactive and create a complete, working implementation
+
+USER REQUEST: {prompt}
+
+Now, please execute this request and create all necessary files."""
+        else:
+            enhanced_prompt = f"""You are Claude Code, an AI assistant specialized in software development.
+
+IMPORTANT INSTRUCTIONS:
+1. Execute the user's request immediately and create the requested code/files
+2. Generate all necessary files and code to fulfill the request
+3. Be proactive and create a complete, working implementation
+4. Don't just acknowledge the request - actually create the implementation
+
+USER REQUEST: {prompt}
+
+Now, please execute this request and create all necessary files."""
+        
+        # Execute Claude Code with the enhanced prompt
         print(f"🤖 Executing Claude Code with prompt: '{prompt[:50]}{'...' if len(prompt) > 50 else ''}'")
+        if agents:
+            print(f"🤝 Using agents: {', '.join(agents)}")
         
         # First, check if Claude Code is installed and available
         print("🔍 Checking Claude Code installation...")
@@ -188,9 +233,13 @@ def main():
         else:
             print("❌ Write permission issue")
         
-        # Build Claude Code command with better error handling
-        claude_command = f"echo '{prompt}' | claude -p --dangerously-skip-permissions"
-        print(f"🚀 Running command: {claude_command}")
+        # Build Claude Code command with enhanced prompt and better error handling
+        # Escape single quotes in the enhanced prompt
+        escaped_prompt = enhanced_prompt.replace("'", "'\\''")
+        claude_command = f"echo '{escaped_prompt}' | claude -p --dangerously-skip-permissions"
+        
+        # Show simplified command for logging (not the full enhanced prompt)
+        print(f"🚀 Running command: echo '[enhanced prompt]' | claude -p --dangerously-skip-permissions")
         
         # Show loading message with visual separation
         print("")

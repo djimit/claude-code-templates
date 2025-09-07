@@ -4,9 +4,48 @@ const express = require('express');
 const path = require('path');
 const { spawn } = require('child_process');
 const chalk = require('chalk');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3444;
+
+// Load .env file from current working directory (where user runs the command)
+function loadEnvFile() {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+        console.log(chalk.blue('📄 Loading .env file from:'), chalk.gray(envPath));
+        
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const envVars = envContent.split('\n')
+            .filter(line => line.trim() && !line.startsWith('#'))
+            .reduce((acc, line) => {
+                const [key, ...valueParts] = line.split('=');
+                if (key && valueParts.length > 0) {
+                    const value = valueParts.join('=').trim().replace(/^["']|["']$/g, ''); // Remove quotes
+                    acc[key.trim()] = value;
+                }
+                return acc;
+            }, {});
+        
+        // Set environment variables
+        Object.assign(process.env, envVars);
+        
+        const hasE2B = !!process.env.E2B_API_KEY;
+        const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+        
+        console.log(chalk.green('✅ Environment variables loaded:'));
+        console.log(chalk.gray(`   • E2B_API_KEY: ${hasE2B ? 'Found' : 'Missing'}`));
+        console.log(chalk.gray(`   • ANTHROPIC_API_KEY: ${hasAnthropic ? 'Found' : 'Missing'}`));
+        
+        return hasE2B && hasAnthropic;
+    } else {
+        console.log(chalk.yellow('⚠️  No .env file found in:'), chalk.gray(envPath));
+        return false;
+    }
+}
+
+// Load environment variables on startup
+const hasApiKeys = loadEnvFile();
 
 // Simple CORS middleware
 app.use((req, res, next) => {
@@ -144,10 +183,14 @@ async function executeE2BTask(task) {
         task.output.push('🔧 Starting Python E2B launcher...');
         task.progress = 20;
         
-        // Execute the E2B launcher
+        // Execute the E2B launcher from the user's working directory
         const child = spawn('python3', args, {
-            cwd: process.cwd(),
-            stdio: ['pipe', 'pipe', 'pipe']
+            cwd: process.cwd(), // This ensures it runs from where the user executed the command
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: {
+                ...process.env, // Pass all environment variables including loaded ones
+                PATH: process.env.PATH
+            }
         });
         
         // Handle stdout
@@ -227,9 +270,16 @@ app.listen(PORT, () => {
     console.log(chalk.cyan('═══════════════════════════════════════'));
     console.log(chalk.green(`🚀 Server running on http://localhost:${PORT}`));
     console.log(chalk.gray('💡 E2B sandbox management interface ready'));
-    console.log(chalk.yellow('\\n📋 Make sure you have the following environment variables:'));
-    console.log(chalk.gray('   • E2B_API_KEY=your_e2b_key'));
-    console.log(chalk.gray('   • ANTHROPIC_API_KEY=your_anthropic_key\\n'));
+    
+    if (hasApiKeys) {
+        console.log(chalk.green('\\n✅ All API keys are configured and ready!'));
+    } else {
+        console.log(chalk.yellow('\\n⚠️  API Keys Status:'));
+        console.log(chalk.gray(`   • E2B_API_KEY: ${process.env.E2B_API_KEY ? 'Found' : 'Missing'}`));
+        console.log(chalk.gray(`   • ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? 'Found' : 'Missing'}`));
+        console.log(chalk.yellow('   • Please add these keys to your .env file'));
+    }
+    console.log('');
 });
 
 module.exports = app;

@@ -247,9 +247,13 @@ Now, please execute this request and create all necessary files."""
         print("=" * 60)
         print("☁️  EXECUTING CLAUDE CODE IN SECURE CLOUD SANDBOX")
         print("=" * 60)
-        print("⏳ Processing your request...")
-        print("🔒 Isolated E2B environment active")
-        print("📊 Real-time output will appear below")
+        print("")
+        print("    ⏳ Executing... Please wait")
+        print("    🔒 Isolated E2B environment active")
+        print("    ⏱️  This may take 30-60 seconds")
+        print("")
+        print("    [■□□□□□□□□□] Processing...")
+        print("")
         print("-" * 60)
         
         # Execute with extended timeout for complex operations

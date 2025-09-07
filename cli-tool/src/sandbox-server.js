@@ -22,15 +22,19 @@ app.use((req, res, next) => {
 
 // JSON parsing middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../../docs')));
 
 // Store active tasks
 const activeTasks = new Map();
 
-// Serve the sandbox interface
+// Serve the sandbox interface at root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../docs/sandbox-interface.html'));
 });
+
+// Serve static files for CSS, JS, etc. (but not index.html at root)
+app.use('/css', express.static(path.join(__dirname, '../../docs/css')));
+app.use('/js', express.static(path.join(__dirname, '../../docs/js')));
+app.use('/assets', express.static(path.join(__dirname, '../../docs/assets')));
 
 // API endpoint to execute sandbox task
 app.post('/api/execute', async (req, res) => {

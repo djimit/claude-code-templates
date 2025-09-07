@@ -1,6 +1,6 @@
 {
   "name": "claude-code-templates",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Component templates and tracking system for Claude Code",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "keywords": [
     "claude-code",
-    "templates", 
+    "templates",
     "components",
     "tracking",
     "analytics"

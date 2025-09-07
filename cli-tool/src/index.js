@@ -2268,7 +2268,7 @@ async function executeSandbox(options, targetDir) {
   console.log(chalk.white(`🌐 Provider: ${chalk.green('E2B Cloud')}`));
   console.log(chalk.gray('\n🔧 Execution details:'));
   console.log(chalk.gray('   • Execution logs will be displayed in real-time'));
-  console.log(chalk.gray('   • Files will be downloaded to project root directory'));  
+  console.log(chalk.gray(`   • Files will be downloaded to: ${chalk.cyan(targetDir)}`));  
   console.log(chalk.gray('   • Extended timeout: 15 minutes for complex operations'));
   console.log(chalk.yellow('   • Press ESC anytime to cancel execution\n'));
   
@@ -2414,7 +2414,7 @@ async function executeSandbox(options, targetDir) {
               e2bKey,
               anthropicKey
             ], {
-              cwd: sandboxDir,
+              cwd: targetDir, // Run from user's current directory to download files there
               stdio: 'inherit',
               timeout: 900000, // 15 minutes timeout for complex operations
               env: { 

@@ -2146,39 +2146,49 @@ async function executeSandbox(options, targetDir) {
     
     console.log(chalk.blue('\n🤖 Agent Selection'));
     console.log(chalk.cyan('═══════════════════════════════════════'));
-    console.log(chalk.gray('Select an agent for your task, or continue without one.\n'));
+    console.log(chalk.gray('Select one or more agents for your task (use SPACE to select, ENTER to confirm).\n'));
     
     // Fetch available agents
     console.log(chalk.gray('⏳ Fetching available agents...'));
     const agents = await getAvailableAgentsFromGitHub();
     
-    // Format agents for selection
+    // Format agents for selection with full path
     const agentChoices = agents.map(a => ({
       name: `${a.path} ${chalk.gray(`- ${a.category}`)}`,
-      value: a.path,
+      value: a.path,  // This already includes folder/agent-name format
       short: a.path
     }));
     
-    // Add option to continue without agent
-    agentChoices.unshift({
-      name: chalk.yellow('⚡ Continue without agent (use default Claude)'),
-      value: null,
-      short: 'No agent'
-    });
-    
-    const { selectedAgent } = await inquirer.prompt([{
-      type: 'list',
-      name: 'selectedAgent',
-      message: 'Select an agent for your task:',
-      choices: agentChoices,
-      pageSize: 15
+    // First ask if they want to select agents
+    const { wantAgents } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'wantAgents',
+      message: 'Do you want to select specific agents for this task?',
+      default: true
     }]);
     
-    if (selectedAgent) {
-      agent = selectedAgent;
-      console.log(chalk.green(`✅ Selected agent: ${chalk.cyan(agent)}`));
+    if (wantAgents) {
+      const { selectedAgents } = await inquirer.prompt([{
+        type: 'checkbox',
+        name: 'selectedAgents',
+        message: 'Select agents (use SPACE to select, ENTER when done):',
+        choices: agentChoices,
+        pageSize: 15,
+        validate: (answers) => {
+          if (answers.length === 0) {
+            return 'Please select at least one agent, or choose No when asked about selecting agents';
+          }
+          return true;
+        }
+      }]);
+      
+      if (selectedAgents && selectedAgents.length > 0) {
+        // Join multiple agents with comma
+        agent = selectedAgents.join(',');
+        console.log(chalk.green(`✅ Selected agents: ${chalk.cyan(selectedAgents.join(', '))}`));
+      }
     } else {
-      console.log(chalk.yellow('⚠️ Continuing without specific agent'));
+      console.log(chalk.yellow('⚠️ Continuing without specific agents'));
     }
   }
   
@@ -2262,7 +2272,20 @@ async function executeSandbox(options, targetDir) {
   // Sandbox execution confirmation
   console.log(chalk.blue('\n☁️ E2B Sandbox Execution'));
   console.log(chalk.cyan('═══════════════════════════════════════'));
-  console.log(chalk.white(`📋 Agent: ${chalk.yellow(agent || 'default')}`));
+  
+  // Display agents properly (handle multiple agents)
+  if (agent) {
+    const agentList = agent.split(',');
+    if (agentList.length > 1) {
+      console.log(chalk.white(`📋 Agents (${agentList.length}):`));
+      agentList.forEach(a => console.log(chalk.yellow(`   • ${a.trim()}`)));
+    } else {
+      console.log(chalk.white(`📋 Agent: ${chalk.yellow(agent)}`));
+    }
+  } else {
+    console.log(chalk.white(`📋 Agent: ${chalk.yellow('default')}`));
+  }
+  
   const truncatedPrompt = prompt.length > 80 ? prompt.substring(0, 80) + '...' : prompt;
   console.log(chalk.white(`💭 Prompt: ${chalk.cyan('"' + truncatedPrompt + '"')}`));
   console.log(chalk.white(`🌐 Provider: ${chalk.green('E2B Cloud')}`));

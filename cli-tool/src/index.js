@@ -1218,8 +1218,65 @@ function extractFrameworkFromAgent(content, agentName) {
  */
 async function getAvailableAgentsFromGitHub() {
   try {
+    // First try to use local components.json file which has all agents cached
+    const fs = require('fs');
+    const path = require('path');
+    const componentsPath = path.join(__dirname, '../../docs/components.json');
+    
+    if (fs.existsSync(componentsPath)) {
+      const componentsData = JSON.parse(fs.readFileSync(componentsPath, 'utf8'));
+      
+      if (componentsData.agents && Array.isArray(componentsData.agents)) {
+        const agents = [];
+        
+        for (const agent of componentsData.agents) {
+          // Extract category from path
+          const pathParts = agent.path.split('/');
+          const category = pathParts.length > 1 ? pathParts[0] : 'root';
+          const name = pathParts[pathParts.length - 1];
+          
+          agents.push({
+            name: name,
+            path: agent.path,
+            category: category
+          });
+        }
+        
+        console.log(chalk.green(`✅ Loaded ${agents.length} agents from local cache`));
+        return agents;
+      }
+    }
+    
+    // Fallback to GitHub API if local file not found
+    console.log(chalk.yellow('⚠️  Local components.json not found, using GitHub API...'));
+    
     const response = await fetch('https://api.github.com/repos/davila7/claude-code-templates/contents/cli-tool/components/agents');
     if (!response.ok) {
+      // Check for rate limit error
+      if (response.status === 403) {
+        const responseText = await response.text();
+        if (responseText.includes('rate limit')) {
+          console.log(chalk.red('❌ GitHub API rate limit exceeded'));
+          console.log(chalk.yellow('💡 Install locally with: npm install -g claude-code-templates'));
+          
+          // Return comprehensive fallback list
+          return [
+            { name: 'frontend-developer', path: 'development-team/frontend-developer', category: 'development-team' },
+            { name: 'backend-developer', path: 'development-team/backend-developer', category: 'development-team' },
+            { name: 'fullstack-developer', path: 'development-team/fullstack-developer', category: 'development-team' },
+            { name: 'devops-engineer', path: 'development-team/devops-engineer', category: 'development-team' },
+            { name: 'nextjs-architecture-expert', path: 'web-tools/nextjs-architecture-expert', category: 'web-tools' },
+            { name: 'react-developer', path: 'web-tools/react-developer', category: 'web-tools' },
+            { name: 'vue-developer', path: 'web-tools/vue-developer', category: 'web-tools' },
+            { name: 'data-scientist', path: 'data-analytics/data-scientist', category: 'data-analytics' },
+            { name: 'data-analyst', path: 'data-analytics/data-analyst', category: 'data-analytics' },
+            { name: 'security-auditor', path: 'security/security-auditor', category: 'security' },
+            { name: 'api-security-audit', path: 'api-security-audit', category: 'root' },
+            { name: 'database-optimization', path: 'database-optimization', category: 'root' },
+            { name: 'react-performance-optimization', path: 'react-performance-optimization', category: 'root' }
+          ];
+        }
+      }
       throw new Error(`GitHub API error: ${response.status}`);
     }
     
@@ -1258,9 +1315,12 @@ async function getAvailableAgentsFromGitHub() {
     
     return agents;
   } catch (error) {
-    console.warn('Warning: Could not fetch agents from GitHub, using fallback list');
-    // Fallback to basic list if GitHub API fails
+    console.warn('Warning: Could not fetch agents, using fallback list');
+    // Comprehensive fallback list if all methods fail
     return [
+      { name: 'frontend-developer', path: 'development-team/frontend-developer', category: 'development-team' },
+      { name: 'backend-developer', path: 'development-team/backend-developer', category: 'development-team' },
+      { name: 'fullstack-developer', path: 'development-team/fullstack-developer', category: 'development-team' },
       { name: 'api-security-audit', path: 'api-security-audit', category: 'root' },
       { name: 'database-optimization', path: 'database-optimization', category: 'root' },
       { name: 'react-performance-optimization', path: 'react-performance-optimization', category: 'root' }

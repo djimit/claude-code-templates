@@ -250,7 +250,7 @@ Now, please execute this request and create all necessary files."""
         print("")
         print("    ⏳ Executing... Please wait")
         print("    🔒 Isolated E2B environment active")
-        print("    ⏱️  This may take 30-60 seconds")
+        print("    ⏱️  This may take a few minutes")
         print("")
         print("    ⣾⣿⣷ Processing...")
         print("")

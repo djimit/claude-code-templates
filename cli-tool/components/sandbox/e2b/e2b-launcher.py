@@ -192,6 +192,16 @@ def main():
         claude_command = f"echo '{prompt}' | claude -p --dangerously-skip-permissions"
         print(f"🚀 Running command: {claude_command}")
         
+        # Show loading message with visual separation
+        print("")
+        print("=" * 60)
+        print("☁️  EXECUTING CLAUDE CODE IN SECURE CLOUD SANDBOX")
+        print("=" * 60)
+        print("⏳ Processing your request...")
+        print("🔒 Isolated E2B environment active")
+        print("📊 Real-time output will appear below")
+        print("-" * 60)
+        
         # Execute with extended timeout for complex operations
         result = sbx.commands.run(
             claude_command,

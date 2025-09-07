@@ -2097,6 +2097,43 @@ async function executeSandbox(options, targetDir) {
     return;
   }
   
+  // Check if this is a standalone sandbox request (no agent, command, or prompt)
+  if (!agent && !command && !mcp && !setting && !hook && !prompt) {
+    console.log(chalk.blue('\n☁️ AITMPL Cloud Agent Interface'));
+    console.log(chalk.cyan('═══════════════════════════════════════'));
+    console.log(chalk.white('🚀 Starting sandbox management server...'));
+    console.log(chalk.gray('💡 This interface allows you to manage E2B sandbox executions'));
+    
+    const { spawn } = require('child_process');
+    const open = require('open');
+    const path = require('path');
+    
+    // Start the sandbox server
+    const serverPath = path.join(__dirname, 'sandbox-server.js');
+    const serverProcess = spawn('node', [serverPath], {
+      stdio: 'inherit'
+    });
+    
+    // Wait a moment for server to start, then open browser
+    setTimeout(async () => {
+      try {
+        await open('http://localhost:3444');
+        console.log(chalk.green('✅ Interface launched at http://localhost:3444'));
+      } catch (error) {
+        console.log(chalk.yellow('💡 Please manually open: http://localhost:3444'));
+      }
+    }, 2000);
+    
+    // Handle process cleanup
+    process.on('SIGINT', () => {
+      console.log(chalk.yellow('\n🛑 Shutting down sandbox server...'));
+      serverProcess.kill();
+      process.exit(0);
+    });
+    
+    return;
+  }
+  
   // Get prompt from user if not provided
   if (!prompt) {
     console.log(chalk.blue('\n📝 Project Requirements'));

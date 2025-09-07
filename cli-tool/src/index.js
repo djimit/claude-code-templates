@@ -2129,8 +2129,8 @@ async function launchClaudeCodeStudio(options, targetDir) {
 }
 
 async function executeSandbox(options, targetDir) {
-  const { sandbox, agent, command, mcp, setting, hook, e2bApiKey, anthropicApiKey } = options;
-  let { prompt } = options;
+  const { sandbox, command, mcp, setting, hook, e2bApiKey, anthropicApiKey } = options;
+  let { agent, prompt } = options;
   
   // Validate sandbox provider
   if (sandbox !== 'e2b') {
@@ -2140,41 +2140,46 @@ async function executeSandbox(options, targetDir) {
     return;
   }
   
-  // Check if this is a standalone sandbox request (no agent, command, or prompt)
-  if (!agent && !command && !mcp && !setting && !hook && !prompt) {
-    console.log(chalk.blue('\n☁️ AITMPL Cloud Agent Interface'));
+  // Interactive agent selection if not provided
+  if (!agent) {
+    const inquirer = require('inquirer');
+    
+    console.log(chalk.blue('\n🤖 Agent Selection'));
     console.log(chalk.cyan('═══════════════════════════════════════'));
-    console.log(chalk.white('🚀 Starting sandbox management server...'));
-    console.log(chalk.gray('💡 This interface allows you to manage E2B sandbox executions'));
+    console.log(chalk.gray('Select an agent for your task, or continue without one.\n'));
     
-    const { spawn } = require('child_process');
-    const open = require('open');
-    const path = require('path');
+    // Fetch available agents
+    console.log(chalk.gray('⏳ Fetching available agents...'));
+    const agents = await getAvailableAgentsFromGitHub();
     
-    // Start the sandbox server
-    const serverPath = path.join(__dirname, 'sandbox-server.js');
-    const serverProcess = spawn('node', [serverPath], {
-      stdio: 'inherit'
+    // Format agents for selection
+    const agentChoices = agents.map(a => ({
+      name: `${a.path} ${chalk.gray(`- ${a.category}`)}`,
+      value: a.path,
+      short: a.path
+    }));
+    
+    // Add option to continue without agent
+    agentChoices.unshift({
+      name: chalk.yellow('⚡ Continue without agent (use default Claude)'),
+      value: null,
+      short: 'No agent'
     });
     
-    // Wait a moment for server to start, then open browser
-    setTimeout(async () => {
-      try {
-        await open('http://localhost:3444');
-        console.log(chalk.green('✅ Interface launched at http://localhost:3444'));
-      } catch (error) {
-        console.log(chalk.yellow('💡 Please manually open: http://localhost:3444'));
-      }
-    }, 2000);
+    const { selectedAgent } = await inquirer.prompt([{
+      type: 'list',
+      name: 'selectedAgent',
+      message: 'Select an agent for your task:',
+      choices: agentChoices,
+      pageSize: 15
+    }]);
     
-    // Handle process cleanup
-    process.on('SIGINT', () => {
-      console.log(chalk.yellow('\n🛑 Shutting down sandbox server...'));
-      serverProcess.kill();
-      process.exit(0);
-    });
-    
-    return;
+    if (selectedAgent) {
+      agent = selectedAgent;
+      console.log(chalk.green(`✅ Selected agent: ${chalk.cyan(agent)}`));
+    } else {
+      console.log(chalk.yellow('⚠️ Continuing without specific agent'));
+    }
   }
   
   // Get prompt from user if not provided

@@ -75,6 +75,16 @@ app.use('/css', express.static(path.join(__dirname, '../../docs/css')));
 app.use('/js', express.static(path.join(__dirname, '../../docs/js')));
 app.use('/assets', express.static(path.join(__dirname, '../../docs/assets')));
 
+// Serve components.json for agent autocomplete
+app.get('/components.json', (req, res) => {
+    const componentsPath = path.join(__dirname, '../../docs/components.json');
+    if (fs.existsSync(componentsPath)) {
+        res.sendFile(componentsPath);
+    } else {
+        res.status(404).json({ error: 'Components file not found' });
+    }
+});
+
 // API endpoint to execute task (local or cloud)
 app.post('/api/execute', async (req, res) => {
     const { prompt, mode = 'local', agent = 'development-team/frontend-developer' } = req.body;
@@ -162,10 +172,141 @@ app.get('/api/tasks', (req, res) => {
     });
 });
 
+// API endpoint to install agent
+app.post('/api/install-agent', async (req, res) => {
+    const { agentName } = req.body;
+    
+    if (!agentName) {
+        return res.status(400).json({
+            success: false,
+            error: 'Agent name is required'
+        });
+    }
+    
+    try {
+        console.log(chalk.blue('🔧 Installing agent:'), chalk.cyan(agentName));
+        
+        // Use the CLI tool to install the agent
+        const child = spawn('npx', ['claude-code-templates@latest', '--agent', agentName, '--yes'], {
+            cwd: process.cwd(),
+            stdio: ['pipe', 'pipe', 'pipe'],
+            shell: true
+        });
+        
+        let output = [];
+        let error = [];
+        
+        child.stdout.on('data', (data) => {
+            const lines = data.toString().split('\n').filter(line => line.trim());
+            output.push(...lines);
+        });
+        
+        child.stderr.on('data', (data) => {
+            const lines = data.toString().split('\n').filter(line => line.trim());
+            error.push(...lines);
+        });
+        
+        child.on('close', (code) => {
+            if (code === 0) {
+                console.log(chalk.green('✅ Agent installed successfully:'), chalk.cyan(agentName));
+                res.json({
+                    success: true,
+                    message: `Agent ${agentName} installed successfully`,
+                    output: output.join('\n')
+                });
+            } else {
+                console.error(chalk.red('❌ Agent installation failed:'), chalk.cyan(agentName));
+                res.status(500).json({
+                    success: false,
+                    error: `Failed to install agent ${agentName}`,
+                    output: error.join('\n')
+                });
+            }
+        });
+        
+        child.on('error', (error) => {
+            console.error(chalk.red('❌ Agent installation error:'), error.message);
+            res.status(500).json({
+                success: false,
+                error: `Installation error: ${error.message}`
+            });
+        });
+        
+    } catch (error) {
+        console.error(chalk.red('❌ Failed to start agent installation:'), error.message);
+        res.status(500).json({
+            success: false,
+            error: `Failed to start installation: ${error.message}`
+        });
+    }
+});
+
+async function checkAndInstallAgent(agentName, task) {
+    // Check if agent exists in .claude directory
+    const claudeDir = path.join(process.cwd(), '.claude');
+    const agentPath = path.join(claudeDir, 'agents', `${agentName}.md`);
+    
+    if (fs.existsSync(agentPath)) {
+        return true; // Agent already exists
+    }
+    
+    task.output.push(`🔧 Agent ${agentName} not found locally. Installing...`);
+    
+    return new Promise((resolve, reject) => {
+        const child = spawn('npx', ['claude-code-templates@latest', '--agent', agentName, '--yes'], {
+            cwd: process.cwd(),
+            stdio: ['pipe', 'pipe', 'pipe'],
+            shell: true
+        });
+        
+        child.stdout.on('data', (data) => {
+            const lines = data.toString().split('\n').filter(line => line.trim());
+            lines.forEach(line => {
+                task.output.push(`📦 ${line}`);
+            });
+        });
+        
+        child.stderr.on('data', (data) => {
+            const lines = data.toString().split('\n').filter(line => line.trim());
+            lines.forEach(line => {
+                task.output.push(`⚠️ ${line}`);
+            });
+        });
+        
+        child.on('close', (code) => {
+            if (code === 0) {
+                task.output.push(`✅ Agent ${agentName} installed successfully`);
+                resolve(true);
+            } else {
+                task.output.push(`❌ Failed to install agent ${agentName}`);
+                resolve(false);
+            }
+        });
+        
+        child.on('error', (error) => {
+            task.output.push(`❌ Installation error: ${error.message}`);
+            resolve(false);
+        });
+    });
+}
+
 async function executeE2BTask(task) {
     try {
         task.output.push('🚀 Initializing E2B sandbox execution...');
         task.progress = 10;
+        
+        // Check and install agent if needed
+        if (task.agent !== 'development-team/frontend-developer') {
+            task.output.push(`🔍 Checking agent: ${task.agent}`);
+            const agentInstalled = await checkAndInstallAgent(task.agent, task);
+            if (!agentInstalled) {
+                task.status = 'failed';
+                task.endTime = new Date();
+                task.output.push(`❌ Could not install required agent: ${task.agent}`);
+                return;
+            }
+            task.progress = 15;
+        }
         
         const e2bLauncherPath = path.join(__dirname, '../components/sandbox/e2b/e2b-launcher.py');
         const agentParam = `--agent=${task.agent} --yes`;
@@ -274,21 +415,50 @@ async function executeLocalTask(task) {
         task.output.push('🖥️  Executing Claude Code locally...');
         task.progress = 10;
         
+        // Check and install agent if needed
+        if (task.agent !== 'development-team/frontend-developer') {
+            task.output.push(`🔍 Checking agent: ${task.agent}`);
+            const agentInstalled = await checkAndInstallAgent(task.agent, task);
+            if (!agentInstalled) {
+                task.status = 'failed';
+                task.endTime = new Date();
+                task.output.push(`❌ Could not install required agent: ${task.agent}`);
+                return;
+            }
+            task.progress = 15;
+        }
+        
         task.output.push('🔍 Checking if Claude Code CLI is available...');
         
-        // Execute Claude Code locally
-        const child = spawn('claude', [task.prompt], {
+        // For local execution, we'll include the agent in the prompt if specified
+        let finalPrompt = task.prompt;
+        if (task.agent && task.agent !== 'development-team/frontend-developer') {
+            finalPrompt = `As a ${task.agent.replace('-', ' ')}, ${task.prompt}`;
+        }
+        
+        // Execute Claude Code locally with just the prompt
+        const child = spawn('claude', [finalPrompt], {
             cwd: process.cwd(),
-            stdio: ['pipe', 'pipe', 'pipe'],
+            stdio: ['ignore', 'pipe', 'pipe'], // Ignore stdin to prevent hanging
             env: {
                 ...process.env,
                 PATH: process.env.PATH
             },
-            shell: true // Use shell to find claude command
+            shell: true, // Use shell to find claude command
+            timeout: 300000 // 5 minute timeout
         });
         
         task.output.push('🚀 Claude Code execution started');
         task.progress = 30;
+        
+        // Set up timeout to prevent hanging
+        const executionTimeout = setTimeout(() => {
+            task.output.push('⏰ Execution timeout reached (5 minutes)');
+            task.output.push('💡 This might indicate Claude Code is waiting for input or has hung');
+            task.status = 'failed';
+            task.endTime = new Date();
+            child.kill('SIGTERM');
+        }, 300000); // 5 minutes
         
         // Handle stdout
         child.stdout.on('data', (data) => {
@@ -317,6 +487,8 @@ async function executeLocalTask(task) {
         
         // Handle process exit
         child.on('close', (code) => {
+            clearTimeout(executionTimeout); // Clear timeout when process exits
+            
             if (code === 0) {
                 task.status = 'completed';
                 task.endTime = new Date();
@@ -340,6 +512,8 @@ async function executeLocalTask(task) {
         
         // Handle process error
         child.on('error', (error) => {
+            clearTimeout(executionTimeout); // Clear timeout on error
+            
             task.status = 'failed';
             task.endTime = new Date();
             

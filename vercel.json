@@ -5,8 +5,8 @@
   "outputDirectory": "docs",
   "rewrites": [
     {
-      "source": "/component/:type/:name",
-      "destination": "/component.html?type=:type&name=:name"
+      "source": "/component/:type/:name*",
+      "destination": "/component.html"
     },
     {
       "source": "/api/(.*)",

@@ -1,5 +1,160 @@
 import os
 import json
+import requests
+from collections import defaultdict
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+def fetch_download_stats():
+    """
+    Fetch download statistics from Supabase
+    Returns a dictionary with component_type-component_name as key and download count as value
+    """
+    print("📊 Fetching download statistics from Supabase...")
+    
+    # Get Supabase credentials (same as generate_trending_data.py)
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_api_key = os.getenv("SUPABASE_API_KEY")
+    
+    if not supabase_url or not supabase_api_key:
+        print("⚠️ Warning: Missing Supabase credentials, skipping download stats")
+        return {}
+    
+    try:
+        headers = {
+            'apikey': supabase_api_key,
+            'Authorization': f'Bearer {supabase_api_key}'
+        }
+        
+        # First, let's query component_downloads to aggregate counts per component
+        # We need to handle pagination since there can be many records
+        api_url = f"{supabase_url}/rest/v1/component_downloads"
+        
+        all_downloads = []
+        offset = 0
+        limit = 1000
+        
+        # Fetch all records with pagination
+        max_pages = 100  # Safety limit
+        for page in range(max_pages):
+            paginated_headers = headers.copy()
+            paginated_headers['Range'] = f'{offset}-{offset + limit - 1}'
+            
+            response = requests.get(api_url, headers=paginated_headers)
+            
+            if response.status_code not in [200, 206]:
+                print(f"  Page {page+1}: Got status {response.status_code}, stopping")
+                break
+                
+            batch = response.json()
+            if not batch:
+                break
+                
+            all_downloads.extend(batch)
+            
+            # Check if we have more records to fetch
+            content_range = response.headers.get('content-range', '')
+            
+            # If we get a range like "45000-45977/*", check if we got less than limit records
+            if len(batch) < limit:
+                break  # We've reached the end
+            
+            # Also check for explicit total if provided
+            if content_range and '/' in content_range:
+                parts = content_range.split('/')
+                if parts[1] != '*':
+                    try:
+                        total = int(parts[1])
+                        if offset + limit >= total:
+                            break
+                    except ValueError:
+                        pass
+            
+            offset += limit
+            
+            # Progress indicator every 10 pages
+            if (page + 1) % 10 == 0:
+                print(f"  Fetched {len(all_downloads)} records so far...")
+        
+        print(f"📊 Total records fetched: {len(all_downloads)}")
+        
+        # If we fetched records, use them
+        if len(all_downloads) > 0:
+            # Process component_downloads data
+            downloads = all_downloads
+            
+            # Aggregate downloads by component
+            download_counts = {}
+            component_totals = defaultdict(int)
+            
+            for download in downloads:
+                component_type = download.get('component_type', '')
+                component_name = download.get('component_name', '')
+                
+                if component_type and component_name:
+                    # Create a key for aggregation
+                    key = f"{component_type}|{component_name}"
+                    component_totals[key] += 1
+            
+            # Convert to the format we need
+            type_mapping = {
+                'agent': 'agents',
+                'command': 'commands',
+                'setting': 'settings',
+                'hook': 'hooks',
+                'mcp': 'mcps',
+                'template': 'templates'
+            }
+            
+            for key, count in component_totals.items():
+                component_type, component_name = key.split('|')
+                mapped_type = type_mapping.get(component_type, component_type + 's')
+                final_key = f"{mapped_type}/{component_name}"
+                download_counts[final_key] = count
+            
+            print(f"✅ Fetched and aggregated {len(download_counts)} component download stats")
+            return download_counts
+        else:
+            # Try alternative: fetch from download_stats table if it exists
+            print("⚠️ No data from component_downloads, trying download_stats table...")
+            alt_url = f"{supabase_url}/rest/v1/download_stats"
+            alt_response = requests.get(alt_url, headers=headers)
+            
+            if alt_response.status_code == 200:
+                print("📊 Using download_stats table instead...")
+                stats = alt_response.json()
+                download_counts = {}
+                
+                for stat in stats:
+                    component_type = stat.get('component_type', '')
+                    component_name = stat.get('component_name', '')
+                    total_downloads = stat.get('total_downloads', 0)
+                    
+                    # Map to plural form
+                    type_mapping = {
+                        'agent': 'agents',
+                        'command': 'commands',
+                        'setting': 'settings',
+                        'hook': 'hooks',
+                        'mcp': 'mcps',
+                        'template': 'templates'
+                    }
+                    
+                    mapped_type = type_mapping.get(component_type, component_type + 's')
+                    key = f"{mapped_type}/{component_name}"
+                    download_counts[key] = total_downloads
+                
+                print(f"✅ Fetched stats for {len(download_counts)} components from download_stats")
+                return download_counts
+            else:
+                print("⚠️ No download stats available")
+                return {}
+        
+    except Exception as e:
+        print(f"⚠️ Error fetching download stats: {e}")
+        return {}
 
 def scan_directory_recursively(directory_path, relative_to_path=None):
     """
@@ -24,12 +179,15 @@ def scan_directory_recursively(directory_path, relative_to_path=None):
 def generate_components_json():
     """
     Scans the cli-tool/components and cli-tool/templates directories and generates a components.json file
-    for the static website, including the content of each file.
+    for the static website, including the content of each file and download statistics.
     """
     components_base_path = 'cli-tool/components'
     templates_base_path = 'cli-tool/templates'
     output_path = 'docs/components.json'
     components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'sandbox': [], 'templates': []}
+    
+    # Fetch download statistics
+    download_stats = fetch_download_stats()
     component_types = ['agents', 'commands', 'mcps', 'settings', 'hooks', 'sandbox']
 
     print(f"Starting scan of {components_base_path} and {templates_base_path}...")
@@ -82,13 +240,19 @@ def generate_components_json():
                         except Exception as e:
                             print(f"Warning: Could not read file {file_path}: {e}")
 
+                        # Look up download count for this component
+                        # The key in download_stats uses the plural form: agents/category/name
+                        download_key = f"{component_type}/{category}/{name}"
+                        downloads = download_stats.get(download_key, 0)
+                        
                         component = {
                             'name': name,
                             'path': os.path.join(category, file_name).replace("\\", "/"),
                             'category': category,
                             'type': component_type[:-1],  # singular form
                             'content': content,  # Add file content
-                            'description': description  # Add description for MCPs
+                            'description': description,  # Add description for MCPs
+                            'downloads': downloads  # Add download count
                         }
                         components_data[component_type].append(component)
 
@@ -116,6 +280,10 @@ def generate_components_json():
                             # For other directories, just add the directory name (optional)
                             pass
                 
+                # Look up download count for this template
+                template_download_key = f"templates/{language_dir}"
+                template_downloads = download_stats.get(template_download_key, 0)
+                
                 # Create language template entry
                 language_template = {
                     'name': language_dir,
@@ -125,7 +293,8 @@ def generate_components_json():
                     'category': 'languages',
                     'description': f'{language_dir.title()} project template',
                     'files': language_files,
-                    'installCommand': f'npx claude-code-templates@latest --template={language_dir} --yes'
+                    'installCommand': f'npx claude-code-templates@latest --template={language_dir} --yes',
+                    'downloads': template_downloads
                 }
                 components_data['templates'].append(language_template)
                 
@@ -152,6 +321,10 @@ def generate_components_json():
                                         # For other directories, just add the directory name (optional)
                                         pass
                             
+                            # Look up download count for this framework
+                            framework_download_key = f"templates/{framework_dir}"
+                            framework_downloads = download_stats.get(framework_download_key, 0)
+                            
                             # Create framework template entry
                             framework_template = {
                                 'name': framework_dir,
@@ -162,7 +335,8 @@ def generate_components_json():
                                 'language': language_dir,
                                 'description': f'{framework_dir.title()} with {language_dir.title()}',
                                 'files': framework_files,
-                                'installCommand': f'npx claude-code-templates@latest --template={framework_dir} --yes'
+                                'installCommand': f'npx claude-code-templates@latest --template={framework_dir} --yes',
+                                'downloads': framework_downloads
                             }
                             components_data['templates'].append(framework_template)
     else:

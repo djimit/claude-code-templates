@@ -23,6 +23,14 @@
     {
       "source": "/component/([^/]+)/([^/]+)",
       "destination": "/component.html?type=$1&name=$2"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/js/$1"
+    },
+    {
+      "source": "/css/(.*)",
+      "destination": "/css/$1"
     }
   ],
   "cleanUrls": true,

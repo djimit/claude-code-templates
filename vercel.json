@@ -19,6 +19,10 @@
     {
       "source": "/nextjs-vercel-claude-code-integration",
       "destination": "/blog/nextjs-vercel-claude-code-integration/"
+    },
+    {
+      "source": "/component/([^/]+)/([^/]+)",
+      "destination": "/component.html?type=$1&name=$2"
     }
   ],
   "cleanUrls": true,

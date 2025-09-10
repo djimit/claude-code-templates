@@ -1,6 +1,6 @@
 {
   "name": "claude-code-templates",
-  "version": "1.21.5",
+  "version": "1.21.10",
   "description": "CLI tool to setup Claude Code configurations with framework-specific commands, automation hooks and MCP Servers for your projects",
   "main": "src/index.js",
   "bin": {
@@ -86,6 +86,7 @@
   "files": [
     "bin/",
     "src/",
+    "components/sandbox/e2b/",
     "README.md"
   ],
   "devDependencies": {

@@ -125,7 +125,6 @@ def main():
                     retry_count += 1
                     if retry_count < max_retries:
                         print(f"⚠️  WebSocket connection failed (attempt {retry_count}), retrying in 3 seconds...")
-                        import time
                         time.sleep(3)
                         continue
                     else:
@@ -355,7 +354,20 @@ Now, please execute this request and create all necessary files."""
         print("📁 GENERATED FILES:")
         print("=" * 60)
         
-        files_result = sbx.commands.run("find . -type f \\( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.py' -o -name '*.json' -o -name '*.md' -o -name '*.tsx' -o -name '*.ts' \\) ! -path '*/.claude/*' ! -path '*/node_modules/*' | head -20")
+        # More comprehensive file search - include jsx, tsx, and other common extensions
+        files_result = sbx.commands.run("""find . -type f \\( \
+            -name '*.html' -o -name '*.js' -o -name '*.jsx' -o \
+            -name '*.ts' -o -name '*.tsx' -o \
+            -name '*.css' -o -name '*.scss' -o -name '*.sass' -o \
+            -name '*.py' -o -name '*.json' -o -name '*.md' -o \
+            -name '*.vue' -o -name '*.svelte' -o \
+            -name '*.yaml' -o -name '*.yml' -o \
+            -name '*.xml' -o -name '*.txt' -o \
+            -name '*.env' -o -name '*.env.example' -o \
+            -name '*.sh' -o -name '*.bash' -o \
+            -name '*.go' -o -name '*.rs' -o -name '*.java' -o \
+            -name '*.php' -o -name '*.rb' -o -name '*.swift' \
+        \\) ! -path '*/.npm/*' ! -path '*/.claude/*' ! -path '*/node_modules/*' | head -50""")
         if files_result.stdout.strip():
             print(files_result.stdout)
             
@@ -377,7 +389,7 @@ Now, please execute this request and create all necessary files."""
             files_to_download = files_result.stdout.strip().split('\n')
             for file_path in files_to_download:
                 file_path = file_path.strip()
-                if file_path:  # Already filtered out .claude and node_modules in find command
+                if file_path and not file_path.startswith('./.npm/'):  # Skip npm cache files
                     try:
                         # Read file content from sandbox
                         file_content = sbx.commands.run(f"cat '{file_path}'", timeout=30)

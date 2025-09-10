@@ -2392,32 +2392,67 @@ async function executeSandbox(options, targetDir) {
     const sandboxDir = path.join(targetDir, '.claude', 'sandbox');
     await fs.ensureDir(sandboxDir);
     
-    // Download E2B component files from new structure
-    const baseUrl = 'https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/sandbox/e2b';
+    // Copy E2B component files from the installed package
+    const componentsDir = path.join(__dirname, '..', 'components', 'sandbox', 'e2b');
     
-    // Download launcher script
-    const launcherResponse = await fetch(`${baseUrl}/e2b-launcher.py`);
-    if (!launcherResponse.ok) {
-      throw new Error(`Failed to download e2b-launcher.py: ${launcherResponse.status} ${launcherResponse.statusText}`);
+    try {
+      // Check if files exist locally (from npm package)
+      if (await fs.pathExists(componentsDir)) {
+        // Copy files from local package
+        console.log(chalk.gray('📦 Using local E2B component files...'));
+        
+        const launcherPath = path.join(componentsDir, 'e2b-launcher.py');
+        const requirementsPath = path.join(componentsDir, 'requirements.txt');
+        const envExamplePath = path.join(componentsDir, '.env.example');
+        
+        if (await fs.pathExists(launcherPath)) {
+          await fs.copyFile(launcherPath, path.join(sandboxDir, 'e2b-launcher.py'));
+          await fs.chmod(path.join(sandboxDir, 'e2b-launcher.py'), 0o755);
+        } else {
+          throw new Error('e2b-launcher.py not found in package');
+        }
+        
+        if (await fs.pathExists(requirementsPath)) {
+          await fs.copyFile(requirementsPath, path.join(sandboxDir, 'requirements.txt'));
+        }
+        
+        if (await fs.pathExists(envExamplePath)) {
+          await fs.copyFile(envExamplePath, path.join(sandboxDir, '.env.example'));
+        }
+      } else {
+        // Fallback to downloading from GitHub if not found locally
+        console.log(chalk.gray('📥 Downloading E2B component files from GitHub...'));
+        
+        const baseUrl = 'https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/sandbox/e2b';
+        
+        // Download launcher script
+        const launcherResponse = await fetch(`${baseUrl}/e2b-launcher.py`);
+        if (!launcherResponse.ok) {
+          throw new Error(`Failed to download e2b-launcher.py: ${launcherResponse.status} ${launcherResponse.statusText}`);
+        }
+        const launcherContent = await launcherResponse.text();
+        await fs.writeFile(path.join(sandboxDir, 'e2b-launcher.py'), launcherContent, { mode: 0o755 });
+        
+        // Download requirements.txt
+        const requirementsResponse = await fetch(`${baseUrl}/requirements.txt`);
+        if (!requirementsResponse.ok) {
+          throw new Error(`Failed to download requirements.txt: ${requirementsResponse.status} ${requirementsResponse.statusText}`);
+        }
+        const requirementsContent = await requirementsResponse.text();
+        await fs.writeFile(path.join(sandboxDir, 'requirements.txt'), requirementsContent);
+        
+        // Download .env.example
+        const envExampleResponse = await fetch(`${baseUrl}/.env.example`);
+        if (!envExampleResponse.ok) {
+          throw new Error(`Failed to download .env.example: ${envExampleResponse.status} ${envExampleResponse.statusText}`);
+        }
+        const envExampleContent = await envExampleResponse.text();
+        await fs.writeFile(path.join(sandboxDir, '.env.example'), envExampleContent);
+      }
+    } catch (error) {
+      spinner.fail(`Failed to install E2B component: ${error.message}`);
+      throw error;
     }
-    const launcherContent = await launcherResponse.text();
-    await fs.writeFile(path.join(sandboxDir, 'e2b-launcher.py'), launcherContent, { mode: 0o755 });
-    
-    // Download requirements.txt
-    const requirementsResponse = await fetch(`${baseUrl}/requirements.txt`);
-    if (!requirementsResponse.ok) {
-      throw new Error(`Failed to download requirements.txt: ${requirementsResponse.status} ${requirementsResponse.statusText}`);
-    }
-    const requirementsContent = await requirementsResponse.text();
-    await fs.writeFile(path.join(sandboxDir, 'requirements.txt'), requirementsContent);
-    
-    // Download .env.example
-    const envExampleResponse = await fetch(`${baseUrl}/.env.example`);
-    if (!envExampleResponse.ok) {
-      throw new Error(`Failed to download .env.example: ${envExampleResponse.status} ${envExampleResponse.statusText}`);
-    }
-    const envExampleContent = await envExampleResponse.text();
-    await fs.writeFile(path.join(sandboxDir, '.env.example'), envExampleContent);
     
     spinner.succeed('E2B sandbox component installed successfully');
     

@@ -67,7 +67,31 @@ const activeTasks = new Map();
 
 // Serve the sandbox interface at root
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../docs/sandbox-interface.html'));
+    // Try local file first (when running from npm package)
+    const localPath = path.join(__dirname, 'sandbox-interface.html');
+    // Fallback to docs folder (when running from source)
+    const docsPath = path.join(__dirname, '../../docs/sandbox-interface.html');
+    
+    if (fs.existsSync(localPath)) {
+        res.sendFile(localPath);
+    } else if (fs.existsSync(docsPath)) {
+        res.sendFile(docsPath);
+    } else {
+        res.status(404).send(`
+            <html>
+                <body style="font-family: system-ui; padding: 40px; background: #0f0f0f; color: #e0e0e0;">
+                    <h1>❌ Sandbox Interface Not Found</h1>
+                    <p>The sandbox-interface.html file could not be found.</p>
+                    <p>Please reinstall the package or check your installation.</p>
+                    <pre style="background: #1a1a1a; padding: 10px; border-radius: 5px;">
+Tried paths:
+- ${localPath}
+- ${docsPath}
+                    </pre>
+                </body>
+            </html>
+        `);
+    }
 });
 
 // Serve static files for CSS, JS, etc. (but not index.html at root)

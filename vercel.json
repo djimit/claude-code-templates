@@ -5,8 +5,8 @@
   "outputDirectory": "docs",
   "rewrites": [
     {
-      "source": "/component/([^/]+)/([^/]+)$",
-      "destination": "/component.html?type=$1&name=$2"
+      "source": "/component/:type/:name",
+      "destination": "/component.html?type=:type&name=:name"
     },
     {
       "source": "/api/(.*)",
@@ -23,18 +23,6 @@
     {
       "source": "/nextjs-vercel-claude-code-integration",
       "destination": "/blog/nextjs-vercel-claude-code-integration/"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/components\\.json$",
-      "dest": "/components.json",
-      "headers": {"Cache-Control": "public, max-age=300"}
-    },
-    {
-      "src": "/components-metadata\\.json$", 
-      "dest": "/components-metadata.json",
-      "headers": {"Cache-Control": "public, max-age=300"}
     }
   ],
   "cleanUrls": false,
@@ -79,6 +67,19 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
         }
       ]
     }

@@ -23,17 +23,9 @@
     {
       "source": "/nextjs-vercel-claude-code-integration",
       "destination": "/blog/nextjs-vercel-claude-code-integration/"
-    },
-    {
-      "source": "/js/(.*)",
-      "destination": "/js/$1"
-    },
-    {
-      "source": "/css/(.*)",
-      "destination": "/css/$1"
     }
   ],
-  "cleanUrls": true,
+  "cleanUrls": false,
   "headers": [
     {
       "source": "/(.*)",
@@ -53,29 +45,24 @@
       ]
     },
     {
-      "source": "/docs/js/(.*).js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/docs/css/(.*).css",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/docs/blog/(.*).js",
+      "source": "/js/(.*).js",
       "headers": [
         {
           "key": "Content-Type",
           "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/css/(.*).css",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css; charset=utf-8"
         },
         {
           "key": "Cache-Control",

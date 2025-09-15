@@ -70,4 +70,4 @@ npx claude-code-templates@latest --hook notifications/discord-notifications
 
 ---
 
-**Next step:** [Installation Methods](./installation) - Learn the different ways to install components
+**Next step:** [CLI Options](../cli-options) - Learn the different ways to install components

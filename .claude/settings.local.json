@@ -27,7 +27,8 @@
       "Bash(npm version:*)",
       "Bash(npm link:*)",
       "Bash(claude-code-templates:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   },

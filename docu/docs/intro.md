@@ -29,10 +29,10 @@ npx claude-code-templates@latest --command testing/generate-tests
 
 ## Next Steps
 
-👉 **[Discover Components](./discover-components)** - Explore and search components on aitmpl.com
+👉 **[Discover Components](https://aitmpl.com)** - Explore and search components on aitmpl.com
 
-👉 **[Installation](./installation)** - Methods to download components  
+👉 **[CLI Options](./cli-options)** - Methods to download components  
 
-👉 **[Catalog](./catalog)** - Complete list of available components
+👉 **[Components](./components/overview)** - Complete list of available components
 
-👉 **[Tools](./tools)** - Analytics, health check, sandbox, and more
+👉 **[Tools](./tools/overview)** - Analytics, health check, sandbox, and more

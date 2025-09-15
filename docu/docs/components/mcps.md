@@ -1,510 +1,109 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
-# MCPs (Model Context Protocol) 🔌
+# MCPs (Model Context Protocol)
 
-**MCPs** (Model Context Protocol integrations) enable Claude Code to interact with external services and tools, dramatically expanding its capabilities beyond the local development environment. They provide secure, structured ways to connect Claude Code with databases, APIs, version control systems, and other development tools.
+External service integrations that extend Claude Code with real-time data access. Browse and install from **[aitmpl.com](https://aitmpl.com)**.
 
-## What Are MCPs?
+## 🔌 What are MCPs?
 
-MCPs are standardized integrations that allow Claude Code to:
+MCPs connect Claude Code to external services, databases, and APIs. They provide real-time access to live data and services during conversations.
 
-- **Access External Data**: Connect to databases, APIs, and cloud services
-- **Interact with Tools**: Use external development tools and services directly
-- **Extend Functionality**: Add capabilities that go beyond file-based operations
-- **Maintain Security**: Provide controlled access to external resources with proper authentication
+## Installation
 
-## Available MCPs
-
-### 🔗 Version Control Integration
-
-#### GitHub Integration MCP
-**Purpose**: Direct GitHub repository interactions and management
-
-**Capabilities**:
-- Repository browsing and file management
-- Issue creation and management
-- Pull request operations
-- Commit history analysis
-- Branch management
-- Release management
-
-**Configuration Example**:
-```json
-{
-  "name": "github-integration",
-  "type": "mcp",
-  "config": {
-    "apiUrl": "https://api.github.com",
-    "authentication": "token",
-    "permissions": ["repo", "issues", "pull_requests"],
-    "rateLimit": {
-      "requests": 5000,
-      "window": "3600"
-    }
-  }
-}
-```
-
-**Usage Examples**:
-```bash
-# With GitHub MCP enabled, Claude Code can:
-# - Analyze repository structure and history
-# - Create issues directly from code analysis
-# - Generate pull request descriptions
-# - Review commit patterns and suggest improvements
-# - Automate release notes generation
-```
-
-#### GitLab Integration MCP  
-**Purpose**: GitLab repository and CI/CD pipeline management
-
-**Capabilities**:
-- Repository operations
-- Merge request management
-- CI/CD pipeline monitoring
-- Issue tracking integration
-- Wiki management
-
-### 🗄️ Database Integration
-
-#### Database Integration MCP
-**Purpose**: Connect to and query databases directly from Claude Code
-
-**Supported Databases**:
-- PostgreSQL
-- MySQL/MariaDB
-- SQLite
-- MongoDB
-- Redis
-
-**Configuration Example**:
-```json
-{
-  "name": "database-integration",
-  "type": "mcp",
-  "config": {
-    "connections": {
-      "primary": {
-        "type": "postgresql",
-        "host": "localhost",
-        "port": 5432,
-        "database": "myapp",
-        "authentication": "credentials"
-      },
-      "cache": {
-        "type": "redis",
-        "host": "localhost",
-        "port": 6379
-      }
-    },
-    "permissions": {
-      "read": true,
-      "write": false,
-      "schema": false
-    }
-  }
-}
-```
-
-**Capabilities**:
-- Query execution and result analysis
-- Schema exploration and documentation
-- Performance optimization suggestions
-- Data integrity validation
-- Migration planning assistance
-
-**Usage Examples**:
-```bash
-# With Database MCP enabled, Claude Code can:
-# - Analyze query performance and suggest optimizations
-# - Generate database documentation from schema
-# - Validate data consistency across tables
-# - Suggest indexing strategies
-# - Help plan database migrations
-```
-
-### 🚀 Cloud Services Integration
-
-#### AWS Integration MCP
-**Purpose**: Amazon Web Services resource management and monitoring
-
-**Supported Services**:
-- EC2 instances
-- S3 buckets
-- RDS databases
-- Lambda functions
-- CloudFormation stacks
-
-**Configuration Example**:
-```json
-{
-  "name": "aws-integration",
-  "type": "mcp",
-  "config": {
-    "region": "us-east-1",
-    "authentication": "iam-role",
-    "services": ["ec2", "s3", "rds", "lambda"],
-    "permissions": {
-      "read": true,
-      "write": false,
-      "billing": false
-    }
-  }
-}
-```
-
-**Capabilities**:
-- Resource monitoring and optimization
-- Cost analysis and recommendations
-- Security best practices validation
-- Infrastructure as Code assistance
-- Deployment guidance
-
-#### Docker Integration MCP
-**Purpose**: Container management and optimization
-
-**Configuration Example**:
-```json
-{
-  "name": "docker-integration",
-  "type": "mcp",
-  "config": {
-    "dockerHost": "unix:///var/run/docker.sock",
-    "registries": [
-      {
-        "name": "docker-hub",
-        "url": "https://index.docker.io/v1/"
-      }
-    ],
-    "permissions": {
-      "read": true,
-      "build": true,
-      "run": false
-    }
-  }
-}
-```
-
-**Capabilities**:
-- Dockerfile optimization
-- Image security scanning
-- Multi-stage build recommendations
-- Container orchestration guidance
-- Registry management
-
-### 🔍 Analysis & Monitoring
-
-#### DeepGraph React MCP
-**Purpose**: Advanced React component analysis and visualization
-
-**Configuration Example**:
-```json
-{
-  "name": "deepgraph-react",
-  "type": "mcp",
-  "config": {
-    "analysisDepth": "deep",
-    "componentTracking": true,
-    "performanceMetrics": true,
-    "dependencyMapping": true
-  }
-}
-```
-
-**Capabilities**:
-- Component dependency mapping
-- Performance bottleneck identification
-- State flow analysis
-- Render pattern optimization
-- Bundle analysis and recommendations
-
-**Usage Examples**:
-```bash
-# With DeepGraph React MCP enabled, Claude Code can:
-# - Generate visual component dependency graphs
-# - Identify circular dependencies
-# - Suggest component splitting strategies
-# - Analyze prop drilling patterns
-# - Recommend state management solutions
-```
-
-#### API Monitoring MCP
-**Purpose**: External API monitoring and analysis
-
-**Capabilities**:
-- API endpoint health monitoring
-- Response time analysis
-- Error rate tracking
-- Documentation generation
-- Rate limiting optimization
-
-## Installation & Configuration
-
-### CLI Parameter Installation (Recommended)
-Install MCPs using the `--mcp` parameter:
+### 📦 Basic Installation
+Install this component locally in your project. Works with your existing Claude Code setup.
 
 ```bash
-# Install specific MCPs directly
-npx claude-code-templates@latest --mcp=github-integration --yes
-npx claude-code-templates@latest --mcp=database-integration --yes
-npx claude-code-templates@latest --mcp=deepgraph-react --yes
-npx claude-code-templates@latest --mcp=aws-integration --yes
-npx claude-code-templates@latest --mcp=docker-integration --yes
+npx claude-code-templates@latest --mcp database/supabase --yes
 ```
 
-### Direct Installation Method (Alternative)
-MCPs can also be installed as JSON configuration files via direct download:
-
+### Multiple MCPs
 ```bash
-# Install GitHub integration MCP
-curl -o ./github-integration.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/github-integration.json
-
-# Install database integration MCP
-curl -o ./database-integration.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/database-integration.json
-
-# Install DeepGraph React MCP
-curl -o ./deepgraph-react.json \
-  https://raw.githubusercontent.com/davila7/claude-code-templates/main/components/mcps/deepgraph-react.json
+npx claude-code-templates@latest --mcp database/supabase,development/github-integration --yes
 ```
 
-### Configuration Management
-After installation, MCPs need to be configured:
+## ⚙️ Configuration
 
-#### 1. Environment Variables
-Set up required environment variables:
+Most MCPs require configuration after installation:
 
+### API Keys
+Add required API keys to environment variables:
 ```bash
-# GitHub integration
-export GITHUB_TOKEN="your-github-token"
-export GITHUB_REPO="username/repository"
+# Database MCPs
+DATABASE_URL=your_database_url
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_anon_key
 
-# Database integration
-export DB_HOST="localhost"
-export DB_USER="username"
-export DB_PASSWORD="password"
+# GitHub MCP
+GITHUB_TOKEN=your_github_token
 
-# AWS integration
-export AWS_REGION="us-east-1"
-export AWS_ACCESS_KEY_ID="your-access-key"
-export AWS_SECRET_ACCESS_KEY="your-secret-key"
+# Cloud MCPs
+AWS_ACCESS_KEY_ID=your_aws_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret
 ```
 
-#### 2. Update Claude Code Configuration
-Add MCPs to your `CLAUDE.md` file:
+## 💡 Usage After Installation
 
-```markdown
-## Active MCPs
+MCPs provide real-time data access:
+- **Query databases** directly in conversations
+- **Access GitHub repos** and issues
+- **Browse documentation** with context
+- **Control browsers** for testing
+- **Interact with cloud services**
 
-### GitHub Integration
-This project uses GitHub MCP for repository management and automation.
-- Enabled features: issues, pull requests, repository browsing
-- Authentication: GitHub token
-- Permissions: read/write repository, read issues
+## 📁 MCP Categories
 
-### Database Integration  
-Direct database access for query optimization and schema analysis.
-- Supported databases: PostgreSQL (primary), Redis (cache)
-- Permissions: read-only access
-- Use cases: query optimization, schema documentation
-```
+Browse MCPs by integration type to connect Claude Code with external services:
 
-#### 3. Verify Installation
-Test MCP connectivity:
+### Database Integrations
+Connect to databases and data sources for real-time data access. Examples: `supabase` for Supabase integration, `postgresql-integration` for PostgreSQL access, `mongodb-integration` for MongoDB queries.
 
-```bash
-# With MCPs configured, Claude Code can verify connections
-# Test database connectivity
-# Verify GitHub API access
-# Check AWS service permissions
-```
+### Development Tools
+GitHub, version control, and development service connections. Examples: `github-integration` for repository access, `filesystem-access` for file operations, `npm-registry` for package management.
 
-## Security Considerations
+### Documentation & Context
+Documentation and knowledge base access for contextual information. Examples: `context7` for documentation lookup, `confluence-integration` for enterprise wikis, `notion-integration` for team knowledge bases.
 
-### Authentication & Authorization
+### Browser Automation
+Web scraping and browser control for testing and automation. Examples: `playwright-mcp` for web automation, `browsermcp` for browser control, `selenium-integration` for legacy browser testing.
 
-#### Best Practices
-- **Use Environment Variables**: Never hardcode credentials in configuration files
-- **Minimal Permissions**: Grant only necessary permissions to MCPs
-- **Token Rotation**: Regularly rotate API tokens and keys
-- **Network Security**: Use encrypted connections (HTTPS/TLS) for all external communications
+### Cloud Services
+AWS, Google Cloud, and other cloud platform integrations. Examples: `aws-integration` for AWS services, `gcp-integration` for Google Cloud, `vercel-integration` for deployment management.
 
-#### Security Configuration
-```json
-{
-  "name": "secure-mcp",
-  "type": "mcp",
-  "security": {
-    "authentication": {
-      "method": "environment-variable",
-      "tokenVariable": "MCP_API_TOKEN"
-    },
-    "permissions": {
-      "read": true,
-      "write": false,
-      "admin": false
-    },
-    "networking": {
-      "enforceHttps": true,
-      "allowedHosts": ["api.example.com"],
-      "timeout": 30000
-    }
-  }
-}
-```
+### Communication
+Slack, Discord, and other communication tool connections. Examples: `slack-integration` for team communication, `discord-integration` for community management, `teams-integration` for enterprise chat.
 
-### Data Privacy
-- **Data Minimization**: Only access data necessary for the task
-- **Local Processing**: Process sensitive data locally when possible
-- **Audit Logging**: Log MCP access and operations for security monitoring
-- **Compliance**: Ensure MCPs comply with relevant data protection regulations
+## 🎯 How to Choose MCPs
 
-## Working with MCPs
+Select MCPs based on your project's external service requirements:
 
-### Development Workflow Integration
+### By Project Type
+- **Web applications**: Choose `supabase` and `github-integration` for database and version control
+- **Data projects**: Use `postgresql-integration` and `context7` for data access and documentation
+- **API services**: Select `github-integration` and `aws-integration` for development and deployment
+- **Testing projects**: Pick `playwright-mcp` and `filesystem-access` for automation and file handling
 
-#### Code Analysis with External Context
-```bash
-# Example: Analyzing code with database context
-User: "Optimize this SQL query for better performance"
+### By Data Requirements
+- **Live database access**: Choose appropriate `database/*` MCPs for real-time queries
+- **Documentation lookup**: Use `context7` for intelligent documentation search
+- **Repository access**: Select `github-integration` for code and issue management
+- **Web automation**: Pick `browser/*` MCPs for web scraping and testing
 
-Claude Code with Database MCP:
-1. Connects to database to analyze current schema
-2. Executes EXPLAIN PLAN for the query
-3. Identifies missing indexes and bottlenecks
-4. Suggests specific optimizations based on actual data patterns
-5. Provides before/after performance metrics
-```
+### By Integration Needs
+- **Supabase projects**: Essential `supabase` MCP for database operations
+- **GitHub workflows**: Required `github-integration` for repository management
+- **AWS deployments**: Use `aws-integration` for cloud service management
+- **Browser testing**: Select `playwright-mcp` for automated web testing
 
-#### Repository Management
-```bash
-# Example: Creating issues from code analysis
-User: "Review this codebase for potential improvements"
+## 🔧 Pro Tips
 
-Claude Code with GitHub MCP:
-1. Analyzes codebase for issues and improvements
-2. Creates GitHub issues for each identified problem
-3. Labels issues appropriately (bug, enhancement, refactor)
-4. Assigns priorities based on impact analysis
-5. Links related issues and suggests milestones
-```
-
-### Best Practices for MCP Usage
-
-#### Effective Integration
-- **Start Simple**: Begin with read-only permissions and basic functionality
-- **Monitor Usage**: Track MCP API usage to avoid rate limits
-- **Handle Failures**: Implement graceful fallbacks when MCPs are unavailable
-- **Document Dependencies**: Keep track of which MCPs your workflows depend on
-
-#### Performance Optimization
-- **Cache Results**: Cache frequently accessed data to reduce API calls
-- **Batch Operations**: Group related operations to improve efficiency
-- **Async Processing**: Use asynchronous operations for non-blocking workflows
-- **Rate Limiting**: Respect API rate limits to maintain service availability
-
-## Custom MCP Development
-
-### Creating Custom MCPs
-
-#### MCP Structure
-```json
-{
-  "name": "custom-mcp",
-  "version": "1.0.0",
-  "description": "Custom MCP for specific integration",
-  "type": "mcp",
-  "config": {
-    "endpoint": "https://api.custom-service.com",
-    "authentication": {
-      "method": "api-key",
-      "keyHeader": "X-API-Key"
-    },
-    "capabilities": [
-      "read-data",
-      "write-data",
-      "execute-operations"
-    ]
-  },
-  "schema": {
-    "requests": {
-      "getData": {
-        "method": "GET",
-        "path": "/api/data/{id}",
-        "parameters": ["id"],
-        "response": "json"
-      }
-    }
-  }
-}
-```
-
-#### Development Process
-1. **Identify Integration Need**: Determine what external service would benefit your workflow
-2. **Design Interface**: Define how Claude Code should interact with the service
-3. **Implement Security**: Add proper authentication and permission controls
-4. **Test Thoroughly**: Validate functionality and error handling
-5. **Document Usage**: Create clear documentation and examples
-6. **Submit for Review**: Contribute to the community repository
-
-### MCP Quality Standards
-
-#### Technical Requirements
-- **Secure Authentication**: Implement proper security measures
-- **Error Handling**: Provide clear error messages and recovery strategies
-- **Rate Limiting**: Respect external service limits
-- **Documentation**: Include comprehensive setup and usage guides
-
-#### User Experience
-- **Clear Purpose**: Define what problems the MCP solves
-- **Easy Setup**: Minimize configuration complexity
-- **Reliable Operation**: Ensure consistent functionality
-- **Helpful Feedback**: Provide meaningful status and error messages
-
-## Troubleshooting
-
-### Common Issues
-
-#### Connection Problems
-- **Check Credentials**: Verify authentication tokens and keys
-- **Network Connectivity**: Ensure network access to external services
-- **Firewall Rules**: Check for blocking firewall or proxy rules
-- **Service Status**: Verify external service availability
-
-#### Permission Errors
-- **Review Permissions**: Ensure MCP has necessary permissions
-- **Token Scope**: Verify API token has required scopes
-- **Rate Limits**: Check if rate limits have been exceeded
-- **Service Quotas**: Ensure service quotas haven't been reached
-
-#### Performance Issues
-- **Optimize Queries**: Reduce unnecessary API calls
-- **Check Timeouts**: Adjust timeout settings for slow services
-- **Monitor Usage**: Track API usage patterns
-- **Cache Strategy**: Implement appropriate caching
-
-### Maintenance
-
-#### Regular Updates
-- **Update Configurations**: Keep MCP configurations current
-- **Rotate Credentials**: Regularly update API tokens and keys
-- **Monitor Performance**: Track MCP performance and reliability
-- **Review Permissions**: Audit and adjust permissions as needed
-
-#### Debugging
-- **Enable Logging**: Turn on detailed logging for troubleshooting
-- **Test Connectivity**: Regularly test MCP connections
-- **Validate Responses**: Ensure external services return expected data
-- **Monitor Errors**: Track and analyze error patterns
+- **Start with essential MCPs** for your stack
+- **Configure environment variables** properly
+- **Test connections** after installation
+- **Browse [aitmpl.com](https://aitmpl.com)** for specialized integrations
 
 ---
 
-**Related Documentation:**
-- [Components Overview](./overview) - Understanding the component system
-- [Agents](./agents) - AI specialists for development tasks
-- [Commands](./commands) - Custom slash commands for Claude Code
-- [Contributing](../contributing) - How to contribute new MCPs
-- [MCP Integration](../project-setup/mcp-integration) - Detailed MCP setup guide
+**Find more MCPs:** [Browse all MCPs on aitmpl.com](https://aitmpl.com) → Filter by "MCPs"

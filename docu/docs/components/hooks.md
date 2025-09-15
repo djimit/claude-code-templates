@@ -1,381 +1,114 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 ---
 
-# 🪝 Hooks
+# Hooks
 
-**Event-driven automation for Claude Code workflows**
+Automation triggers that execute actions based on events. Browse and install from **[aitmpl.com](https://aitmpl.com)**.
 
-Hooks are powerful automation components that execute shell commands in response to specific Claude Code events. They enable you to create automated workflows, notifications, and integrations that react to your development activities.
+## 🪝 What are Hooks?
 
-## What are Hooks?
+Hooks are automation scripts that trigger actions when specific events occur in your development workflow. They run automatically in the background.
 
-Hooks are event-driven scripts that automatically execute when certain actions occur in Claude Code. They follow the official Claude Code hooks specification and support all hook events including tool usage, session management, and notifications.
+## Installation
 
-**Key Features:**
-- 🔄 **Event-Driven**: Automatically respond to Claude Code events
-- 🛠️ **Shell Integration**: Execute any shell command or script
-- 📊 **Environment Variables**: Access context about the triggering event
-- 🎯 **Pattern Matching**: Target specific tools or file types
-- 🔧 **Cross-Platform**: Works on macOS, Linux, and Windows
-- 📱 **Notifications**: Integrate with external services like Telegram, Slack, etc.
+### 📦 Basic Installation
+Install this component locally in your project. Works with your existing Claude Code setup.
 
-## Hook Events
-
-### PreToolUse
-Executes **before** Claude Code processes a tool call:
-
-```json
-{
-  "PreToolUse": [
-    {
-      "matcher": "Edit|Write",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "echo 'About to modify file: $CLAUDE_TOOL_FILE_PATH'"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### PostToolUse  
-Executes **after** a tool completes successfully:
-
-```json
-{
-  "PostToolUse": [
-    {
-      "matcher": "Edit",
-      "hooks": [
-        {
-          "type": "command", 
-          "command": "git add \"$CLAUDE_TOOL_FILE_PATH\""
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Other Events
-- **Stop**: Main Claude Code agent finished responding
-- **SubagentStop**: Subagent (Task tool) finished responding
-- **Notification**: Claude Code sends notifications
-- **UserPromptSubmit**: User submits a prompt
-- **SessionStart**: New session or resume
-- **PreCompact**: Before context compaction
-
-## Available Hook Categories
-
-### 🔧 Development Tools
-Essential development workflow automation:
-
-- **`command-logger`** - Log all Claude Code tool usage for audit trails
-- **`file-backup`** - Automatically backup files before editing
-- **`change-tracker`** - Track all file modifications with timestamps
-- **`smart-formatting`** - Auto-format code using Prettier, Black, gofmt, etc.
-- **`lint-on-save`** - Run linting tools after file modifications
-
-### 🔄 Git Workflow
-Git integration and version control automation:
-
-- **`auto-git-add`** - Automatically stage modified files
-- **`smart-commit`** - Generate intelligent commit messages based on changes
-
-### 🧪 Testing
-Automated testing integration:
-
-- **`test-runner`** - Run relevant tests after code changes
-
-### ⚡ Automation  
-General purpose automation and notifications:
-
-- **`build-on-change`** - Trigger build processes when files change
-- **`simple-notifications`** - Desktop notifications for completed operations
-- **`dependency-checker`** - Monitor and audit package dependencies
-- **`telegram-notifications`** - Send Telegram messages when work completes
-- **`telegram-detailed-notifications`** - Detailed session tracking via Telegram
-- **`telegram-error-notifications`** - Monitor long operations and issues
-
-### 🔒 Security
-Security monitoring and file protection:
-
-- **`file-protection`** - Prevent modification of critical system files
-- **`security-scanner`** - Scan code for vulnerabilities and secrets
-
-### 📊 Performance
-Performance monitoring and optimization:
-
-- **`performance-monitor`** - Track CPU, memory usage, and execution times
-
-## Installation Options
-
-Like settings, hooks support the full Claude Code configuration hierarchy:
-
-### 🏠 User Hooks (`~/.claude/settings.json`)
-- **Scope**: Global - applies to all projects
-- **Use case**: Personal automation preferences
-
-### 📁 Project Hooks (`.claude/settings.json`) 
-- **Scope**: Project-specific
-- **Use case**: Team-shared automation, project requirements
-
-### ⚙️ Local Hooks (`.claude/settings.local.json`)
-- **Scope**: Project-specific, personal  
-- **Use case**: Personal automation, experimentation
-
-### 🏢 Enterprise Hooks (Platform-specific)
-- **Scope**: System-wide automation policies
-- **Use case**: Organization-wide monitoring and compliance
-
-## Installation Methods
-
-### Using CLI (Recommended)
 ```bash
-# Install with interactive location selection
-npx claude-code-templates@latest --hook=git-workflow/auto-git-add
-
-# Install multiple hooks
-npx claude-code-templates@latest --hook=development-tools/file-backup,automation/simple-notifications
-
-# Skip location prompt (defaults to local settings)
-npx claude-code-templates@latest --hook=testing/test-runner --yes
+npx claude-code-templates@latest --hook git/auto-git-add --yes
 ```
 
-### Installation Flow
-When installing hooks, you'll choose the installation location:
-
-1. **🏠 User settings** - Global automation
-2. **📁 Project settings** - Shared team automation  
-3. **⚙️ Local settings** - Personal automation (default)
-4. **🏢 Enterprise settings** - System-wide automation (requires admin)
-
-## Usage Examples
-
-### Basic File Operations
+### Multiple Hooks
 ```bash
-# Backup files before editing
-npx claude-code-templates@latest --hook=development-tools/file-backup
-
-# Track all file changes
-npx claude-code-templates@latest --hook=development-tools/change-tracker
-
-# Auto-format code after editing
-npx claude-code-templates@latest --hook=development-tools/smart-formatting
+npx claude-code-templates@latest --hook notifications/discord-notifications,git/smart-commit --yes
 ```
 
-### Git Integration
+## ⚙️ Hook Configuration
+
+Most hooks require configuration after installation:
+
+### Environment Variables
 ```bash
-# Automatically stage changes
-npx claude-code-templates@latest --hook=git-workflow/auto-git-add
+# Notification hooks
+DISCORD_WEBHOOK_URL=your_discord_webhook
+SLACK_WEBHOOK_URL=your_slack_webhook
+TELEGRAM_BOT_TOKEN=your_telegram_token
 
-# Generate smart commits
-npx claude-code-templates@latest --hook=git-workflow/smart-commit
+# Deployment hooks
+DEPLOY_API_KEY=your_deploy_key
+STAGING_URL=your_staging_url
+PRODUCTION_URL=your_production_url
 ```
 
-### Automation & Notifications
+## 🔄 Hook Events
+
+Hooks trigger on various events:
+- **File changes** → `git/auto-git-add`
+- **Commits** → `git/pre-commit-validation`
+- **File save** → `quality/lint-on-save`
+- **Test run** → `testing/coverage-reporter`
+
+## 🛠️ Managing Hooks
+
+### Enable/Disable Hooks
 ```bash
-# Get desktop notifications
-npx claude-code-templates@latest --hook=automation/simple-notifications
+# Disable a hook
+echo '{"enabled": false}' > .claude/hooks/discord-notifications.json
 
-# Telegram integration (requires bot setup)
-npx claude-code-templates@latest --hook=automation/telegram-notifications
+# Re-enable a hook
+echo '{"enabled": true}' > .claude/hooks/discord-notifications.json
 ```
 
-### Security & Performance
-```bash
-# Protect sensitive files
-npx claude-code-templates@latest --hook=security/file-protection
+## 📁 Hook Categories
 
-# Monitor performance
-npx claude-code-templates@latest --hook=performance/performance-monitor
-```
+Browse hooks by automation area to add the right triggers for your workflow:
 
-## Environment Variables
+### Git Automation
+Automatic Git operations and version control workflows. Examples: `auto-git-add` for automatic staging, `smart-commit` for intelligent commits, `pre-commit-validation` for quality checks.
 
-Hooks have access to context about the triggering event:
+### Notifications
+Real-time alerts to communication platforms. Examples: `discord-notifications` for Discord alerts, `slack-notifications` for team updates, `telegram-notifications` for mobile alerts.
 
-- **`$CLAUDE_TOOL_NAME`** - Name of the tool being executed
-- **`$CLAUDE_TOOL_FILE_PATH`** - File path for file operations  
-- **`$CLAUDE_PROJECT_DIR`** - Project root directory
+### Testing & Quality
+Automated testing and code quality enforcement. Examples: `auto-test-runner` for continuous testing, `coverage-reporter` for test metrics, `lint-on-save` for code quality.
 
-### Example Usage
-```bash
-# Log tool usage with context
-echo "[$(date)] $CLAUDE_TOOL_NAME executed on $CLAUDE_TOOL_FILE_PATH"
+### Performance Monitoring
+Performance tracking and system optimization. Examples: `performance-monitor` for system metrics, `memory-tracker` for resource usage, `build-time-tracker` for compilation monitoring.
 
-# Conditional logic based on file type
-if [[ "$CLAUDE_TOOL_FILE_PATH" == *.js ]]; then
-  npx prettier --write "$CLAUDE_TOOL_FILE_PATH"
-fi
-```
+### Deployment
+Automated deployment and CI/CD triggers. Examples: `auto-deploy` for automatic deployment, `staging-deploy` for environment management, `production-guard` for safety checks.
 
-## Tool Matchers
+### Documentation
+Automatic documentation maintenance. Examples: `auto-doc-update` for documentation sync, `changelog-generator` for release notes, `api-doc-sync` for API documentation.
 
-Control which tools trigger your hooks:
+## 🎯 How to Choose Hooks
 
-### Common Matchers
-- **`*`** - Match all tools
-- **`Edit`** - File editing operations
-- **`Write`** - File creation operations
-- **`Bash`** - Shell commands
-- **`Read`** - File reading operations
+Select hooks based on your team structure and automation needs:
 
-### Pattern Matching
-```json
-{
-  "matcher": "Edit|Write|MultiEdit",    // Multiple tools
-  "matcher": "Notebook.*",              // Regex patterns
-  "matcher": "*"                        // All tools
-}
-```
+### By Team Size
+- **Solo projects**: Use `auto-git-add` and `performance-monitor` for personal productivity
+- **Small teams**: Add `slack-notifications` and `auto-test-runner` for coordination
+- **Large teams**: Include `pre-commit-validation` and `production-guard` for safety
 
-## Hook Structure
+### By Project Type
+- **Web applications**: Choose `auto-test-runner` and `auto-deploy` for development automation
+- **Open source libraries**: Use `changelog-generator` and `lint-on-save` for maintenance
+- **API services**: Select `performance-monitor` and `api-doc-sync` for service management
 
-Hooks follow the official Claude Code specification:
+### By Development Stage
+- **Active development**: Focus on `auto-git-add` and `lint-on-save` for productivity
+- **Testing phase**: Use `coverage-reporter` and `slack-notifications` for visibility
+- **Production**: Add `production-guard` and `deployment-metrics` for reliability
 
-```json
-{
-  "description": "What this hook does",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "your-shell-command-here"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+## 💡 Pro Tips
 
-## Advanced Examples
-
-### Telegram Notifications Setup
-
-1. **Create Telegram Bot**:
-   - Message [@BotFather](https://t.me/BotFather)
-   - Create new bot with `/newbot`
-   - Save the bot token
-
-2. **Get Chat ID**:
-   - Message your bot
-   - Visit: `https://api.telegram.org/bot<TOKEN>/getUpdates`
-   - Copy your chat ID from the response
-
-3. **Set Environment Variables**:
-   ```bash
-   export TELEGRAM_BOT_TOKEN="your-bot-token"
-   export TELEGRAM_CHAT_ID="your-chat-id"
-   ```
-
-4. **Install Hook**:
-   ```bash
-   npx claude-code-templates@latest --hook=automation/telegram-notifications
-   ```
-
-### Custom File Processing
-```json
-{
-  "description": "Process TypeScript files after editing",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.ts ]]; then npx tsc --noEmit \"$CLAUDE_TOOL_FILE_PATH\" && echo '✅ TypeScript check passed'; fi"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Best Practices
-
-### Hook Design
-- **Keep Commands Simple**: Use short, focused commands
-- **Handle Errors Gracefully**: Include `2>/dev/null || true` for optional operations
-- **Check Prerequisites**: Verify tools exist before using them
-- **Use Absolute Paths**: Avoid relative path issues
-
-### Performance Considerations
-- **Minimize Hook Execution Time**: Hooks should complete quickly
-- **Avoid Blocking Operations**: Don't use commands that wait for user input
-- **Test Thoroughly**: Ensure hooks work across different scenarios
-- **Monitor Resource Usage**: Watch for memory/CPU impact
-
-### Security Guidelines
-- **Validate Inputs**: Never execute unvalidated user input
-- **Limit Scope**: Use specific matchers rather than `*` when possible
-- **Protect Credentials**: Use environment variables for sensitive data
-- **Review Commands**: Audit hook commands regularly
-
-## Troubleshooting
-
-### Hook Not Executing?
-- Verify hook is installed in the correct settings file
-- Check Claude Code version supports hooks
-- Ensure environment variables are properly set
-- Test with simple commands first
-
-### Permission Errors?
-- Check file permissions on script files
-- Verify Claude Code has necessary permissions
-- For enterprise hooks, ensure admin privileges
-- Review system security policies
-
-### Command Failures?
-- Test commands manually in terminal
-- Check command availability with `which command-name`
-- Review error output (remove `2>/dev/null` temporarily)
-- Verify file paths and environment variables
-
-## Creating Custom Hooks
-
-Want to create your own hook? Follow these guidelines:
-
-1. **Define Clear Purpose**: Each hook should solve one specific problem
-2. **Use Official Structure**: Follow Claude Code hooks specification
-3. **Handle Edge Cases**: Account for missing files, permissions, etc.
-4. **Include Error Handling**: Use `|| true` for non-critical operations
-5. **Document Thoroughly**: Explain what the hook does and how to use it
-6. **Test Extensively**: Verify across different platforms and scenarios
-
-### Example Custom Hook
-```json
-{
-  "description": "Automatically deploy to staging after successful tests",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command", 
-            "command": "if [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.js && -f package.json ]]; then npm test && npm run deploy:staging; fi"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+- **Start with Git hooks** for basic automation
+- **Add notifications** for team coordination
+- **Use testing hooks** for quality assurance
+- **Monitor performance** with tracking hooks
+- **Browse [aitmpl.com](https://aitmpl.com)** for specialized automation
 
 ---
 
-**Next Steps:**
-- [Browse All Hooks](https://aitmpl.com) - View available hooks in the web interface
-- [Automation Hooks Guide →](../project-setup/automation-hooks) - Deep dive into automation workflows
-- [Contributing Guide →](../contributing) - Add your own hooks to the collection
-- [Telegram Setup Guide →](https://github.com/davila7/claude-code-templates/blob/main/cli-tool/components/hooks/automation/TELEGRAM_SETUP.md) - Detailed Telegram integration guide
+**Find more hooks:** [Browse all hooks on aitmpl.com](https://aitmpl.com) → Filter by "Hooks"

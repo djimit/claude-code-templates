@@ -49,15 +49,15 @@
 .featureTitle {
   color: var(--text-primary) !important;
   font-family: inherit !important;
-  font-size: 1.25rem !important;
+  font-size: 1.35rem !important;
   margin-bottom: 1rem !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
 }
 
 .featureDescription {
   color: var(--text-secondary) !important;
-  font-size: 0.9rem !important;
-  line-height: 1.5 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
   margin-bottom: 1.5rem !important;
   flex: 1;
 }

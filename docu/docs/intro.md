@@ -4,13 +4,15 @@ sidebar_position: 1
 
 # Claude Code Templates
 
-**Claude Code Templates** is a CLI tool that configures Claude Code projects and provides specialized components to enhance your AI-powered development workflow.
+**Claude Code Templates** is an open-source CLI tool that configures Claude Code projects and provides specialized components to enhance your AI-powered development workflow.
+
+Browse over 500 components at **[aitmpl.com](https://aitmpl.com)** or contribute to the project on **[GitHub](https://github.com/davila7/claude-code-templates)**.
 
 ## What does this CLI do?
 
 Simplifies Claude Code usage through:
 
-- **🔍 Pre-configured components**: Over 1000 agents, commands, and configurations ready to use
+- **🔍 Pre-configured components**: Over 500 agents, commands, and configurations ready to use
 - **📦 Automatic installation**: Complete project setup or individual components  
 - **🛠️ Additional tools**: Analytics, health checks, sandbox, and more
 

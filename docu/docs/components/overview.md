@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Overview
 
-Browse and search over 1000 Claude Code components on **[aitmpl.com](https://aitmpl.com)**.
+Browse and search over 500 Claude Code components on **[aitmpl.com](https://aitmpl.com)**.
 
 ## 🌐 How to Use aitmpl.com
 

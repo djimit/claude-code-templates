@@ -590,7 +590,8 @@ td {
   padding: 0 !important;
 }
 
-/* Enhanced list styling */
+/* Enhanced list styling - DISABLED to prevent double numbering */
+/*
 .theme-doc-markdown ul li::before {
   content: '▸';
   color: var(--text-accent);
@@ -615,6 +616,16 @@ td {
   margin-right: 0.5rem;
   margin-left: -1.5rem;
   font-family: var(--ifm-font-family-monospace);
+}
+*/
+
+/* Basic list styling without custom numbering */
+.theme-doc-markdown ul li {
+  color: var(--text-primary) !important;
+}
+
+.theme-doc-markdown ol li {
+  color: var(--text-primary) !important;
 }
 
 /* Status indicators for documentation */

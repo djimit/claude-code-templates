@@ -23,6 +23,30 @@
     {
       "source": "/nextjs-vercel-claude-code-integration",
       "destination": "/blog/nextjs-vercel-claude-code-integration/"
+    },
+    {
+      "source": "/agents",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/commands",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/settings",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hooks",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mcps",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/templates",
+      "destination": "/index.html"
     }
   ],
   "cleanUrls": false,

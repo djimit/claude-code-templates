@@ -1,6 +1,6 @@
 ---
 name: docusaurus-expert
-description: Docusaurus documentation specialist. Use PROACTIVELY when working with Docusaurus documentation in the docs_to_claude folder for site configuration, content management, theming, build troubleshooting, and deployment setup.
+description: Docusaurus documentation specialist. Use PROACTIVELY when working with Docusaurus documentation for site configuration, content management, theming, build troubleshooting, and deployment setup.
 tools: Read, Write, Edit, Bash
 model: sonnet
 ---
@@ -40,9 +40,11 @@ When invoked:
 1. **Project Analysis**
    ```bash
    # Examine current Docusaurus structure
-   ls -la docs_to_claude/
-   cat docs_to_claude/docusaurus.config.js
-   cat docs_to_claude/sidebars.js
+   # Look for common documentation locations:
+   # docs/, docu/, documentation/, website/docs/, path_to_docs/
+   ls -la path_to_docusaurus_project/
+   cat path_to_docusaurus_project/docusaurus.config.js
+   cat path_to_docusaurus_project/sidebars.js
    ```
 
 2. **Configuration Review**
@@ -170,4 +172,4 @@ module.exports = {
 - [ ] Image path problems
 - [ ] MDX syntax errors
 
-Always provide specific file paths relative to `docs_to_claude/` and include complete, working code examples. Reference official Docusaurus documentation when recommending advanced features.
+Always provide specific file paths relative to the project's documentation directory (e.g., `path_to_docs/`, `docs/`, `docu/`, `documentation/`, or wherever Docusaurus is configured) and include complete, working code examples. Reference official Docusaurus documentation when recommending advanced features.

@@ -1,0 +1,17 @@
+{
+  "description": "Automatically loads AGENTS.md configuration file content at session start to ensure Claude Code follows project-specific agent behavior. Falls back to CLAUDE.md if AGENTS.md doesn't exist. Supports the universal AGENTS.md standard for cross-platform AI assistant compatibility.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ -f \"AGENTS.md\" ]]; then echo \"🤖 Loading AGENTS.md configuration...\"; echo \"## Agent Configuration from AGENTS.md\"; echo \"\"; cat \"AGENTS.md\"; echo \"\"; echo \"✅ AGENTS.md configuration loaded successfully\"; elif [[ -f \"CLAUDE.md\" ]]; then echo \"## Fallback: Loading CLAUDE.md configuration\"; echo \"\"; cat \"CLAUDE.md\"; echo \"\"; echo \"ℹ️ Consider creating AGENTS.md for universal agent compatibility\"; else echo \"⚠️ No AGENTS.md or CLAUDE.md found - using default configuration\"; fi",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [[ -f \"AGENTS.md\" ]]; then echo \"🤖 Loading AGENTS.md configuration...\"; echo \"## Agent Configuration from AGENTS.md\"; echo \"\"; cat \"AGENTS.md\"; echo \"\"; echo \"✅ AGENTS.md configuration loaded successfully\"; elif [[ -f \"CLAUDE.md\" ]]; then echo \"## Fallback: Loading CLAUDE.md configuration\"; echo \"\"; cat \"CLAUDE.md\"; echo \"\"; echo \"ℹ️ Consider creating AGENTS.md for universal agent compatibility\"; else echo \"⚠️ No AGENTS.md or CLAUDE.md found - using default configuration\"; fi",
+            "command": "python3 -c \"import json, sys, os; agents_content = open('AGENTS.md', 'r').read() if os.path.exists('AGENTS.md') else ''; output = {'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': agents_content}}; print(json.dumps(output))\"",
             "timeout": 30
           }
         ]

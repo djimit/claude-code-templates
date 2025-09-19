@@ -28,7 +28,13 @@
       "Bash(npm link:*)",
       "Bash(claude-code-templates:*)",
       "Bash(python:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "WebFetch(domain:docs.claude.com)",
+      "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
+      "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
+      "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
+      "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
+      "WebSearch"
     ],
     "deny": []
   },

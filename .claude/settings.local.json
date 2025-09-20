@@ -34,7 +34,8 @@
       "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
       "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
       "Read(/Users/danipower/.claude/local/node_modules/@anthropic-ai/claude-code/**)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:neon.com)"
     ],
     "deny": []
   },

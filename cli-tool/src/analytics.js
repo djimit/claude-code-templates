@@ -1227,41 +1227,10 @@ class ClaudeAnalytics {
     // Activity heatmap data endpoint - needs full conversation history
     this.app.get('/api/activity', async (req, res) => {
       try {
-        // TEMPORARY: Use test data for demo/screenshots
-        console.log(`🔥 /api/activity called - using test data for demo...`);
-        const fs = require('fs');
-        const path = require('path');
-        const testDataPath = path.join(__dirname, 'test-activity-data.json');
-        
-        if (fs.existsSync(testDataPath)) {
-          const testData = JSON.parse(fs.readFileSync(testDataPath, 'utf8'));
-          
-          // Calculate totals
-          const totalContributions = testData.reduce((sum, day) => sum + day.conversations, 0);
-          const totalTools = testData.reduce((sum, day) => sum + day.tools, 0);
-          const totalMessages = testData.reduce((sum, day) => sum + day.messages, 0);
-          const totalTokens = testData.reduce((sum, day) => sum + day.tokens, 0);
-          
-          const activityData = {
-            dailyActivity: testData,
-            totalContributions,
-            activeDays: testData.length,
-            longestStreak: 7, // Sample streak
-            currentStreak: 3,  // Sample current streak
-            totalTools,
-            totalMessages,
-            totalTokens,
-            timestamp: new Date().toISOString()
-          };
-          
-          return res.json(activityData);
-        }
-        
-        // Fallback to real data if test file doesn't exist
         console.log(`🔥 /api/activity called - loading all conversations...`);
         const allConversations = await this.conversationAnalyzer.loadConversations(this.stateCalculator);
         console.log(`🔥 Loaded ${allConversations.length} conversations from server`);
-        
+
         // Generate activity data using complete dataset
         const activityData = this.generateActivityDataFromConversations(allConversations);
         res.json({

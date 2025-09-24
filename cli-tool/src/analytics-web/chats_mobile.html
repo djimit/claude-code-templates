@@ -81,6 +81,26 @@
             width: 100%;
         }
 
+        .chat-header-content .header-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .chat-header-content .header-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+
+        .chat-header-content .header-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex: 1;
+        }
+
         .chat-title {
             font-size: 1.2rem;
             font-weight: 700;
@@ -770,7 +790,28 @@
             border-bottom: 1px solid var(--border-primary);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             min-height: 64px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex: 1;
         }
 
         .chat-view-back {
@@ -997,6 +1038,136 @@
                 /* On larger screens, show side-by-side if needed */
             }
         }
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-primary);
+            padding: 24px;
+            max-width: 600px;
+            width: 95%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-command {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--terminal-orange);
+            word-break: break-all;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            color: var(--terminal-orange);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn:hover {
+            background: rgba(255, 107, 53, 0.15);
+            border-color: rgba(255, 107, 53, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+        }
+
+        .modal-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(255, 107, 53, 0.2);
+        }
+
+        .modal-btn.primary {
+            background: var(--terminal-orange);
+            color: var(--bg-primary);
+        }
+
+        .modal-btn.primary:hover {
+            background: var(--terminal-orange-hover);
+            color: var(--bg-primary);
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            border-color: var(--border-primary);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-secondary);
+            color: var(--text-primary);
+        }
+
     </style>
 </head>
 <body>
@@ -1006,8 +1177,15 @@
             <!-- Header -->
             <div class="chat-header">
                 <div class="chat-header-content">
-                    <h1 class="chat-title">Claude Code Chats</h1>
-                    <div class="header-actions">
+                    <div class="header-left">
+                        <h1 class="chat-title">Claude Code Chats</h1>
+                    </div>
+                    <div class="header-center">
+                        <button class="header-btn" id="githubBtn" title="Star on GitHub" onclick="window.open('https://github.com/davila7/claude-code-templates', '_blank')">
+                            ⭐️ on Github
+                        </button>
+                    </div>
+                    <div class="header-right">
                         <button class="header-btn" id="refreshBtn" title="Refresh">
                             Refresh
                         </button>
@@ -1034,19 +1212,28 @@
         <!-- Chat View -->
         <div class="chat-view" id="chatView">
             <div class="chat-view-header">
-                <button class="header-btn back-btn chat-view-back" id="backToList">
-                    ←
-                </button>
-                <div class="chat-view-info">
-                    <h2 class="chat-view-title" id="chatViewTitle">Select a conversation</h2>
-                    <p class="chat-view-subtitle" id="chatViewSubtitle"></p>
+                <div class="header-left">
+                    <button class="header-btn back-btn chat-view-back" id="backToList">
+                        ←
+                    </button>
+                    <div class="chat-view-info">
+                        <h2 class="chat-view-title" id="chatViewTitle">Select a conversation</h2>
+                        <p class="chat-view-subtitle" id="chatViewSubtitle"></p>
+                    </div>
                 </div>
-                <div class="tools-toggle" id="toolsToggle">
-                    <span class="tools-toggle-label" onclick="document.getElementById('showToolsSwitch').click()">Show Tools</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="showToolsSwitch" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
+                <div class="header-center">
+                    <button class="header-btn resume-btn" id="resumeConversation" style="display: none;" onclick="resumeConversationWithClaude()">
+                        ▶️ Resume
+                    </button>
+                </div>
+                <div class="header-right">
+                    <div class="tools-toggle" id="toolsToggle">
+                        <span class="tools-toggle-label" onclick="document.getElementById('showToolsSwitch').click()">Show Tools</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showToolsSwitch" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="chat-messages" id="chatMessages">
@@ -1064,6 +1251,26 @@
                     <span class="status-text" id="statusText">Ready</span>
                 </div>
                 <div class="status-details" id="statusDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Conversation Modal -->
+    <div class="modal-overlay" id="resumeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-icon">▶️</span>
+                <h3 class="modal-title">Resume Conversation</h3>
+            </div>
+            <p class="modal-description">
+                To resume this conversation in Claude Code, copy and run the following command in your terminal:
+            </p>
+            <div class="modal-command" id="modalCommand">
+                <!-- Command will be inserted here -->
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeResumeModal()">Cancel</button>
+                <button class="modal-btn primary" id="copyCommandBtn" onclick="copyModalCommand()">Copy Command</button>
             </div>
         </div>
     </div>
@@ -1308,6 +1515,11 @@
                     chatView.classList.remove('show-tools');
                 }
                 
+                // Show resume button
+                const resumeBtn = document.getElementById('resumeConversation');
+                resumeBtn.style.display = 'block';
+                resumeBtn.setAttribute('data-conversation-id', conversationId);
+
                 // Load messages (placeholder for now)
                 this.loadChatMessages(conversationId);
             }
@@ -1320,6 +1532,10 @@
                 
                 // Clean up scroll tracking when leaving conversation
                 this.removeScrollTracking();
+
+                // Hide resume button
+                const resumeBtn = document.getElementById('resumeConversation');
+                resumeBtn.style.display = 'none';
                 
                 // Remove active state from conversations
                 document.querySelectorAll('.conversation-item').forEach(item => {
@@ -2578,6 +2794,114 @@
                 
                 // Store preference in localStorage
                 localStorage.setItem('showTools', show);
+            }
+        }
+
+        // Global function to resume conversation with Claude Code
+        function resumeConversationWithClaude() {
+            const resumeBtn = document.getElementById('resumeConversation');
+            const conversationId = resumeBtn.getAttribute('data-conversation-id');
+
+            if (!conversationId) {
+                console.error('No conversation ID found');
+                return;
+            }
+
+            // Show modal with command
+            showResumeModal(conversationId);
+        }
+
+        function showResumeModal(conversationId) {
+            const modal = document.getElementById('resumeModal');
+            const modalCommand = document.getElementById('modalCommand');
+            const command = `claude --resume ${conversationId}`;
+
+            // Set the command in the modal
+            modalCommand.textContent = command;
+            modalCommand.setAttribute('data-command', command);
+
+            // Show the modal
+            modal.classList.add('show');
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeResumeModal();
+                }
+            });
+
+            console.log('📋 Resume modal opened for conversation:', conversationId);
+        }
+
+        function closeResumeModal() {
+            const modal = document.getElementById('resumeModal');
+            modal.classList.remove('show');
+        }
+
+        function copyModalCommand() {
+            const modalCommand = document.getElementById('modalCommand');
+            const copyBtn = document.getElementById('copyCommandBtn');
+            const command = modalCommand.getAttribute('data-command');
+
+            if (!command) {
+                console.error('No command found to copy');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(command).then(() => {
+                    // Show success feedback
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '✅ Copied!';
+                    copyBtn.style.backgroundColor = 'rgba(63, 185, 80, 0.8)';
+                    copyBtn.style.borderColor = 'rgba(63, 185, 80, 1)';
+
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.backgroundColor = '';
+                        copyBtn.style.borderColor = '';
+                        closeResumeModal();
+                    }, 1500);
+
+                    console.log('📋 Command copied to clipboard:', command);
+                }).catch(err => {
+                    console.error('Failed to copy to clipboard:', err);
+                    fallbackCopy(command);
+                });
+            } else {
+                // Fallback for browsers without clipboard API
+                fallbackCopy(command);
+            }
+        }
+
+        function fallbackCopy(command) {
+            // Create a temporary text area to select and copy
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = command;
+            tempTextArea.style.position = 'fixed';
+            tempTextArea.style.left = '-9999px';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+
+            try {
+                document.execCommand('copy');
+                const copyBtn = document.getElementById('copyCommandBtn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.style.backgroundColor = 'rgba(63, 185, 80, 0.8)';
+
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.backgroundColor = '';
+                    closeResumeModal();
+                }, 1500);
+
+                console.log('📋 Command copied using fallback method:', command);
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                alert(`Please copy this command manually:\n\n${command}`);
+            } finally {
+                document.body.removeChild(tempTextArea);
             }
         }
 

@@ -92,12 +92,20 @@ def fetch_download_stats():
             for download in downloads:
                 component_type = download.get('component_type', '')
                 component_name = download.get('component_name', '')
-                
+
                 if component_type and component_name:
-                    # Create a key for aggregation
-                    key = f"{component_type}|{component_name}"
+                    # Handle case where component_name already includes category
+                    if '/' in component_name:
+                        category = component_name.split('/')[0]
+                        actual_name = component_name.split('/')[-1]
+                    else:
+                        actual_name = component_name
+                        category = 'general'
+
+                    # Create a key for aggregation matching trending data structure
+                    key = f"{component_type}|{category}|{actual_name}"
                     component_totals[key] += 1
-            
+
             # Convert to the format we need
             type_mapping = {
                 'agent': 'agents',
@@ -107,12 +115,14 @@ def fetch_download_stats():
                 'mcp': 'mcps',
                 'template': 'templates'
             }
-            
+
             for key, count in component_totals.items():
-                component_type, component_name = key.split('|')
-                mapped_type = type_mapping.get(component_type, component_type + 's')
-                final_key = f"{mapped_type}/{component_name}"
-                download_counts[final_key] = count
+                parts = key.split('|')
+                if len(parts) == 3:
+                    component_type, category, component_name = parts
+                    mapped_type = type_mapping.get(component_type, component_type + 's')
+                    final_key = f"{mapped_type}/{category}/{component_name}"
+                    download_counts[final_key] = count
             
             print(f"✅ Fetched and aggregated {len(download_counts)} component download stats")
             return download_counts
@@ -131,7 +141,15 @@ def fetch_download_stats():
                     component_type = stat.get('component_type', '')
                     component_name = stat.get('component_name', '')
                     total_downloads = stat.get('total_downloads', 0)
-                    
+
+                    # Handle case where component_name already includes category
+                    if '/' in component_name:
+                        category = component_name.split('/')[0]
+                        actual_name = component_name.split('/')[-1]
+                    else:
+                        actual_name = component_name
+                        category = 'general'
+
                     # Map to plural form
                     type_mapping = {
                         'agent': 'agents',
@@ -141,9 +159,9 @@ def fetch_download_stats():
                         'mcp': 'mcps',
                         'template': 'templates'
                     }
-                    
+
                     mapped_type = type_mapping.get(component_type, component_type + 's')
-                    key = f"{mapped_type}/{component_name}"
+                    key = f"{mapped_type}/{category}/{actual_name}"
                     download_counts[key] = total_downloads
                 
                 print(f"✅ Fetched stats for {len(download_counts)} components from download_stats")

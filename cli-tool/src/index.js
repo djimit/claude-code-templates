@@ -978,8 +978,7 @@ async function installIndividualHook(hookName, targetDir, options) {
         console.log(chalk.green(`✓ Found Python script: ${hookBaseName}.py`));
       }
     } catch (error) {
-      // Python file is optional, continue if not found
-      console.log(chalk.gray(`  No additional script found (optional)`));
+      // Python file is optional, silently continue if not found
     }
 
     // Remove description field before merging
@@ -1175,7 +1174,7 @@ async function installIndividualHook(hookName, targetDir, options) {
       // Install additional files (e.g., Python scripts)
       if (Object.keys(additionalFiles).length > 0) {
         for (const [relativePath, fileData] of Object.entries(additionalFiles)) {
-          const absolutePath = path.join(projectDir, relativePath);
+          const absolutePath = path.join(currentTargetDir, relativePath);
           const dir = path.dirname(absolutePath);
 
           // Ensure directory exists

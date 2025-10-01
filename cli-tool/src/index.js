@@ -959,6 +959,29 @@ async function installIndividualHook(hookName, targetDir, options) {
     const hookConfigText = await response.text();
     const hookConfig = JSON.parse(hookConfigText);
 
+    // Check if there are additional files to download (e.g., Python scripts for hooks)
+    const additionalFiles = {};
+
+    // Check if there's a corresponding Python file for ANY hook
+    const pythonUrl = githubUrl.replace('.json', '.py');
+    const hookBaseName = hookName.includes('/') ? hookName.split('/').pop() : hookName;
+
+    try {
+      console.log(chalk.gray(`📥 Checking for additional Python script...`));
+      const pythonResponse = await fetch(pythonUrl);
+      if (pythonResponse.ok) {
+        const pythonContent = await pythonResponse.text();
+        additionalFiles[`.claude/hooks/${hookBaseName}.py`] = {
+          content: pythonContent,
+          executable: true
+        };
+        console.log(chalk.green(`✓ Found Python script: ${hookBaseName}.py`));
+      }
+    } catch (error) {
+      // Python file is optional, continue if not found
+      console.log(chalk.gray(`  No additional script found (optional)`));
+    }
+
     // Remove description field before merging
     if (hookConfig && typeof hookConfig === 'object') {
       delete hookConfig.description;
@@ -1148,7 +1171,25 @@ async function installIndividualHook(hookName, targetDir, options) {
       
       // Write the merged configuration
       await fs.writeJson(actualTargetFile, mergedConfig, { spaces: 2 });
-      
+
+      // Install additional files (e.g., Python scripts)
+      if (Object.keys(additionalFiles).length > 0) {
+        for (const [relativePath, fileData] of Object.entries(additionalFiles)) {
+          const absolutePath = path.join(projectDir, relativePath);
+          const dir = path.dirname(absolutePath);
+
+          // Ensure directory exists
+          await fs.ensureDir(dir);
+
+          // Write file
+          await fs.writeFile(absolutePath, fileData.content, { mode: fileData.executable ? 0o755 : 0o644 });
+
+          if (!options.silent) {
+            console.log(chalk.green(`✓ Installed additional file: ${relativePath}`));
+          }
+        }
+      }
+
       if (!options.silent) {
         console.log(chalk.green(`✅ Hook "${hookName}" installed successfully in ${installLocation}!`));
         console.log(chalk.cyan(`📁 Configuration merged into: ${actualTargetFile}`));

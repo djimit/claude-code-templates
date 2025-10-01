@@ -1,0 +1,16 @@
+{
+  "description": "Enforce conventional commit message format for all git commits. Validates commit messages follow the pattern: type(scope): description. Supported types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert. Ensures consistent commit history for changelog generation and semantic versioning.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit:*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "COMMIT_MSG=$(echo \"$CLAUDE_TOOL_COMMAND\" | grep -oP '(?<=-m \")[^\"]+' | head -1); if [[ -n \"$COMMIT_MSG\" ]] && [[ ! \"$COMMIT_MSG\" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\\(.+\\))?:\\  ]]; then echo \"❌ Invalid commit message format\"; echo \"\"; echo \"Commit messages must follow Conventional Commits:\"; echo \"  type(scope): description\"; echo \"\"; echo \"Types:\"; echo \"  feat:     New feature\"; echo \"  fix:      Bug fix\"; echo \"  docs:     Documentation changes\"; echo \"  style:    Code style changes (formatting)\"; echo \"  refactor: Code refactoring\"; echo \"  perf:     Performance improvements\"; echo \"  test:     Adding or updating tests\"; echo \"  chore:    Maintenance tasks\"; echo \"  ci:       CI/CD changes\"; echo \"  build:    Build system changes\"; echo \"  revert:   Revert previous commit\"; echo \"\"; echo \"Examples:\"; echo \"  ✅ feat: add user authentication\"; echo \"  ✅ feat(auth): implement JWT tokens\"; echo \"  ✅ fix: resolve memory leak in parser\"; echo \"  ✅ fix(api): handle null responses\"; echo \"  ✅ docs: update API documentation\"; echo \"  ❌ Added new feature (no type)\"; echo \"  ❌ feat:add feature (missing space)\"; echo \"  ❌ feature: add login (wrong type)\"; echo \"\"; echo \"Your message: $COMMIT_MSG\"; exit 1; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

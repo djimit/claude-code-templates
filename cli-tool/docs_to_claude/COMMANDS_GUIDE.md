@@ -127,10 +127,23 @@ model: claude-3-5-haiku-20241022     # Faster, simpler tasks
 model: claude-3-opus-20240229        # Most capable, complex tasks
 ```
 
+### `disable-model-invocation` (Optional)
+Prevent Claude from automatically invoking this command via the SlashCommand tool:
+```yaml
+disable-model-invocation: true    # Default: false
+```
+
+**Use cases:**
+- Commands that should only be manually triggered
+- Commands with side effects that need explicit user approval
+- Commands that are experimental or under development
+
 ## Advanced Features
 
 ### Dynamic Arguments
-Use `$ARGUMENTS` to pass values to your commands:
+
+#### All Arguments with `$ARGUMENTS`
+Capture all arguments passed to the command:
 
 ```markdown
 ---
@@ -147,6 +160,34 @@ Fix issue #$ARGUMENTS following our team's coding standards:
 ```
 
 **Usage**: `/fix-issue 123`
+
+#### Individual Arguments with `$1`, `$2`, `$3`
+Access specific arguments individually (similar to shell scripts):
+
+```markdown
+---
+argument-hint: [pr-number] [priority] [assignee]
+description: Review pull request with specific priority and assignee
+---
+
+Review PR #$1 with priority $2 and assign to $3.
+
+**Pull Request**: #$1
+**Priority Level**: $2
+**Assignee**: @$3
+
+Focus on:
+- Security vulnerabilities
+- Performance implications
+- Code style adherence
+```
+
+**Usage**: `/review-pr 456 high alice`
+
+**When to use positional arguments:**
+- Access arguments individually in different parts of your command
+- Provide defaults for missing arguments
+- Build structured commands with specific parameter roles
 
 ### Bash Command Integration
 Execute commands before the prompt runs using `!` prefix:
@@ -604,6 +645,91 @@ DROP TABLE IF EXISTS example;
 - `/mcp` - Manage MCP server connections and OAuth
 - `/terminal-setup` - Configure Shift+Enter for newlines
 - `/vim` - Toggle vim mode for modal editing
+- `/usage` - Show plan usage limits and rate limit status (subscription plans only)
+- `/rewind` - Rewind the conversation and/or code
+
+## SlashCommand Tool
+
+The `SlashCommand` tool allows Claude to programmatically execute custom slash commands during conversations. This enables Claude to invoke commands automatically when appropriate.
+
+### How It Works
+
+1. **Automatic Discovery**: Claude can see available custom commands and their descriptions
+2. **Context-Aware Invocation**: Claude triggers commands based on conversation context
+3. **Metadata Inclusion**: Command descriptions are included in context up to character budget
+
+### Enabling SlashCommand Tool
+
+To encourage Claude to use commands, reference them by name in your prompts:
+
+```markdown
+> Run /write-unit-test when you are about to start writing tests.
+> Use /security-audit before committing sensitive code changes.
+> Execute /performance-check after implementing new features.
+```
+
+### Supported Commands
+
+`SlashCommand` tool only supports:
+- ✅ User-defined custom commands
+- ✅ Commands with `description` frontmatter field
+- ❌ Built-in commands like `/compact`, `/init` (not supported)
+
+### Permission Rules
+
+Control which commands Claude can invoke:
+
+```bash
+# Deny all SlashCommand invocations
+/permissions
+# Add to deny: SlashCommand
+
+# Allow specific commands only
+# Exact match: SlashCommand:/commit (no arguments)
+# Prefix match: SlashCommand:/review-pr:* (any arguments)
+```
+
+### Disable Specific Commands
+
+Prevent a command from automatic invocation:
+
+```yaml
+---
+disable-model-invocation: true
+description: This command requires manual approval
+---
+```
+
+### Character Budget Limit
+
+The SlashCommand tool has a character budget to prevent token overflow:
+
+- **Default limit**: 15,000 characters
+- **Includes**: Command name, arguments, and description
+- **Custom limit**: Set via `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable
+
+```bash
+# Set custom character budget
+export SLASH_COMMAND_TOOL_CHAR_BUDGET=20000
+```
+
+**When budget is exceeded**:
+- Claude sees only a subset of available commands
+- A warning shows in `/context` as "M of N commands"
+- Prioritize important commands by keeping descriptions concise
+
+### Best Practices
+
+**DO:**
+- ✅ Write clear, concise command descriptions
+- ✅ Reference commands explicitly in prompts/CLAUDE.md
+- ✅ Use `disable-model-invocation` for sensitive operations
+- ✅ Monitor character budget with `/context`
+
+**DON'T:**
+- ❌ Assume Claude will discover commands without references
+- ❌ Write overly long command descriptions
+- ❌ Enable automatic invocation for destructive operations
 
 ## MCP Commands
 

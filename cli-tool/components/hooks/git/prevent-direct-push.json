@@ -3,11 +3,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash(git push:*)",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "PUSH_CMD=\"$CLAUDE_TOOL_COMMAND\"; CURRENT_BRANCH=$(git branch --show-current 2>/dev/null); if [[ \"$PUSH_CMD\" =~ (origin[[:space:]]+main|origin[[:space:]]+develop|main|develop) ]] || [[ \"$CURRENT_BRANCH\" == \"main\" || \"$CURRENT_BRANCH\" == \"develop\" ]]; then if [[ \"$PUSH_CMD\" != *\"--force\"* ]] && ([[ \"$CURRENT_BRANCH\" == \"main\" ]] || [[ \"$CURRENT_BRANCH\" == \"develop\" ]] || [[ \"$PUSH_CMD\" =~ origin[[:space:]]main ]] || [[ \"$PUSH_CMD\" =~ origin[[:space:]]develop ]]); then echo \"❌ Direct push to main/develop is not allowed!\"; echo \"\"; echo \"Protected branches:\"; echo \"  - main (production)\"; echo \"  - develop (integration)\"; echo \"\"; echo \"Git Flow workflow:\"; echo \"  1. Create a feature branch:\"; echo \"     /feature <name>\"; echo \"\"; echo \"  2. Make your changes and commit\"; echo \"\"; echo \"  3. Push feature branch:\"; echo \"     git push origin feature/<name>\"; echo \"\"; echo \"  4. Create pull request:\"; echo \"     gh pr create\"; echo \"\"; echo \"  5. After approval, merge with:\"; echo \"     /finish\"; echo \"\"; echo \"For releases:\"; echo \"  /release <version> → PR → /finish\"; echo \"\"; echo \"For hotfixes:\"; echo \"  /hotfix <name> → PR → /finish\"; echo \"\"; echo \"Current branch: $CURRENT_BRANCH\"; exit 1; fi; fi"
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/prevent-direct-push.py"
           }
         ]
       }

@@ -418,7 +418,7 @@ def generate_components_json():
                         'commandsList': commands_names,
                         'agentsList': agents_names,
                         'mcpServersList': mcps_names,
-                        'installCommand': f'/plugin marketplace add davila7/claude-code-templates && /plugin install {plugin_name}',
+                        'installCommand': f'/plugin install "{plugin_name}"@claude-code-templates',
                         'downloads': plugin_downloads
                     }
                     components_data['plugins'].append(plugin_entry)

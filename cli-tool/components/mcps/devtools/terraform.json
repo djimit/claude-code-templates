@@ -7,7 +7,7 @@
         "run",
         "-i",
         "--rm",
-        "hashicorp/terraform-mcp-server"
+        "hashicorp/terraform-mcp-server:0.2.3"
       ]
     }
   }

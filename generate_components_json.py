@@ -201,8 +201,9 @@ def generate_components_json():
     """
     components_base_path = 'cli-tool/components'
     templates_base_path = 'cli-tool/templates'
+    plugins_path = '.claude-plugin/marketplace.json'
     output_path = 'docs/components.json'
-    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'sandbox': [], 'templates': []}
+    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'sandbox': [], 'templates': [], 'plugins': []}
     
     # Fetch download statistics
     download_stats = fetch_download_stats()
@@ -360,10 +361,79 @@ def generate_components_json():
     else:
         print(f"Warning: Templates directory not found: {templates_base_path}")
 
-    # Sort components alphabetically 
+    # Scan plugins from marketplace.json
+    if os.path.isfile(plugins_path):
+        print(f"Scanning for plugins in {plugins_path}...")
+        try:
+            with open(plugins_path, 'r', encoding='utf-8') as f:
+                marketplace_data = json.load(f)
+
+            if 'plugins' in marketplace_data:
+                for plugin in marketplace_data['plugins']:
+                    plugin_name = plugin.get('name', '')
+                    plugin_description = plugin.get('description', '')
+                    plugin_version = plugin.get('version', '1.0.0')
+                    plugin_keywords = plugin.get('keywords', [])
+                    plugin_author = plugin.get('author', {}).get('name', '')
+
+                    # Get component lists with file names
+                    commands_list = plugin.get('commands', [])
+                    agents_list = plugin.get('agents', [])
+                    mcps_list = plugin.get('mcpServers', [])
+
+                    # Extract component names with category/folder from file paths
+                    def extract_component_with_category(path):
+                        # Extract category/name from path like "./cli-tool/components/commands/git/feature.md"
+                        # Result should be "git/feature"
+                        parts = path.split('/')
+                        if len(parts) >= 2:
+                            filename = parts[-1].replace('.md', '').replace('.json', '')
+                            category = parts[-2]
+                            return f"{category}/{filename}"
+                        else:
+                            # Fallback to just filename if path structure is unexpected
+                            filename = path.split('/')[-1]
+                            return filename.replace('.md', '').replace('.json', '')
+
+                    commands_names = [extract_component_with_category(cmd) for cmd in commands_list]
+                    agents_names = [extract_component_with_category(agent) for agent in agents_list]
+                    mcps_names = [extract_component_with_category(mcp) for mcp in mcps_list]
+
+                    # Look up download count for this plugin
+                    plugin_download_key = f"plugins/{plugin_name}"
+                    plugin_downloads = download_stats.get(plugin_download_key, 0)
+
+                    # Create plugin entry
+                    plugin_entry = {
+                        'name': plugin_name,
+                        'id': plugin_name,
+                        'type': 'plugin',
+                        'description': plugin_description,
+                        'version': plugin_version,
+                        'keywords': plugin_keywords,
+                        'author': plugin_author,
+                        'commands': len(commands_list),
+                        'agents': len(agents_list),
+                        'mcpServers': len(mcps_list),
+                        'commandsList': commands_names,
+                        'agentsList': agents_names,
+                        'mcpServersList': mcps_names,
+                        'installCommand': f'/plugin marketplace add davila7/claude-code-templates && /plugin install {plugin_name}',
+                        'downloads': plugin_downloads
+                    }
+                    components_data['plugins'].append(plugin_entry)
+                    print(f"  Processed plugin: {plugin_name}")
+
+            print(f"✅ Processed {len(components_data['plugins'])} plugins from marketplace.json")
+        except Exception as e:
+            print(f"⚠️ Error reading plugins from {plugins_path}: {e}")
+    else:
+        print(f"Warning: Plugins file not found: {plugins_path}")
+
+    # Sort components alphabetically
     for component_type in components_data:
-        if component_type == 'templates':
-            # Sort templates by name since they don't have path
+        if component_type in ['templates', 'plugins']:
+            # Sort templates and plugins by name since they don't have path
             components_data[component_type].sort(key=lambda x: x['name'])
         else:
             # Sort other components by path
@@ -382,6 +452,11 @@ def generate_components_json():
                 languages = len([t for t in components if t.get('subtype') == 'language'])
                 frameworks = len([t for t in components if t.get('subtype') == 'framework'])
                 print(f"    • {languages} languages, {frameworks} frameworks")
+            elif component_type == 'plugins':
+                total_commands = sum(p.get('commands', 0) for p in components)
+                total_agents = sum(p.get('agents', 0) for p in components)
+                total_mcps = sum(p.get('mcpServers', 0) for p in components)
+                print(f"    • {total_commands} commands, {total_agents} agents, {total_mcps} MCPs")
         print("--------------------------")
 
     except IOError as e:

@@ -1,28 +1,10 @@
 {
-  "version": 2,
-  "public": true,
-  "buildCommand": "echo 'No build needed'",
+  "buildCommand": "npm run build",
   "outputDirectory": "docs",
   "rewrites": [
     {
-      "source": "/component/:type/:name*",
-      "destination": "/component.html"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/blog",
-      "destination": "/blog/"
-    },
-    {
-      "source": "/supabase-claude-code-integration",
-      "destination": "/blog/supabase-claude-code-integration/"
-    },
-    {
-      "source": "/nextjs-vercel-claude-code-integration",
-      "destination": "/blog/nextjs-vercel-claude-code-integration/"
+      "source": "/",
+      "destination": "/index.html"
     },
     {
       "source": "/agents",
@@ -47,65 +29,18 @@
     {
       "source": "/templates",
       "destination": "/index.html"
-    }
-  ],
-  "cleanUrls": false,
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
     },
     {
-      "source": "/js/(.*).js",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "source": "/plugins",
+      "destination": "/index.html"
     },
     {
-      "source": "/css/(.*).css",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/css; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "source": "/plugin/:name",
+      "destination": "/plugin.html"
     },
     {
-      "source": "/(.*).json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300"
-        }
-      ]
+      "source": "/component/:type/:name*",
+      "destination": "/component.html"
     }
   ]
 }

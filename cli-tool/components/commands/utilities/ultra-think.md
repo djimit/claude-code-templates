@@ -1,3 +1,8 @@
+---
+description: Deep analysis and problem solving with multi-dimensional thinking
+argument-hint: [problem or question to analyze]
+---
+
 # Deep Analysis and Problem Solving Mode
 
 Deep analysis and problem solving mode
@@ -10,7 +15,7 @@ Deep analysis and problem solving mode
    - Prepare to explore the problem space comprehensively
 
 2. **Parse the Problem or Question**
-   - Extract the core challenge from: **$ARGUMENTS**
+   - Extract the core challenge from: $ARGUMENTS
    - Identify all stakeholders and constraints
    - Recognize implicit requirements and hidden complexities
    - Question assumptions and surface unknowns
@@ -123,16 +128,16 @@ Deep analysis and problem solving mode
 
 ```bash
 # Architectural decision
-/project:ultra-think Should we migrate to microservices or improve our monolith?
+/ultra-think Should we migrate to microservices or improve our monolith?
 
 # Complex problem solving
-/project:ultra-think How do we scale our system to handle 10x traffic while reducing costs?
+/ultra-think How do we scale our system to handle 10x traffic while reducing costs?
 
 # Strategic planning
-/project:ultra-think What technology stack should we choose for our next-gen platform?
+/ultra-think What technology stack should we choose for our next-gen platform?
 
 # Design challenge
-/project:ultra-think How can we improve our API to be more developer-friendly while maintaining backward compatibility?
+/ultra-think How can we improve our API to be more developer-friendly while maintaining backward compatibility?
 ```
 
 ## Key Principles

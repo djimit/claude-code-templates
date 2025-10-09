@@ -5,9 +5,6 @@
 .env.development
 .env*.local
 
-# claude
-.claude-plugin/*
-
 # Database related files
 *.db
 *.sqlite

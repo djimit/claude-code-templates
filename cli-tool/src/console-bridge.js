@@ -338,12 +338,12 @@ class ConsoleBridge extends EventEmitter {
       if (Math.random() > 0.7) { // Simulate occasional prompts
         this.handleDetectedPrompt(`Read file
 
-  Search(pattern: "(?:Yes|No|yes|no)(?:,\\s*and\\s*don't\\s*ask\\s*again)?", path: 
-  "../../../../../../../.claude/projects/-Users-danipower-Proyectos-Github-claude-code-templates", include: "*.jsonl")
+  Search(pattern: "(?:Yes|No|yes|no)(?:,\\s*and\\s*don't\\s*ask\\s*again)?", path:
+  "../../../../../../../.claude/projects/-Users-username-Projects-project-name", include: "*.jsonl")
 
 Do you want to proceed?
 ❯ 1. Yes
-  2. Yes, and add /Users/danipower/.claude/projects/-Users-danipower-Proyectos-Github-claude-code-templates as a working directory for this session
+  2. Yes, and add ~/.claude/projects/-Users-username-Projects-project-name as a working directory for this session
   3. No, and tell Claude what to do differently (esc)`);
       }
       

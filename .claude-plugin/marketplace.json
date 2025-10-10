@@ -143,10 +143,8 @@
         "./cli-tool/components/agents/data-ai/nlp-engineer.md",
         "./cli-tool/components/agents/data-ai/computer-vision-engineer.md",
         "./cli-tool/components/agents/data-ai/mlops-engineer.md"
-      ],
-      "mcpServers": [
-        "./cli-tool/components/mcps/integration/openai-mcp.json"
       ]
+      
     },
     {
       "name": "devops-automation",

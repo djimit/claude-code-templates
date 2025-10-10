@@ -15,6 +15,7 @@ const { runMCPStats } = require('./mcp-stats');
 const { runAnalytics } = require('./analytics');
 const { startChatsMobile } = require('./chats-mobile');
 const { runHealthCheck } = require('./health-check');
+const { runPluginDashboard } = require('./plugin-dashboard');
 const { trackingService } = require('./tracking-service');
 const { createGlobalAgent, listGlobalAgents, removeGlobalAgent, updateGlobalAgent } = require('./sdk/global-agent-manager');
 
@@ -193,7 +194,14 @@ async function createClaudeConfig(options = {}) {
     await runAnalytics(options);
     return;
   }
-  
+
+  // Handle plugin dashboard
+  if (options.plugins) {
+    trackingService.trackAnalyticsDashboard({ page: 'plugins', source: 'command_line' });
+    await runPluginDashboard(options);
+    return;
+  }
+
   // Handle chats dashboard (now points to mobile chats interface)
   if (options.chats) {
     trackingService.trackAnalyticsDashboard({ page: 'chats-mobile', source: 'command_line' });

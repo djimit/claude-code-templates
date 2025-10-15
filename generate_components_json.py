@@ -35,9 +35,9 @@ def fetch_download_stats():
         all_downloads = []
         offset = 0
         limit = 1000
-        
+
         # Fetch all records with pagination
-        max_pages = 100  # Safety limit
+        max_pages = 200  # Safety limit (200 pages * 1000 records = 200,000 max)
         for page in range(max_pages):
             paginated_headers = headers.copy()
             paginated_headers['Range'] = f'{offset}-{offset + limit - 1}'

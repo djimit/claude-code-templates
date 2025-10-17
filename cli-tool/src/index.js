@@ -129,7 +129,7 @@ async function createClaudeConfig(options = {}) {
   }
   
   // Handle multiple components installation (new approach)
-  if (options.agent || options.command || options.mcp || options.setting || options.hook) {
+  if (options.agent || options.command || options.mcp || options.setting || options.hook || options.skill) {
     // If --workflow is used with components, treat it as YAML
     if (options.workflow) {
       options.yaml = options.workflow;
@@ -1391,6 +1391,162 @@ async function getAvailableAgentsFromGitHub() {
   }
 }
 
+async function installIndividualSkill(skillName, targetDir, options) {
+  console.log(chalk.blue(`💡 Installing skill: ${skillName}`));
+
+  try {
+    // Skills always use SKILL.md as the main file (Anthropic standard)
+    // Format: skills/skill-name/SKILL.md
+    const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/skills/${skillName}/SKILL.md`;
+
+    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
+
+    const response = await fetch(githubUrl);
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(chalk.red(`❌ Skill "${skillName}" not found`));
+        console.log(chalk.yellow('Available skills: pdf-processing, excel-analysis, git-commit-helper, email-composer'));
+        return false;
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const skillContent = await response.text();
+
+    // Check if there are additional files to download (e.g., referenced .md files, scripts, reference)
+    const additionalFiles = {};
+    const skillBaseName = skillName;
+
+    // 1. Look for references to additional files like [FORMS.md](FORMS.md) or [reference](./reference/)
+    const referencePattern = /\[([A-Z_]+\.md)\]\(\1\)|\[.*?\]\(\.\/([a-z_]+)\/\)/g;
+    let match;
+
+    while ((match = referencePattern.exec(skillContent)) !== null) {
+      const referencedFile = match[1] || match[2];
+      const referencedUrl = githubUrl.replace('SKILL.md', referencedFile);
+
+      try {
+        console.log(chalk.gray(`📥 Downloading referenced file: ${referencedFile}...`));
+        const refResponse = await fetch(referencedUrl);
+        if (refResponse.ok) {
+          const refContent = await refResponse.text();
+          additionalFiles[`.claude/skills/${skillBaseName}/${referencedFile}`] = {
+            content: refContent,
+            executable: false
+          };
+          console.log(chalk.green(`✓ Found referenced file: ${referencedFile}`));
+        }
+      } catch (error) {
+        // Referenced file is optional, continue if not found
+        console.log(chalk.gray(`  (Referenced file ${referencedFile} not found, continuing...)`));
+      }
+    }
+
+    // 2. Try to download common directories (scripts/, reference/) from GitHub API
+    const githubApiUrl = `https://api.github.com/repos/davila7/claude-code-templates/contents/cli-tool/components/skills/${skillName}`;
+
+    try {
+      const dirResponse = await fetch(githubApiUrl, {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'claude-code-templates'
+        }
+      });
+
+      if (dirResponse.ok) {
+        const dirContents = await dirResponse.json();
+
+        // Find directories (scripts, reference, templates)
+        for (const item of dirContents) {
+          if (item.type === 'dir' && ['scripts', 'reference', 'templates'].includes(item.name)) {
+            console.log(chalk.gray(`📂 Found directory: ${item.name}/`));
+
+            // Fetch directory contents recursively
+            const subdirResponse = await fetch(item.url, {
+              headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'claude-code-templates'
+              }
+            });
+
+            if (subdirResponse.ok) {
+              const subdirContents = await subdirResponse.json();
+
+              for (const file of subdirContents) {
+                if (file.type === 'file') {
+                  try {
+                    const fileResponse = await fetch(file.download_url);
+                    if (fileResponse.ok) {
+                      const fileContent = await fileResponse.text();
+                      const isExecutable = file.name.endsWith('.py') || file.name.endsWith('.sh');
+
+                      additionalFiles[`.claude/skills/${skillBaseName}/${item.name}/${file.name}`] = {
+                        content: fileContent,
+                        executable: isExecutable
+                      };
+                      console.log(chalk.green(`✓ Downloaded: ${item.name}/${file.name}`));
+                    }
+                  } catch (err) {
+                    console.log(chalk.gray(`  (Could not download ${item.name}/${file.name})`));
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // GitHub API access optional, continue if not available
+      console.log(chalk.gray(`  (Could not access GitHub API for directory listing)`));
+    }
+
+    // Create .claude/skills/skill-name directory (Anthropic standard structure)
+    const skillsDir = path.join(targetDir, '.claude', 'skills');
+    const skillSubDir = path.join(skillsDir, skillBaseName);
+    await fs.ensureDir(skillSubDir);
+
+    // Always use SKILL.md as filename (Anthropic standard)
+    const targetFile = path.join(skillSubDir, 'SKILL.md');
+
+    // Write the main skill file
+    await fs.writeFile(targetFile, skillContent, 'utf8');
+
+    // Write any additional files
+    for (const [filePath, fileData] of Object.entries(additionalFiles)) {
+      const fullPath = path.join(targetDir, filePath);
+      await fs.ensureDir(path.dirname(fullPath));
+      await fs.writeFile(fullPath, fileData.content, 'utf8');
+
+      if (fileData.executable) {
+        await fs.chmod(fullPath, '755');
+      }
+    }
+
+    if (!options.silent) {
+      console.log(chalk.green(`✅ Skill "${skillName}" installed successfully!`));
+      console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
+      if (Object.keys(additionalFiles).length > 0) {
+        console.log(chalk.cyan(`📄 Additional files: ${Object.keys(additionalFiles).length}`));
+      }
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+    }
+
+    // Track successful skill installation
+    trackingService.trackDownload('skill', skillName, {
+      installation_type: 'individual_skill',
+      target_directory: path.relative(process.cwd(), targetDir),
+      source: 'github_main',
+      has_additional_files: Object.keys(additionalFiles).length > 0
+    });
+
+    return true;
+
+  } catch (error) {
+    console.log(chalk.red(`❌ Error installing skill: ${error.message}`));
+    return false;
+  }
+}
+
 /**
  * Install multiple components with optional YAML workflow
  */
@@ -1403,7 +1559,8 @@ async function installMultipleComponents(options, targetDir) {
       commands: [],
       mcps: [],
       settings: [],
-      hooks: []
+      hooks: [],
+      skills: []
     };
     
     // Parse comma-separated values for each component type
@@ -1431,8 +1588,13 @@ async function installMultipleComponents(options, targetDir) {
       const hooksInput = Array.isArray(options.hook) ? options.hook.join(',') : options.hook;
       components.hooks = hooksInput.split(',').map(h => h.trim()).filter(h => h);
     }
-    
-    const totalComponents = components.agents.length + components.commands.length + components.mcps.length + components.settings.length + components.hooks.length;
+
+    if (options.skill) {
+      const skillsInput = Array.isArray(options.skill) ? options.skill.join(',') : options.skill;
+      components.skills = skillsInput.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    const totalComponents = components.agents.length + components.commands.length + components.mcps.length + components.settings.length + components.hooks.length + components.skills.length;
     
     if (totalComponents === 0) {
       console.log(chalk.yellow('⚠️  No components specified to install.'));
@@ -1445,6 +1607,7 @@ async function installMultipleComponents(options, targetDir) {
     console.log(chalk.gray(`   MCPs: ${components.mcps.length}`));
     console.log(chalk.gray(`   Settings: ${components.settings.length}`));
     console.log(chalk.gray(`   Hooks: ${components.hooks.length}`));
+    console.log(chalk.gray(`   Skills: ${components.skills.length}`));
     
     // Counter for successfully installed components
     let successfullyInstalled = 0;
@@ -1526,14 +1689,21 @@ async function installMultipleComponents(options, targetDir) {
     // Install hooks (using shared installation locations)
     for (const hook of components.hooks) {
       console.log(chalk.gray(`   Installing hook: ${hook}`));
-      const hookSuccess = await installIndividualHook(hook, targetDir, { 
-        ...options, 
-        silent: true, 
-        sharedInstallLocations: sharedInstallLocations 
+      const hookSuccess = await installIndividualHook(hook, targetDir, {
+        ...options,
+        silent: true,
+        sharedInstallLocations: sharedInstallLocations
       });
       if (hookSuccess > 0) successfullyInstalled++;
     }
-    
+
+    // Install skills
+    for (const skill of components.skills) {
+      console.log(chalk.gray(`   Installing skill: ${skill}`));
+      const skillSuccess = await installIndividualSkill(skill, targetDir, { ...options, silent: true });
+      if (skillSuccess) successfullyInstalled++;
+    }
+
     // Handle YAML workflow if provided
     if (options.yaml) {
       console.log(chalk.blue('\n📄 Processing workflow YAML...'));

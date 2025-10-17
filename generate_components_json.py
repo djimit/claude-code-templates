@@ -294,6 +294,7 @@ def fetch_download_stats():
                 'setting': 'settings',
                 'hook': 'hooks',
                 'mcp': 'mcps',
+                'skill': 'skills',
                 'template': 'templates'
             }
 
@@ -338,6 +339,7 @@ def fetch_download_stats():
                         'setting': 'settings',
                         'hook': 'hooks',
                         'mcp': 'mcps',
+                        'skill': 'skills',
                         'template': 'templates'
                     }
 
@@ -384,14 +386,14 @@ def generate_components_json():
     templates_base_path = 'cli-tool/templates'
     plugins_path = '.claude-plugin/marketplace.json'
     output_path = 'docs/components.json'
-    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'sandbox': [], 'templates': [], 'plugins': []}
+    components_data = {'agents': [], 'commands': [], 'mcps': [], 'settings': [], 'hooks': [], 'sandbox': [], 'skills': [], 'templates': [], 'plugins': []}
 
     # Run security validation
     security_metadata = run_security_validation()
 
     # Fetch download statistics
     download_stats = fetch_download_stats()
-    component_types = ['agents', 'commands', 'mcps', 'settings', 'hooks', 'sandbox']
+    component_types = ['agents', 'commands', 'mcps', 'settings', 'hooks', 'sandbox', 'skills']
 
     print(f"Starting scan of {components_base_path} and {templates_base_path}...")
 

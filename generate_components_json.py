@@ -405,7 +405,71 @@ def generate_components_json():
             continue
 
         print(f"Scanning for {component_type} in {type_path}...")
-        
+
+        # Special handling for skills - they use SKILL.md inside category/skill directories
+        if component_type == 'skills':
+            for category in os.listdir(type_path):
+                category_path = os.path.join(type_path, category)
+                if os.path.isdir(category_path) and not category.endswith('.md'):
+                    for skill_dir in os.listdir(category_path):
+                        skill_dir_path = os.path.join(category_path, skill_dir)
+                        if os.path.isdir(skill_dir_path):
+                            # Look for SKILL.md inside the skill directory
+                            skill_file_path = os.path.join(skill_dir_path, 'SKILL.md')
+                            if os.path.isfile(skill_file_path):
+                                name = skill_dir  # Use directory name as skill name
+
+                                # Read file content
+                                content = ''
+                                description = ''
+                                try:
+                                    with open(skill_file_path, 'r', encoding='utf-8') as f:
+                                        content = f.read()
+
+                                    # Extract description from frontmatter if available
+                                    if content.startswith('---'):
+                                        frontmatter_end = content.find('---', 3)
+                                        if frontmatter_end != -1:
+                                            frontmatter = content[3:frontmatter_end]
+                                            for line in frontmatter.split('\n'):
+                                                if line.startswith('description:'):
+                                                    description = line.split('description:', 1)[1].strip()
+                                                    break
+
+                                except Exception as e:
+                                    print(f"Warning: Could not read file {skill_file_path}: {e}")
+
+                                # Look up download count for this skill
+                                download_key = f"{component_type}/{category}/{name}"
+                                downloads = download_stats.get(download_key, 0)
+
+                                # Look up security metadata for this skill
+                                security_key = f"{component_type}/{category}/{name}"
+                                security = security_metadata.get(security_key, {
+                                    'validated': False,
+                                    'valid': None,
+                                    'score': None,
+                                    'errorCount': 0,
+                                    'warningCount': 0,
+                                    'lastValidated': None
+                                })
+
+                                # Path includes category for proper organization
+                                component = {
+                                    'name': name,  # Just the skill directory name
+                                    'path': f"{category}/{name}",  # category/skill-name format
+                                    'category': category,
+                                    'type': 'skill',
+                                    'content': content,
+                                    'description': description,
+                                    'downloads': downloads,
+                                    'security': security
+                                }
+                                components_data[component_type].append(component)
+                                print(f"  Processed skill: {category}/{name}")
+            continue  # Skip the normal file scanning for skills
+
+        # Normal scanning for other component types
         for category in os.listdir(type_path):
             category_path = os.path.join(type_path, category)
             if os.path.isdir(category_path):

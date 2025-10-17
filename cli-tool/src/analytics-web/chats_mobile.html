@@ -1576,20 +1576,20 @@
             async loadMoreMessages(conversationId, isInitialLoad = false) {
                 const chatMessages = document.getElementById('chatMessages');
                 if (!chatMessages) return;
-                
+
                 // Prevent concurrent loading
                 if (this.messagesPagination.isLoading || !this.messagesPagination.hasMore) {
                     return;
                 }
-                
+
                 // Ensure we're loading for the correct conversation
                 if (this.messagesPagination.conversationId !== conversationId) {
                     return;
                 }
-                
+
                 try {
                     this.messagesPagination.isLoading = true;
-                    
+
                     if (isInitialLoad) {
                         // Show loading state for initial load
                         chatMessages.innerHTML = `
@@ -1604,16 +1604,16 @@
                         // Show loading indicator at top for infinite scroll
                         this.showMessagesLoadingIndicator(true);
                     }
-                    
+
                     // Fetch paginated messages from the server
                     const response = await fetch(`/api/conversations/${conversationId}/messages?page=${this.messagesPagination.currentPage}&limit=${this.messagesPagination.limit}`);
-                    
+
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    
+
                     const messagesData = await response.json();
-                    
+
                     if (messagesData && messagesData.messages) {
                         // Update pagination state - handle both paginated and non-paginated responses
                         if (messagesData.pagination) {
@@ -1625,24 +1625,25 @@
                             this.messagesPagination.hasMore = false;
                             this.messagesPagination.currentPage = 1;
                         }
-                        
+
                         // Get existing messages or initialize
                         let existingMessages = this.loadedMessages.get(conversationId) || [];
-                        
+
                         if (isInitialLoad) {
                             // For initial load, replace all messages (newest messages first)
                             existingMessages = messagesData.messages;
+                            // Render all messages for initial load
+                            this.renderCachedMessages(existingMessages, false);
                         } else {
                             // For infinite scroll, prepend older messages to the beginning
                             existingMessages = [...messagesData.messages, ...existingMessages];
+                            // Render ONLY the new messages (not all accumulated messages)
+                            this.renderCachedMessages(messagesData.messages, true);
                         }
-                        
+
                         // Cache the combined messages
                         this.loadedMessages.set(conversationId, existingMessages);
-                        
-                        // Render messages
-                        this.renderCachedMessages(existingMessages, !isInitialLoad);
-                        
+
                         // Setup scroll listener for infinite scroll (only on initial load)
                         if (isInitialLoad) {
                             this.setupMessagesScrollListener(conversationId);
@@ -1655,7 +1656,7 @@
                             // Update status based on conversation state
                             this.analyzeConversationStatus(existingMessages);
                         }
-                        
+
                     } else if (isInitialLoad) {
                         chatMessages.innerHTML = `
                             <div class="no-messages-found">

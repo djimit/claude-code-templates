@@ -1395,8 +1395,12 @@ async function installIndividualSkill(skillName, targetDir, options) {
   console.log(chalk.blue(`💡 Installing skill: ${skillName}`));
 
   try {
+    // Skills can be in format: "skill-name" or "category/skill-name"
+    // Extract the actual skill name (last part of the path)
+    const skillBaseName = skillName.includes('/') ? skillName.split('/').pop() : skillName;
+
     // Skills always use SKILL.md as the main file (Anthropic standard)
-    // Format: skills/skill-name/SKILL.md
+    // Format: skills/category/skill-name/SKILL.md
     const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/skills/${skillName}/SKILL.md`;
 
     console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
@@ -1405,7 +1409,8 @@ async function installIndividualSkill(skillName, targetDir, options) {
     if (!response.ok) {
       if (response.status === 404) {
         console.log(chalk.red(`❌ Skill "${skillName}" not found`));
-        console.log(chalk.yellow('Available skills: pdf-processing, excel-analysis, git-commit-helper, email-composer'));
+        console.log(chalk.yellow('💡 Tip: Use format "category/skill-name" (e.g., creative-design/algorithmic-art)'));
+        console.log(chalk.yellow('Available categories: creative-design, development, document-processing, enterprise-communication'));
         return false;
       }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1415,7 +1420,6 @@ async function installIndividualSkill(skillName, targetDir, options) {
 
     // Check if there are additional files to download (e.g., referenced .md files, scripts, reference)
     const additionalFiles = {};
-    const skillBaseName = skillName;
 
     // 1. Look for references to additional files like [FORMS.md](FORMS.md) or [reference](./reference/)
     const referencePattern = /\[([A-Z_]+\.md)\]\(\1\)|\[.*?\]\(\.\/([a-z_]+)\/\)/g;

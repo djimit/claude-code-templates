@@ -38,7 +38,10 @@
       "WebFetch(domain:neon.com)",
       "Read(//Users/danipower/.claude/**)",
       "Bash(git checkout -b feature/agent-validation-system)",
-      "Bash(npm test -- StructuralValidator.test.js)"
+      "Bash(npm test -- StructuralValidator.test.js)",
+      "Bash(gh pr create:*)",
+      "Bash(mv:*)",
+      "Read(//private/tmp/anthropic-skills/**)"
     ],
     "deny": []
   },

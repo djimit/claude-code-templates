@@ -1399,124 +1399,89 @@ async function installIndividualSkill(skillName, targetDir, options) {
     // Extract the actual skill name (last part of the path)
     const skillBaseName = skillName.includes('/') ? skillName.split('/').pop() : skillName;
 
-    // Skills always use SKILL.md as the main file (Anthropic standard)
-    // Format: skills/category/skill-name/SKILL.md
-    const githubUrl = `https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/skills/${skillName}/SKILL.md`;
-
-    console.log(chalk.gray(`📥 Downloading from GitHub (main branch)...`));
-
-    const response = await fetch(githubUrl);
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log(chalk.red(`❌ Skill "${skillName}" not found`));
-        console.log(chalk.yellow('💡 Tip: Use format "category/skill-name" (e.g., creative-design/algorithmic-art)'));
-        console.log(chalk.yellow('Available categories: creative-design, development, document-processing, enterprise-communication'));
-        return false;
-      }
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const skillContent = await response.text();
-
-    // Check if there are additional files to download (e.g., referenced .md files, scripts, reference)
-    const additionalFiles = {};
-
-    // 1. Look for references to additional files like [FORMS.md](FORMS.md) or [reference](./reference/)
-    const referencePattern = /\[([A-Z_]+\.md)\]\(\1\)|\[.*?\]\(\.\/([a-z_]+)\/\)/g;
-    let match;
-
-    while ((match = referencePattern.exec(skillContent)) !== null) {
-      const referencedFile = match[1] || match[2];
-      const referencedUrl = githubUrl.replace('SKILL.md', referencedFile);
-
-      try {
-        console.log(chalk.gray(`📥 Downloading referenced file: ${referencedFile}...`));
-        const refResponse = await fetch(referencedUrl);
-        if (refResponse.ok) {
-          const refContent = await refResponse.text();
-          additionalFiles[`.claude/skills/${skillBaseName}/${referencedFile}`] = {
-            content: refContent,
-            executable: false
-          };
-          console.log(chalk.green(`✓ Found referenced file: ${referencedFile}`));
-        }
-      } catch (error) {
-        // Referenced file is optional, continue if not found
-        console.log(chalk.gray(`  (Referenced file ${referencedFile} not found, continuing...)`));
-      }
-    }
-
-    // 2. Try to download common directories (scripts/, reference/) from GitHub API
+    // Use GitHub API to download ALL files and directories for the skill
     const githubApiUrl = `https://api.github.com/repos/davila7/claude-code-templates/contents/cli-tool/components/skills/${skillName}`;
 
-    try {
-      const dirResponse = await fetch(githubApiUrl, {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'claude-code-templates'
+    console.log(chalk.gray(`📥 Downloading skill from GitHub (main branch)...`));
+
+    const downloadedFiles = {};
+
+    // Recursive function to download all files and directories
+    async function downloadDirectory(apiUrl, relativePath = '') {
+      try {
+        const response = await fetch(apiUrl, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'claude-code-templates'
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.log(chalk.red(`❌ Skill "${skillName}" not found`));
+            console.log(chalk.yellow('💡 Tip: Use format "category/skill-name" (e.g., creative-design/algorithmic-art)'));
+            console.log(chalk.yellow('Available categories: creative-design, development, document-processing, enterprise-communication'));
+            return false;
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      });
 
-      if (dirResponse.ok) {
-        const dirContents = await dirResponse.json();
+        const contents = await response.json();
 
-        // Find directories (scripts, reference, templates)
-        for (const item of dirContents) {
-          if (item.type === 'dir' && ['scripts', 'reference', 'templates'].includes(item.name)) {
-            console.log(chalk.gray(`📂 Found directory: ${item.name}/`));
+        for (const item of contents) {
+          const itemPath = relativePath ? `${relativePath}/${item.name}` : item.name;
 
-            // Fetch directory contents recursively
-            const subdirResponse = await fetch(item.url, {
-              headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                'User-Agent': 'claude-code-templates'
+          if (item.type === 'file') {
+            // Download file
+            try {
+              const fileResponse = await fetch(item.download_url);
+              if (fileResponse.ok) {
+                const fileContent = await fileResponse.text();
+                const isExecutable = item.name.endsWith('.py') || item.name.endsWith('.sh');
+
+                const targetPath = `.claude/skills/${skillBaseName}/${itemPath}`;
+                downloadedFiles[targetPath] = {
+                  content: fileContent,
+                  executable: isExecutable
+                };
+                console.log(chalk.green(`✓ Downloaded: ${itemPath}`));
               }
-            });
-
-            if (subdirResponse.ok) {
-              const subdirContents = await subdirResponse.json();
-
-              for (const file of subdirContents) {
-                if (file.type === 'file') {
-                  try {
-                    const fileResponse = await fetch(file.download_url);
-                    if (fileResponse.ok) {
-                      const fileContent = await fileResponse.text();
-                      const isExecutable = file.name.endsWith('.py') || file.name.endsWith('.sh');
-
-                      additionalFiles[`.claude/skills/${skillBaseName}/${item.name}/${file.name}`] = {
-                        content: fileContent,
-                        executable: isExecutable
-                      };
-                      console.log(chalk.green(`✓ Downloaded: ${item.name}/${file.name}`));
-                    }
-                  } catch (err) {
-                    console.log(chalk.gray(`  (Could not download ${item.name}/${file.name})`));
-                  }
-                }
-              }
+            } catch (err) {
+              console.log(chalk.gray(`  (Could not download ${itemPath})`));
             }
+          } else if (item.type === 'dir') {
+            // Recursively download directory contents
+            console.log(chalk.gray(`📂 Downloading directory: ${itemPath}/`));
+            await downloadDirectory(item.url, itemPath);
           }
         }
+
+        return true;
+      } catch (error) {
+        console.log(chalk.gray(`  (Could not access GitHub API: ${error.message})`));
+        return false;
       }
-    } catch (error) {
-      // GitHub API access optional, continue if not available
-      console.log(chalk.gray(`  (Could not access GitHub API for directory listing)`));
+    }
+
+    // Download all files from the skill directory
+    const success = await downloadDirectory(githubApiUrl);
+    if (!success) {
+      return false;
+    }
+
+    // Check if SKILL.md was downloaded (required)
+    const skillMdPath = `.claude/skills/${skillBaseName}/SKILL.md`;
+    if (!downloadedFiles[skillMdPath]) {
+      console.log(chalk.red(`❌ SKILL.md not found in skill directory`));
+      return false;
     }
 
     // Create .claude/skills/skill-name directory (Anthropic standard structure)
     const skillsDir = path.join(targetDir, '.claude', 'skills');
-    const skillSubDir = path.join(skillsDir, skillBaseName);
-    await fs.ensureDir(skillSubDir);
+    await fs.ensureDir(skillsDir);
 
-    // Always use SKILL.md as filename (Anthropic standard)
-    const targetFile = path.join(skillSubDir, 'SKILL.md');
-
-    // Write the main skill file
-    await fs.writeFile(targetFile, skillContent, 'utf8');
-
-    // Write any additional files
-    for (const [filePath, fileData] of Object.entries(additionalFiles)) {
+    // Write all downloaded files
+    for (const [filePath, fileData] of Object.entries(downloadedFiles)) {
       const fullPath = path.join(targetDir, filePath);
       await fs.ensureDir(path.dirname(fullPath));
       await fs.writeFile(fullPath, fileData.content, 'utf8');
@@ -1526,13 +1491,13 @@ async function installIndividualSkill(skillName, targetDir, options) {
       }
     }
 
+    const targetFile = path.join(skillsDir, skillBaseName, 'SKILL.md');
+
     if (!options.silent) {
       console.log(chalk.green(`✅ Skill "${skillName}" installed successfully!`));
       console.log(chalk.cyan(`📁 Installed to: ${path.relative(targetDir, targetFile)}`));
-      if (Object.keys(additionalFiles).length > 0) {
-        console.log(chalk.cyan(`📄 Additional files: ${Object.keys(additionalFiles).length}`));
-      }
-      console.log(chalk.cyan(`📦 Downloaded from: ${githubUrl}`));
+      console.log(chalk.cyan(`📄 Total files downloaded: ${Object.keys(downloadedFiles).length}`));
+      console.log(chalk.cyan(`📦 Downloaded from: ${githubApiUrl}`));
     }
 
     // Track successful skill installation
@@ -1540,7 +1505,7 @@ async function installIndividualSkill(skillName, targetDir, options) {
       installation_type: 'individual_skill',
       target_directory: path.relative(process.cwd(), targetDir),
       source: 'github_main',
-      has_additional_files: Object.keys(additionalFiles).length > 0
+      total_files: Object.keys(downloadedFiles).length
     });
 
     return true;

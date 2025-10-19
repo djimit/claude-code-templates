@@ -2395,10 +2395,11 @@ async function executeSandbox(options, targetDir) {
   let { agent, prompt } = options;
   
   // Validate sandbox provider
-  if (sandbox !== 'e2b') {
-    console.log(chalk.red('❌ Error: Only E2B sandbox is currently supported'));
-    console.log(chalk.yellow('💡 Available providers: e2b'));
+  if (sandbox !== 'e2b' && sandbox !== 'cloudflare') {
+    console.log(chalk.red('❌ Error: Invalid sandbox provider'));
+    console.log(chalk.yellow('💡 Available providers: e2b, cloudflare'));
     console.log(chalk.gray('   Example: --sandbox e2b --prompt "Create a web app"'));
+    console.log(chalk.gray('   Example: --sandbox cloudflare --prompt "Calculate factorial of 5"'));
     return;
   }
   
@@ -2507,28 +2508,246 @@ async function executeSandbox(options, targetDir) {
     // Ignore .env loading errors
   }
   
-  // Check for API keys (either from CLI parameters or environment variables)
-  const e2bKey = e2bApiKey || process.env.E2B_API_KEY;
+  // Check for API keys based on sandbox provider
   const anthropicKey = anthropicApiKey || process.env.ANTHROPIC_API_KEY;
-  
-  if (!e2bKey) {
-    console.log(chalk.red('❌ Error: E2B API key is required'));
-    console.log(chalk.yellow('💡 Options:'));
-    console.log(chalk.gray('   1. Set environment variable: E2B_API_KEY=your_key'));
-    console.log(chalk.gray('   2. Use CLI parameter: --e2b-api-key your_key'));
-    console.log(chalk.blue('   Get your key at: https://e2b.dev/dashboard'));
+
+  if (sandbox === 'e2b') {
+    const e2bKey = e2bApiKey || process.env.E2B_API_KEY;
+
+    if (!e2bKey) {
+      console.log(chalk.red('❌ Error: E2B API key is required'));
+      console.log(chalk.yellow('💡 Options:'));
+      console.log(chalk.gray('   1. Set environment variable: E2B_API_KEY=your_key'));
+      console.log(chalk.gray('   2. Use CLI parameter: --e2b-api-key your_key'));
+      console.log(chalk.blue('   Get your key at: https://e2b.dev/dashboard'));
+      return;
+    }
+
+    if (!anthropicKey) {
+      console.log(chalk.red('❌ Error: Anthropic API key is required'));
+      console.log(chalk.yellow('💡 Options:'));
+      console.log(chalk.gray('   1. Set environment variable: ANTHROPIC_API_KEY=your_key'));
+      console.log(chalk.gray('   2. Use CLI parameter: --anthropic-api-key your_key'));
+      console.log(chalk.blue('   Get your key at: https://console.anthropic.com'));
+      return;
+    }
+
+    // Execute E2B sandbox
+    await executeE2BSandbox({ sandbox, agent, prompt, command, mcp, setting, hook, e2bKey, anthropicKey }, targetDir);
+
+  } else if (sandbox === 'cloudflare') {
+    if (!anthropicKey) {
+      console.log(chalk.red('❌ Error: Anthropic API key is required for Cloudflare sandbox'));
+      console.log(chalk.yellow('💡 Options:'));
+      console.log(chalk.gray('   1. Set environment variable: ANTHROPIC_API_KEY=your_key'));
+      console.log(chalk.gray('   2. Use CLI parameter: --anthropic-api-key your_key'));
+      console.log(chalk.blue('   Get your key at: https://console.anthropic.com'));
+      return;
+    }
+
+    // Execute Cloudflare sandbox
+    await executeCloudflareSandbox({ sandbox, agent, prompt, command, mcp, setting, hook, anthropicKey }, targetDir);
+  }
+}
+
+async function executeCloudflareSandbox(options, targetDir) {
+  const { agent, prompt, anthropicKey } = options;
+
+  console.log(chalk.blue('\n☁️  Cloudflare Sandbox Execution'));
+  console.log(chalk.cyan('═══════════════════════════════════════'));
+
+  if (agent) {
+    const agentList = agent.split(',');
+    if (agentList.length > 1) {
+      console.log(chalk.white(`📋 Agents (${agentList.length}):`));
+      agentList.forEach(a => console.log(chalk.yellow(`   • ${a.trim()}`)));
+    } else {
+      console.log(chalk.white(`📋 Agent: ${chalk.yellow(agent)}`));
+    }
+  } else {
+    console.log(chalk.white(`📋 Agent: ${chalk.yellow('default')}`));
+  }
+
+  const truncatedPrompt = prompt.length > 80 ? prompt.substring(0, 80) + '...' : prompt;
+  console.log(chalk.white(`💭 Prompt: ${chalk.cyan('"' + truncatedPrompt + '"')}`));
+  console.log(chalk.white(`🌐 Provider: ${chalk.green('Cloudflare Workers')}`));
+  console.log(chalk.gray('\n🔧 Execution details:'));
+  console.log(chalk.gray('   • Uses Claude AI for code generation'));
+  console.log(chalk.gray('   • Executes in isolated Cloudflare sandbox'));
+  console.log(chalk.gray('   • Global edge deployment for low latency\n'));
+
+  const inquirer = require('inquirer');
+
+  const { shouldExecute } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'shouldExecute',
+    message: 'Execute this prompt in Cloudflare sandbox?',
+    default: true
+  }]);
+
+  if (!shouldExecute) {
+    console.log(chalk.yellow('⏹️  Cloudflare sandbox execution cancelled by user.'));
     return;
   }
-  
-  if (!anthropicKey) {
-    console.log(chalk.red('❌ Error: Anthropic API key is required'));
-    console.log(chalk.yellow('💡 Options:'));
-    console.log(chalk.gray('   1. Set environment variable: ANTHROPIC_API_KEY=your_key'));
-    console.log(chalk.gray('   2. Use CLI parameter: --anthropic-api-key your_key'));
-    console.log(chalk.blue('   Get your key at: https://console.anthropic.com'));
-    return;
+
+  try {
+    console.log(chalk.blue('🔮 Setting up Cloudflare sandbox environment...'));
+
+    const spinner = ora('Installing Cloudflare sandbox component...').start();
+
+    // Create .claude/sandbox/cloudflare directory
+    const sandboxDir = path.join(targetDir, '.claude', 'sandbox', 'cloudflare');
+    await fs.ensureDir(sandboxDir);
+
+    // Copy Cloudflare component files
+    const componentsDir = path.join(__dirname, '..', 'components', 'sandbox', 'cloudflare');
+
+    try {
+      if (await fs.pathExists(componentsDir)) {
+        console.log(chalk.gray('📦 Using local Cloudflare component files...'));
+
+        // Copy all files from cloudflare directory
+        await fs.copy(componentsDir, sandboxDir, {
+          overwrite: true,
+          filter: (src) => {
+            // Exclude node_modules and build artifacts
+            return !src.includes('node_modules') &&
+                   !src.includes('.wrangler') &&
+                   !src.includes('dist');
+          }
+        });
+      } else {
+        throw new Error('Cloudflare component files not found in package');
+      }
+    } catch (error) {
+      spinner.fail(`Failed to install Cloudflare component: ${error.message}`);
+      throw error;
+    }
+
+    spinner.succeed('Cloudflare sandbox component installed successfully');
+
+    // Check for Node.js
+    const nodeSpinner = ora('Checking Node.js environment...').start();
+
+    try {
+      const { spawn } = require('child_process');
+
+      // Check Node.js version
+      const checkNode = () => {
+        return new Promise((resolve) => {
+          const check = spawn('node', ['--version'], { stdio: 'pipe' });
+          check.on('close', (code) => resolve(code === 0));
+          check.on('error', () => resolve(false));
+        });
+      };
+
+      const nodeAvailable = await checkNode();
+      if (!nodeAvailable) {
+        nodeSpinner.fail('Node.js not found');
+        console.log(chalk.red('❌ Node.js 16.17.0+ is required for Cloudflare sandbox'));
+        console.log(chalk.yellow('💡 Please install Node.js and try again'));
+        console.log(chalk.blue('   Visit: https://nodejs.org'));
+        return;
+      }
+
+      nodeSpinner.succeed('Node.js environment ready');
+
+      // Install NPM dependencies
+      const depSpinner = ora('Installing Cloudflare dependencies...').start();
+
+      const npmInstall = spawn('npm', ['install'], {
+        cwd: sandboxDir,
+        stdio: 'pipe'
+      });
+
+      let npmOutput = '';
+      let npmError = '';
+
+      npmInstall.stdout.on('data', (data) => {
+        npmOutput += data.toString();
+      });
+
+      npmInstall.stderr.on('data', (data) => {
+        npmError += data.toString();
+      });
+
+      await new Promise((resolve, reject) => {
+        npmInstall.on('close', async (npmCode) => {
+          if (npmCode === 0) {
+            depSpinner.succeed('Cloudflare dependencies installed successfully');
+
+            // Execute using launcher
+            console.log(chalk.blue('🚀 Launching Cloudflare sandbox...'));
+            console.log(chalk.gray(`📝 Prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}"`));
+
+            // Use ts-node or tsx to execute TypeScript launcher
+            const launcherPath = path.join(sandboxDir, 'launcher.ts');
+
+            console.log(chalk.blue('🚀 Starting Cloudflare sandbox execution...'));
+
+            const sandboxExecution = spawn('npx', [
+              'tsx',
+              launcherPath,
+              prompt,
+              agent || '',
+              anthropicKey,
+              'http://localhost:8787' // Local dev server URL
+            ], {
+              cwd: sandboxDir,
+              stdio: 'inherit',
+              timeout: 300000, // 5 minutes
+              env: {
+                ...process.env,
+                ANTHROPIC_API_KEY: anthropicKey
+              }
+            });
+
+            sandboxExecution.on('close', (code) => {
+              if (code === 0) {
+                console.log(chalk.green('🎉 Cloudflare sandbox execution completed successfully!'));
+                resolve();
+              } else if (code === null) {
+                console.log(chalk.yellow('⏹️  Sandbox execution was cancelled'));
+                resolve();
+              } else {
+                console.log(chalk.yellow(`⚠️  Sandbox execution finished with exit code ${code}`));
+                console.log(chalk.gray('💡 Check the output above for error details'));
+                resolve();
+              }
+            });
+
+            sandboxExecution.on('error', (error) => {
+              console.log(chalk.red(`❌ Error executing sandbox: ${error.message}`));
+              console.log(chalk.yellow('💡 Make sure you have set ANTHROPIC_API_KEY'));
+              reject(error);
+            });
+          } else {
+            depSpinner.fail('Failed to install Cloudflare dependencies');
+            console.log(chalk.red(`❌ npm install failed with exit code ${npmCode}`));
+            if (npmError) {
+              console.log(chalk.red('Error output:'));
+              console.log(chalk.gray(npmError.trim()));
+            }
+            reject(new Error('Failed to install dependencies'));
+          }
+        });
+      });
+
+    } catch (error) {
+      nodeSpinner.fail('Failed to check Node.js environment');
+      console.log(chalk.red(`❌ Error: ${error.message}`));
+      throw error;
+    }
+
+  } catch (error) {
+    console.log(chalk.red(`❌ Error setting up Cloudflare sandbox: ${error.message}`));
+    console.log(chalk.yellow('💡 Please check your internet connection and try again'));
   }
-  
+}
+
+async function executeE2BSandbox(options, targetDir) {
+  const { agent, prompt, command, mcp, setting, hook, e2bKey, anthropicKey } = options;
+
   // Sandbox execution confirmation
   console.log(chalk.blue('\n☁️ E2B Sandbox Execution'));
   console.log(chalk.cyan('═══════════════════════════════════════'));

@@ -192,13 +192,27 @@ def fetch_download_stats():
     """
     Fetch download statistics from Supabase
     Returns a dictionary with component_type-component_name as key and download count as value
+    Supports: agents, commands, mcps, settings, hooks, sandbox, skills, templates, plugins
     """
     print("📊 Fetching download statistics from Supabase...")
-    
+
+    # Define type mapping once (DRY principle)
+    TYPE_MAPPING = {
+        'agent': 'agents',
+        'command': 'commands',
+        'setting': 'settings',
+        'hook': 'hooks',
+        'mcp': 'mcps',
+        'skill': 'skills',
+        'template': 'templates',
+        'plugin': 'plugins',
+        'sandbox': 'sandbox'
+    }
+
     # Get Supabase credentials (same as generate_trending_data.py)
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_api_key = os.getenv("SUPABASE_API_KEY")
-    
+
     if not supabase_url or not supabase_api_key:
         print("⚠️ Warning: Missing Supabase credentials, skipping download stats")
         return {}
@@ -287,22 +301,12 @@ def fetch_download_stats():
                     key = f"{component_type}|{category}|{actual_name}"
                     component_totals[key] += 1
 
-            # Convert to the format we need
-            type_mapping = {
-                'agent': 'agents',
-                'command': 'commands',
-                'setting': 'settings',
-                'hook': 'hooks',
-                'mcp': 'mcps',
-                'skill': 'skills',
-                'template': 'templates'
-            }
-
+            # Convert to the format we need using the TYPE_MAPPING constant
             for key, count in component_totals.items():
                 parts = key.split('|')
                 if len(parts) == 3:
                     component_type, category, component_name = parts
-                    mapped_type = type_mapping.get(component_type, component_type + 's')
+                    mapped_type = TYPE_MAPPING.get(component_type, component_type + 's')
                     final_key = f"{mapped_type}/{category}/{component_name}"
                     download_counts[final_key] = count
             
@@ -332,18 +336,8 @@ def fetch_download_stats():
                         actual_name = component_name
                         category = 'general'
 
-                    # Map to plural form
-                    type_mapping = {
-                        'agent': 'agents',
-                        'command': 'commands',
-                        'setting': 'settings',
-                        'hook': 'hooks',
-                        'mcp': 'mcps',
-                        'skill': 'skills',
-                        'template': 'templates'
-                    }
-
-                    mapped_type = type_mapping.get(component_type, component_type + 's')
+                    # Map to plural form using TYPE_MAPPING constant
+                    mapped_type = TYPE_MAPPING.get(component_type, component_type + 's')
                     key = f"{mapped_type}/{category}/{actual_name}"
                     download_counts[key] = total_downloads
                 

@@ -270,7 +270,15 @@ Requirements:
 
     try {
       for await (const message of query({ prompt: promptContent, options })) {
-        if (message.type === 'text') {
+        // The Agent SDK returns different message types:
+        // - 'system': Initialization info
+        // - 'assistant': Individual API responses
+        // - 'result': Final aggregated result (THIS is what we need!)
+        if (message.type === 'result' && message.result) {
+          generatedCode = message.result;
+          log(`Received result (${message.result.length} chars)`, 'success');
+        } else if (message.type === 'text' && message.text) {
+          // Fallback for older SDK versions
           generatedCode += message.text;
         }
       }

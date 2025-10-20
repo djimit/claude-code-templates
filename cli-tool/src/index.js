@@ -2610,15 +2610,7 @@ async function executeCloudflareSandbox(options, targetDir) {
 
         // Copy all files from cloudflare directory
         await fs.copy(componentsDir, sandboxDir, {
-          overwrite: true,
-          filter: (src) => {
-            // Exclude node_modules and build artifacts
-            const shouldCopy = !src.includes('node_modules') &&
-                               !src.includes('.wrangler') &&
-                               !src.includes('dist') &&
-                               !src.includes('.gitignore');
-            return shouldCopy;
-          }
+          overwrite: true
         });
 
         // Verify files were copied

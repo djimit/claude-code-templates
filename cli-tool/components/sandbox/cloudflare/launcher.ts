@@ -132,14 +132,6 @@ function saveFilesToDirectory(files: { path: string; content: string }[], baseDi
     fs.mkdirSync(baseDir, { recursive: true });
   }
 
-  console.log('');
-  printSeparator();
-  console.log(`${colors.bright}💾 DOWNLOADING FILES${colors.reset}`);
-  printSeparator();
-  console.log('');
-  console.log(`${colors.cyan}Output directory:${colors.reset} ${baseDir}`);
-  console.log('');
-
   files.forEach(file => {
     const fullPath = path.join(baseDir, file.path);
     const dir = path.dirname(fullPath);
@@ -151,7 +143,7 @@ function saveFilesToDirectory(files: { path: string; content: string }[], baseDi
 
     // Write file
     fs.writeFileSync(fullPath, file.content, 'utf-8');
-    log(`Downloaded: ${file.path} → ${fullPath}`, 'success');
+    log(`✓ ${file.path}`, 'success');
   });
 
   console.log('');
@@ -370,38 +362,16 @@ async function installAgents(agents: string[]): Promise<void> {
 
 function displayResults(result: ExecutionResult, targetDir?: string) {
   console.log('');
-  printSeparator();
-  console.log(`${colors.bright}📊 EXECUTION RESULTS${colors.reset}`);
-  printSeparator();
-  console.log('');
-
-  console.log(`${colors.cyan}Question:${colors.reset} ${result.question}`);
-  console.log('');
-
-  console.log(`${colors.cyan}Generated Code:${colors.reset}`);
-  printSeparator('-');
-  console.log(result.code);
-  printSeparator('-');
-  console.log('');
-
-  if (result.output) {
-    console.log(`${colors.cyan}Output:${colors.reset}`);
-    console.log(result.output);
-    console.log('');
-  }
 
   if (result.error) {
-    console.log(`${colors.red}Error:${colors.reset}`);
-    console.log(result.error);
+    console.log(`${colors.red}❌ Error:${colors.reset} ${result.error}`);
     console.log('');
+    return;
   }
 
   if (result.sandboxId) {
-    console.log(`${colors.dim}Sandbox ID: ${result.sandboxId}${colors.reset}`);
+    log(`Sandbox ID: ${result.sandboxId}`);
   }
-
-  console.log(`${colors.green}Status:${colors.reset} ${result.success ? 'Success ✓' : 'Failed ✗'}`);
-  printSeparator();
 
   // Extract and save files
   const files = extractFilesFromCode(result.code);
@@ -410,6 +380,11 @@ function displayResults(result: ExecutionResult, targetDir?: string) {
     const timestamp = Date.now().toString(36);
     const baseDir = targetDir || process.cwd();
     const outputDir = path.join(baseDir, `cloudflare-${timestamp}`);
+
+    console.log('');
+    printSeparator();
+    log(`Downloading ${files.length} file(s)...`);
+    console.log('');
     saveFilesToDirectory(files, outputDir);
   }
 }

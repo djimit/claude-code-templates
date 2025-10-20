@@ -2551,7 +2551,7 @@ async function executeSandbox(options, targetDir) {
 }
 
 async function executeCloudflareSandbox(options, targetDir) {
-  const { agent, prompt, anthropicKey } = options;
+  const { agent, command, mcp, setting, hook, prompt, anthropicKey } = options;
 
   console.log(chalk.blue('\n☁️  Cloudflare Sandbox Execution'));
   console.log(chalk.cyan('═══════════════════════════════════════'));

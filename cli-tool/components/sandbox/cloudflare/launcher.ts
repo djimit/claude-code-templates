@@ -4,7 +4,7 @@
  * Executes Claude Code prompts using Cloudflare Workers and Sandbox SDK
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { query, ClaudeAgentOptions } from '@anthropic-ai/claude-agent-sdk';
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -192,41 +192,19 @@ async function executeViaWorker(
 }
 
 async function executeDirectly(config: LauncherConfig): Promise<ExecutionResult> {
-  log('Executing directly using Anthropic SDK...');
+  log('Executing with Claude Agent SDK...');
 
-  const anthropic = new Anthropic({
-    apiKey: config.anthropicApiKey,
-  });
-
-  // Build enhanced prompt with component context
-  let enhancedPrompt = config.prompt;
-
-  if (config.componentsToInstall) {
-    const agents = extractAgents(config.componentsToInstall);
-    if (agents.length > 0) {
-      enhancedPrompt = `You are Claude Code, an AI assistant specialized in software development.
-
-IMPORTANT INSTRUCTIONS:
-1. Execute the user's request immediately and create the requested code/files
-2. You have access to the following specialized agents: ${agents.join(', ')}
-3. Use these agents appropriately for completing the task
-4. Generate all necessary files and code to fulfill the request
-5. Be proactive and create a complete, working implementation
-
-USER REQUEST: ${config.prompt}
-
-Now, please execute this request and provide the code.`;
-    }
-  }
+  // Extract agent names for context
+  const agents = config.componentsToInstall ? extractAgents(config.componentsToInstall) : [];
 
   try {
-    log('Generating code with Claude Sonnet 4.5...');
+    log('Generating code with Claude Agent SDK...');
 
     // Detect if this is a web development request
-    const isWebRequest = /html|css|javascript|webpage|website|form|ui|interface|frontend/i.test(enhancedPrompt);
+    const isWebRequest = /html|css|javascript|webpage|website|form|ui|interface|frontend/i.test(config.prompt);
 
     const promptContent = isWebRequest
-      ? `Create a complete web application for: "${enhancedPrompt}"
+      ? `Create a complete web application for: "${config.prompt}"
 
 IMPORTANT FORMAT REQUIREMENTS:
 - Provide complete, working code for ALL files needed
@@ -251,34 +229,36 @@ Requirements:
 - Add proper comments
 - Ensure code is ready to run
 - Do NOT include any explanations, ONLY code blocks with filenames`
-      : `Generate Python code to answer: "${enhancedPrompt}"
+      : config.prompt;
 
-Requirements:
-- Use only Python standard library
-- Print the result using print()
-- Keep code simple and safe
-- Include proper error handling
-
-Return ONLY the code, no explanations.`;
-
-    const codeGeneration = await anthropic.messages.create({
+    // Configure Claude Agent SDK options
+    const options: ClaudeAgentOptions = {
       model: 'claude-sonnet-4-5',
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: promptContent,
-        },
-      ],
-    });
+      apiKey: config.anthropicApiKey,
+      // Use Claude Code preset to get proper coding behavior
+      systemPrompt: { type: 'preset', preset: 'claude_code' },
+      // Load project settings to use agents and components
+      settingSources: ['project'],
+    };
 
-    const generatedCode =
-      codeGeneration.content[0]?.type === 'text'
-        ? codeGeneration.content[0].text
-        : '';
+    // Collect the full response
+    let generatedCode = '';
+
+    try {
+      for await (const message of query({ prompt: promptContent, options })) {
+        if (message.type === 'text') {
+          generatedCode += message.text;
+        }
+      }
+    } catch (queryError) {
+      const err = queryError as Error;
+      log(`Query error: ${err.message}`, 'error');
+      log(`Stack: ${err.stack}`, 'error');
+      throw new Error(`Claude Agent SDK query failed: ${err.message}`);
+    }
 
     if (!generatedCode) {
-      throw new Error('Failed to generate code from Claude');
+      throw new Error('Failed to generate code from Claude Agent SDK (empty response)');
     }
 
     log('Code generated successfully', 'success');
@@ -313,6 +293,65 @@ function extractAgents(componentsString: string): string[] {
   }
 
   return agents;
+}
+
+async function installAgents(agents: string[]): Promise<void> {
+  if (agents.length === 0) {
+    return;
+  }
+
+  log(`Installing ${agents.length} agent(s)...`);
+
+  // Create .claude/agents directory
+  const claudeDir = path.join(process.cwd(), '.claude');
+  const agentsDir = path.join(claudeDir, 'agents');
+
+  if (!fs.existsSync(agentsDir)) {
+    fs.mkdirSync(agentsDir, { recursive: true });
+  }
+
+  // Download each agent from GitHub
+  const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/agents';
+
+  for (const agent of agents) {
+    try {
+      log(`Downloading agent: ${agent}...`);
+
+      // Construct the GitHub URL for the agent
+      const agentUrl = `${GITHUB_RAW_BASE}/${agent}.md`;
+
+      // Download the agent file
+      const response = await fetch(agentUrl);
+
+      if (!response.ok) {
+        log(`Failed to download agent ${agent}: ${response.statusText}`, 'warning');
+        continue;
+      }
+
+      const agentContent = await response.text();
+
+      // Save to .claude/agents/
+      const agentFileName = agent.replace(/\//g, '-') + '.md';
+      const agentPath = path.join(agentsDir, agentFileName);
+
+      fs.writeFileSync(agentPath, agentContent, 'utf-8');
+      log(`Installed agent: ${agent}`, 'success');
+    } catch (error) {
+      log(`Error installing agent ${agent}: ${error instanceof Error ? error.message : String(error)}`, 'warning');
+    }
+  }
+
+  // Create settings.json to reference the agents
+  const settingsPath = path.join(claudeDir, 'settings.json');
+  const settings = {
+    agents: agents.map(agent => ({
+      name: agent.split('/').pop() || agent,
+      path: `.claude/agents/${agent.replace(/\//g, '-')}.md`
+    }))
+  };
+
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+  log('Created .claude/settings.json', 'success');
 }
 
 function displayResults(result: ExecutionResult, targetDir?: string) {
@@ -418,6 +457,10 @@ async function main() {
     const agents = extractAgents(config.componentsToInstall);
     if (agents.length > 0) {
       log(`Agents: ${agents.join(', ')}`);
+
+      // Install agents before execution
+      console.log('');
+      await installAgents(agents);
     }
   }
 

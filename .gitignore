@@ -36,6 +36,10 @@ coverage
 sandbox-*/
 cloudflare-*/
 
+# Test directories (local only)
+test-agent-sdk/
+test-cloudflare/
+
 # System files
 .DS_Store
 .DS_Store?

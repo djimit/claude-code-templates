@@ -232,38 +232,20 @@ Requirements:
 - Do NOT include any explanations, ONLY code blocks with filenames`
       : config.prompt;
 
-    // TEMPORARY SOLUTION: Load agent content manually and pass as systemPrompt
-    //
-    // NOTE: This is a workaround because the current version of @anthropic-ai/claude-agent-sdk
-    // does not properly support `settingSources: ['project']` for loading agents from .claude/
-    //
-    // FUTURE: Once the SDK properly supports settingSources, we should use:
-    //   settingSources: ['project']
-    // instead of manually loading and passing the agent content.
-    //
-    // The SDK version ^0.1.0 is the latest available but seems to have issues with
-    // automatic agent loading. We need to revisit this in future SDK updates.
-    let agentSystemPrompt = '';
-    if (agents.length > 0) {
-      const agentPath = path.join(process.cwd(), '.claude', 'agents', `${agents[0].replace(/\//g, '-')}.md`);
-      if (fs.existsSync(agentPath)) {
-        agentSystemPrompt = fs.readFileSync(agentPath, 'utf-8');
-        log(`Loaded agent from: ${agentPath}`);
-      } else {
-        log(`Agent file not found: ${agentPath}`, 'warning');
-      }
-    }
-
     // Configure Claude Agent SDK options
+    // Using settingSources: ['project'] to automatically load agents from .claude/ directory
+    // This is supported in SDK version ^0.1.23 and later
     const options: ClaudeAgentOptions = {
       model: 'claude-sonnet-4-5',
       apiKey: config.anthropicApiKey,
-      // Use custom system prompt with agent content if available
-      // TODO: Replace with settingSources once SDK properly supports it
-      systemPrompt: agentSystemPrompt
-        ? { type: 'text', text: agentSystemPrompt }
-        : { type: 'preset', preset: 'claude_code' },
+      systemPrompt: { type: 'preset', preset: 'claude_code' },
+      // Automatically load agents, settings, and configurations from .claude/ directory
+      settingSources: ['project'],
     };
+
+    if (agents.length > 0) {
+      log(`Using agents from .claude/agents/ directory via settingSources`, 'success');
+    }
 
     // Collect the full response
     let generatedCode = '';

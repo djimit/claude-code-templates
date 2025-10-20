@@ -346,22 +346,6 @@ npx claude-code-templates@latest --sandbox cloudflare \
 ✅ Performance optimizations included
 ✅ Cost analysis provided
 
-## File Download Structure
-
-The sandbox follows E2B's directory pattern for downloaded files:
-
-- **E2B**: Downloads to `your-project/sandbox-{id}/`
-- **Cloudflare**: Downloads to `your-project/cloudflare-{timestamp}/`
-
-Generated files (HTML, CSS, JavaScript, etc.) are automatically extracted from Claude's response and saved to a timestamped directory in the project root, keeping the project structure clean and organized.
-
-**Implementation Details**:
-- Timestamp-based directory names using base36 encoding
-- Automatic file extraction from code blocks
-- Support for multiple file formats (HTML, CSS, JS, TS, Python)
-- Pattern matching: ```html:filename.html or fallback by language
-- Files preserve directory structure if specified in filenames
-
 ## Conclusion
 
 This implementation provides a production-ready, globally-distributed sandbox solution for executing AI-generated code. It complements the existing E2B sandbox by offering ultra-fast cold starts and predictable pricing, making it ideal for high-volume, latency-sensitive applications.
@@ -371,5 +355,5 @@ The comprehensive documentation and tooling ensure developers can quickly get st
 ---
 
 **Implementation Date**: October 19, 2025
-**Version**: 1.0.1
+**Version**: 1.0.0
 **Status**: Production Ready ✅

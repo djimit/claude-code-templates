@@ -2691,7 +2691,8 @@ async function executeCloudflareSandbox(options, targetDir) {
               prompt,
               agent || '',
               anthropicKey,
-              'http://localhost:8787' // Local dev server URL
+              'http://localhost:8787', // Local dev server URL
+              targetDir // Project root directory for file output
             ], {
               cwd: sandboxDir,
               stdio: 'inherit',

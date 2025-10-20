@@ -32,6 +32,10 @@ node_modules
 dist
 coverage
 
+# Sandbox output directories
+sandbox-*/
+cloudflare-*/
+
 # System files
 .DS_Store
 .DS_Store?

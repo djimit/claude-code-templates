@@ -232,7 +232,17 @@ Requirements:
 - Do NOT include any explanations, ONLY code blocks with filenames`
       : config.prompt;
 
-    // Load agent content if agents were installed
+    // TEMPORARY SOLUTION: Load agent content manually and pass as systemPrompt
+    //
+    // NOTE: This is a workaround because the current version of @anthropic-ai/claude-agent-sdk
+    // does not properly support `settingSources: ['project']` for loading agents from .claude/
+    //
+    // FUTURE: Once the SDK properly supports settingSources, we should use:
+    //   settingSources: ['project']
+    // instead of manually loading and passing the agent content.
+    //
+    // The SDK version ^0.1.0 is the latest available but seems to have issues with
+    // automatic agent loading. We need to revisit this in future SDK updates.
     let agentSystemPrompt = '';
     if (agents.length > 0) {
       const agentPath = path.join(process.cwd(), '.claude', 'agents', `${agents[0].replace(/\//g, '-')}.md`);
@@ -249,6 +259,7 @@ Requirements:
       model: 'claude-sonnet-4-5',
       apiKey: config.anthropicApiKey,
       // Use custom system prompt with agent content if available
+      // TODO: Replace with settingSources once SDK properly supports it
       systemPrompt: agentSystemPrompt
         ? { type: 'text', text: agentSystemPrompt }
         : { type: 'preset', preset: 'claude_code' },

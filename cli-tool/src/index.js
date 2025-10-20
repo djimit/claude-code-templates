@@ -2679,9 +2679,21 @@ async function executeCloudflareSandbox(options, targetDir) {
           if (npmCode === 0) {
             depSpinner.succeed('Cloudflare dependencies installed successfully');
 
+            // Build components string for installation inside sandbox
+            let componentsToInstall = '';
+            if (agent) componentsToInstall += ` --agent ${agent}`;
+            if (command) componentsToInstall += ` --command ${command}`;
+            if (mcp) componentsToInstall += ` --mcp ${mcp}`;
+            if (setting) componentsToInstall += ` --setting ${setting}`;
+            if (hook) componentsToInstall += ` --hook ${hook}`;
+
             // Execute using launcher
             console.log(chalk.blue('🚀 Launching Cloudflare sandbox...'));
             console.log(chalk.gray(`📝 Prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}"`));
+
+            if (componentsToInstall) {
+              console.log(chalk.gray(`📦 Components to install:${componentsToInstall}`));
+            }
 
             // Use ts-node or tsx to execute TypeScript launcher
             const launcherPath = path.join(sandboxDir, 'launcher.ts');
@@ -2692,7 +2704,7 @@ async function executeCloudflareSandbox(options, targetDir) {
               'tsx',
               launcherPath,
               prompt,
-              agent || '',
+              componentsToInstall.trim(),
               anthropicKey,
               'http://localhost:8787', // Local dev server URL
               targetDir // Project root directory for file output

@@ -2605,19 +2605,30 @@ async function executeCloudflareSandbox(options, targetDir) {
     try {
       if (await fs.pathExists(componentsDir)) {
         console.log(chalk.gray('📦 Using local Cloudflare component files...'));
+        console.log(chalk.dim(`   Source: ${componentsDir}`));
+        console.log(chalk.dim(`   Target: ${sandboxDir}`));
 
         // Copy all files from cloudflare directory
         await fs.copy(componentsDir, sandboxDir, {
           overwrite: true,
           filter: (src) => {
             // Exclude node_modules and build artifacts
-            return !src.includes('node_modules') &&
-                   !src.includes('.wrangler') &&
-                   !src.includes('dist');
+            const shouldCopy = !src.includes('node_modules') &&
+                               !src.includes('.wrangler') &&
+                               !src.includes('dist') &&
+                               !src.includes('.gitignore');
+            return shouldCopy;
           }
         });
+
+        // Verify files were copied
+        const copiedFiles = await fs.readdir(sandboxDir);
+        console.log(chalk.dim(`   Copied ${copiedFiles.length} items`));
+        if (copiedFiles.length === 0) {
+          throw new Error('No files were copied from Cloudflare component directory');
+        }
       } else {
-        throw new Error('Cloudflare component files not found in package');
+        throw new Error(`Cloudflare component files not found at: ${componentsDir}`);
       }
     } catch (error) {
       spinner.fail(`Failed to install Cloudflare component: ${error.message}`);

@@ -232,14 +232,26 @@ Requirements:
 - Do NOT include any explanations, ONLY code blocks with filenames`
       : config.prompt;
 
+    // Load agent content if agents were installed
+    let agentSystemPrompt = '';
+    if (agents.length > 0) {
+      const agentPath = path.join(process.cwd(), '.claude', 'agents', `${agents[0].replace(/\//g, '-')}.md`);
+      if (fs.existsSync(agentPath)) {
+        agentSystemPrompt = fs.readFileSync(agentPath, 'utf-8');
+        log(`Loaded agent from: ${agentPath}`);
+      } else {
+        log(`Agent file not found: ${agentPath}`, 'warning');
+      }
+    }
+
     // Configure Claude Agent SDK options
     const options: ClaudeAgentOptions = {
       model: 'claude-sonnet-4-5',
       apiKey: config.anthropicApiKey,
-      // Use Claude Code preset to get proper coding behavior
-      systemPrompt: { type: 'preset', preset: 'claude_code' },
-      // Load project settings to use agents and components
-      settingSources: ['project'],
+      // Use custom system prompt with agent content if available
+      systemPrompt: agentSystemPrompt
+        ? { type: 'text', text: agentSystemPrompt }
+        : { type: 'preset', preset: 'claude_code' },
     };
 
     // Collect the full response

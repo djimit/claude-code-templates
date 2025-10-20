@@ -199,6 +199,7 @@ async function executeDirectly(config: LauncherConfig): Promise<ExecutionResult>
 
   try {
     log('Generating code with Claude Agent SDK...');
+    log(`Working directory: ${process.cwd()}`);
 
     // Detect if this is a web development request
     const isWebRequest = /html|css|javascript|webpage|website|form|ui|interface|frontend/i.test(config.prompt);

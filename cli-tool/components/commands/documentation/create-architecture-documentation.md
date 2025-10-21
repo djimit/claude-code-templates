@@ -2,7 +2,6 @@
 allowed-tools: Read, Write, Edit, Bash
 argument-hint: [framework] | --c4-model | --arc42 | --adr | --plantuml | --full-suite
 description: Generate comprehensive architecture documentation with diagrams, ADRs, and interactive visualization
-model: sonnet
 ---
 
 # Architecture Documentation Generator

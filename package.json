@@ -15,6 +15,7 @@
     "agent:security-auditor": "security-auditor 'Security audit covering codebase, dependencies, and deployment configuration'"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "@vercel/postgres": "^0.10.0",
     "boxen": "^5.1.2",
     "chalk": "^4.1.2",

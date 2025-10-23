@@ -173,6 +173,244 @@ class ChatsMobile {
       }
     });
 
+    // API to get unique working directories from conversations
+    this.app.get('/api/directories', (req, res) => {
+      try {
+        // Extract unique directories from conversations
+        const directories = new Set();
+
+        this.data.conversations.forEach(conv => {
+          if (conv.project && conv.project.trim()) {
+            directories.add(conv.project);
+          }
+        });
+
+        // Convert to array and sort alphabetically
+        const sortedDirectories = Array.from(directories).sort((a, b) =>
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        );
+
+        res.json({
+          directories: sortedDirectories,
+          count: sortedDirectories.length,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error getting directories:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    // API to search conversations with advanced filters
+    this.app.post('/api/search', async (req, res) => {
+      try {
+        const { query, workingDirectory, dateFrom, dateTo, contentSearch } = req.body;
+
+        let results = [...this.data.conversations];
+
+        // Filter by working directory (project)
+        if (workingDirectory && workingDirectory.trim()) {
+          results = results.filter(conv => {
+            if (!conv.project) return false;
+            return conv.project.toLowerCase().includes(workingDirectory.toLowerCase());
+          });
+        }
+
+        // Filter by date range
+        if (dateFrom) {
+          const fromDate = new Date(dateFrom);
+          results = results.filter(conv => new Date(conv.created) >= fromDate);
+        }
+
+        if (dateTo) {
+          const toDate = new Date(dateTo);
+          toDate.setHours(23, 59, 59, 999); // Include entire day
+          results = results.filter(conv => new Date(conv.created) <= toDate);
+        }
+
+        // Filter by conversation metadata (filename, id)
+        if (query && query.trim()) {
+          const searchTerm = query.toLowerCase();
+          results = results.filter(conv =>
+            conv.filename.toLowerCase().includes(searchTerm) ||
+            conv.id.toLowerCase().includes(searchTerm) ||
+            (conv.project && conv.project.toLowerCase().includes(searchTerm))
+          );
+        }
+
+        // Search within message content
+        if (contentSearch && contentSearch.trim()) {
+          const contentTerm = contentSearch.toLowerCase();
+          const matchingConversations = [];
+
+          for (const conv of results) {
+            try {
+              const messages = await this.conversationAnalyzer.getParsedConversation(conv.filePath);
+
+              // Search in message content
+              const hasMatch = messages.some(msg => {
+                // Search in text content
+                if (typeof msg.content === 'string') {
+                  return msg.content.toLowerCase().includes(contentTerm);
+                }
+
+                // Search in array content (tool use, text blocks)
+                if (Array.isArray(msg.content)) {
+                  return msg.content.some(block => {
+                    if (block.type === 'text' && block.text) {
+                      return block.text.toLowerCase().includes(contentTerm);
+                    }
+                    if (block.type === 'tool_use' && block.name) {
+                      return block.name.toLowerCase().includes(contentTerm);
+                    }
+                    return false;
+                  });
+                }
+
+                return false;
+              });
+
+              if (hasMatch) {
+                matchingConversations.push(conv);
+              }
+            } catch (error) {
+              // Skip conversations that can't be parsed
+              this.log('warn', `Error searching in conversation ${conv.id}:`, error.message);
+            }
+          }
+
+          results = matchingConversations;
+        }
+
+        // Sort by last modified (most recent first)
+        results.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+
+        res.json({
+          results: results,
+          count: results.length,
+          filters: {
+            query,
+            workingDirectory,
+            dateFrom,
+            dateTo,
+            contentSearch
+          },
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error searching conversations:', error);
+        res.status(500).json({ error: 'Internal server error', message: error.message });
+      }
+    });
+
+    // API to search within a specific conversation
+    this.app.post('/api/conversations/:id/search', async (req, res) => {
+      try {
+        const conversationId = req.params.id;
+        const { query } = req.body;
+        const conversation = this.data.conversations.find(conv => conv.id === conversationId);
+
+        if (!conversation) {
+          return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        if (!query || !query.trim()) {
+          return res.json({
+            matches: [],
+            totalMatches: 0,
+            conversationId: conversationId
+          });
+        }
+
+        // Get all messages from the conversation
+        const allMessages = await this.conversationAnalyzer.getParsedConversation(conversation.filePath);
+        const searchTerm = query.toLowerCase();
+        const matches = [];
+
+        // Search through all messages
+        allMessages.forEach((msg, index) => {
+          let messageText = '';
+          let allText = [];
+
+          // Extract text from message content
+          if (typeof msg.content === 'string') {
+            allText.push(msg.content);
+          } else if (Array.isArray(msg.content)) {
+            msg.content.forEach(block => {
+              if (block.type === 'text' && block.text) {
+                allText.push(block.text);
+              }
+              // Also search in tool_use content
+              if (block.type === 'tool_use') {
+                if (block.name) allText.push(block.name);
+                if (block.input) {
+                  allText.push(JSON.stringify(block.input));
+                }
+              }
+            });
+          }
+
+          // IMPORTANT: Also search in tool results (this is where code blocks appear!)
+          if (msg.toolResults && Array.isArray(msg.toolResults)) {
+            msg.toolResults.forEach(toolResult => {
+              if (toolResult.content) {
+                if (typeof toolResult.content === 'string') {
+                  allText.push(toolResult.content);
+                } else if (Array.isArray(toolResult.content)) {
+                  toolResult.content.forEach(block => {
+                    if (block.type === 'text' && block.text) {
+                      allText.push(block.text);
+                    }
+                  });
+                }
+              }
+            });
+          }
+
+          // Combine all text
+          messageText = allText.join(' ');
+
+          // Search in the combined text
+          if (messageText.toLowerCase().includes(searchTerm)) {
+            // Find all positions of the search term in this message
+            const lowerText = messageText.toLowerCase();
+            let position = 0;
+            let matchCount = 0;
+
+            while ((position = lowerText.indexOf(searchTerm, position)) !== -1) {
+              matchCount++;
+              position += searchTerm.length;
+            }
+
+            matches.push({
+              messageIndex: index,
+              messageId: msg.id,
+              role: msg.role,
+              timestamp: msg.timestamp,
+              preview: this.getMessagePreview(messageText, searchTerm),
+              matchCount: matchCount
+            });
+          }
+        });
+
+        console.log(`🔍 Search in conversation ${conversationId}:`, {
+          query: query,
+          messagesWithMatches: matches.length,
+          totalOccurrences: matches.reduce((sum, m) => sum + m.matchCount, 0)
+        });
+
+        res.json({
+          matches: matches,
+          totalMatches: matches.length,
+          conversationId: conversationId,
+          query: query
+        });
+      } catch (error) {
+        console.error('Error searching in conversation:', error);
+        res.status(500).json({ error: 'Internal server error', message: error.message });
+      }
+    });
+
     // API to get specific conversation messages (with pagination support)
     this.app.get('/api/conversations/:id/messages', async (req, res) => {
       try {
@@ -416,6 +654,26 @@ class ChatsMobile {
   async setupWebSocket() {
     // WebSocketServer will be initialized after HTTP server is created
     console.log(chalk.gray('🔧 WebSocket server setup prepared'));
+  }
+
+  /**
+   * Helper function to get message preview with context
+   */
+  getMessagePreview(text, searchTerm, contextLength = 100) {
+    const lowerText = text.toLowerCase();
+    const lowerTerm = searchTerm.toLowerCase();
+    const position = lowerText.indexOf(lowerTerm);
+
+    if (position === -1) return text.substring(0, contextLength);
+
+    const start = Math.max(0, position - contextLength / 2);
+    const end = Math.min(text.length, position + searchTerm.length + contextLength / 2);
+
+    let preview = text.substring(start, end);
+    if (start > 0) preview = '...' + preview;
+    if (end < text.length) preview = preview + '...';
+
+    return preview;
   }
 
   /**

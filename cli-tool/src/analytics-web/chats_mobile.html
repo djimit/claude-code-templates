@@ -183,6 +183,554 @@
             color: var(--text-secondary);
         }
 
+        /* Advanced Search Panel - Telegram Style */
+        .search-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .search-panel-overlay.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 10vh;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .search-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 10;
+        }
+
+        .search-panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-panel-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .search-panel-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .search-panel-body {
+            padding: 20px;
+        }
+
+        .search-filter-group {
+            margin-bottom: 24px;
+        }
+
+        .search-filter-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .search-filter-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-filter-input:focus {
+            border-color: var(--terminal-orange);
+            background: var(--bg-primary);
+        }
+
+        .search-filter-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-filter-date-range {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .search-filter-date-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-filter-date-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .search-panel-actions {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-primary);
+            display: flex;
+            gap: 12px;
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-secondary);
+        }
+
+        .search-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .search-btn-primary {
+            background: var(--terminal-orange);
+            color: white;
+        }
+
+        .search-btn-primary:hover {
+            background: var(--terminal-orange-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .search-btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .search-btn-secondary:hover {
+            background: var(--border-secondary);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .search-filter-icon {
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .advanced-search-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            color: var(--terminal-orange);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-left: 8px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .advanced-search-toggle:hover {
+            background: var(--terminal-orange);
+            color: white;
+            border-color: var(--terminal-orange);
+        }
+
+        .search-results-info {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .search-results-info.active {
+            display: block;
+        }
+
+        .search-results-count {
+            color: var(--terminal-orange);
+            font-weight: 600;
+        }
+
+        .clear-filters-btn {
+            background: none;
+            border: none;
+            color: var(--terminal-orange);
+            cursor: pointer;
+            font-size: 0.875rem;
+            text-decoration: underline;
+            padding: 0;
+            margin-left: 8px;
+        }
+
+        .clear-filters-btn:hover {
+            color: var(--terminal-orange-hover);
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .filter-tag-icon {
+            font-size: 0.7rem;
+        }
+
+        .filter-tag-label {
+            color: var(--text-secondary);
+            margin-right: 2px;
+        }
+
+        .filter-tag-value {
+            color: var(--terminal-orange);
+            font-weight: 500;
+        }
+
+        /* Folder Browser */
+        .folder-browser-wrapper {
+            position: relative;
+        }
+
+        .folder-browser-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--terminal-orange);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .folder-browser-toggle:hover {
+            background: var(--terminal-orange-hover);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .folder-browser-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        .folder-browser-dropdown.active {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        .folder-browser-header {
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .folder-browser-search {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .folder-browser-search:focus {
+            border-color: var(--terminal-orange);
+        }
+
+        .folder-browser-list {
+            padding: 4px 0;
+        }
+
+        .folder-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .folder-item:last-child {
+            border-bottom: none;
+        }
+
+        .folder-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .folder-item.selected {
+            background: var(--terminal-orange);
+            color: white;
+        }
+
+        .folder-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .folder-path {
+            flex: 1;
+            font-size: 0.875rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .folder-item.selected .folder-path {
+            color: white;
+        }
+
+        .folder-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .folder-item.selected .folder-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .folder-browser-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* In-Conversation Search */
+        .chat-search-bar {
+            display: none;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+            padding: 12px 16px;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.2s ease;
+        }
+
+        .chat-search-bar.active {
+            display: flex;
+        }
+
+        .chat-search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-search-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .chat-search-input:focus {
+            border-color: var(--terminal-orange);
+        }
+
+        .chat-search-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-search-counter {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .chat-search-counter.has-results {
+            color: var(--terminal-orange);
+            font-weight: 500;
+        }
+
+        .chat-search-nav-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            color: var(--text-primary);
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-search-nav-btn:hover:not(:disabled) {
+            background: var(--terminal-orange);
+            border-color: var(--terminal-orange);
+            color: white;
+        }
+
+        .chat-search-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .chat-search-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .chat-search-close-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Message highlight */
+        .message-highlight {
+            background: var(--terminal-orange);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .message-current-highlight {
+            background: #ffaa00;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+            box-shadow: 0 0 8px rgba(255, 170, 0, 0.6);
+        }
+
+        /* Search toggle button in header */
+        .search-toggle-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            color: var(--terminal-orange);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-toggle-btn:hover {
+            background: var(--terminal-orange);
+            color: white;
+            border-color: var(--terminal-orange);
+        }
+
+        .search-toggle-btn.active {
+            background: var(--terminal-orange);
+            color: white;
+            border-color: var(--terminal-orange);
+        }
+
         /* Conversations list */
         .conversations-list {
             flex: 1;
@@ -1195,17 +1743,156 @@
 
             <!-- Search -->
             <div class="chat-search">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="Search conversations..." 
-                    id="searchInput"
-                />
+                <div style="display: flex; align-items: center;">
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search conversations..."
+                        id="searchInput"
+                        style="flex: 1;"
+                    />
+                    <button class="advanced-search-toggle" id="advancedSearchToggle">
+                        <span>🔍</span>
+                        <span>Advanced</span>
+                    </button>
+                </div>
+
+                <!-- Search Results Info -->
+                <div class="search-results-info" id="searchResultsInfo">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Found <span class="search-results-count" id="searchResultsCount">0</span> conversations</span>
+                            <button class="clear-filters-btn" id="clearFiltersBtn">Clear filters</button>
+                        </div>
+                        <div id="appliedFilters" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Conversations List -->
             <div class="conversations-list" id="conversationsList">
                 <div class="loading-spinner" style="margin: 40px auto;"></div>
+            </div>
+        </div>
+
+        <!-- Advanced Search Panel Overlay -->
+        <div class="search-panel-overlay" id="searchPanelOverlay">
+            <div class="search-panel">
+                <!-- Panel Header -->
+                <div class="search-panel-header">
+                    <h3 class="search-panel-title">
+                        <span class="search-filter-icon">🔍</span>
+                        Advanced Search
+                    </h3>
+                    <button class="search-panel-close" id="searchPanelClose">✕</button>
+                </div>
+
+                <!-- Panel Body -->
+                <div class="search-panel-body">
+                    <!-- Quick Search -->
+                    <div class="search-filter-group">
+                        <label class="search-filter-label">
+                            <span class="search-filter-icon">💬</span>
+                            Quick Search
+                        </label>
+                        <input
+                            type="text"
+                            class="search-filter-input"
+                            placeholder="Search by conversation ID or filename..."
+                            id="filterQuery"
+                        />
+                    </div>
+
+                    <!-- Working Directory Filter -->
+                    <div class="search-filter-group">
+                        <label class="search-filter-label">
+                            <span class="search-filter-icon">📁</span>
+                            Working Directory
+                        </label>
+                        <div class="folder-browser-wrapper">
+                            <input
+                                type="text"
+                                class="search-filter-input"
+                                placeholder="e.g., /Users/name/Projects/MyProject"
+                                id="filterWorkingDirectory"
+                                style="padding-right: 100px;"
+                            />
+                            <button class="folder-browser-toggle" id="folderBrowserToggle">
+                                📂 Browse
+                            </button>
+
+                            <!-- Folder Browser Dropdown -->
+                            <div class="folder-browser-dropdown" id="folderBrowserDropdown">
+                                <div class="folder-browser-header">
+                                    <input
+                                        type="text"
+                                        class="folder-browser-search"
+                                        placeholder="Filter directories..."
+                                        id="folderBrowserSearch"
+                                    />
+                                </div>
+                                <div class="folder-browser-list" id="folderBrowserList">
+                                    <div class="folder-browser-empty">
+                                        Loading directories...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div class="search-filter-group">
+                        <label class="search-filter-label">
+                            <span class="search-filter-icon">📅</span>
+                            Date Range
+                        </label>
+                        <div class="search-filter-date-range">
+                            <div class="search-filter-date-wrapper">
+                                <span class="search-filter-date-label">From</span>
+                                <input
+                                    type="date"
+                                    class="search-filter-input"
+                                    id="filterDateFrom"
+                                />
+                            </div>
+                            <div class="search-filter-date-wrapper">
+                                <span class="search-filter-date-label">To</span>
+                                <input
+                                    type="date"
+                                    class="search-filter-input"
+                                    id="filterDateTo"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Search -->
+                    <div class="search-filter-group">
+                        <label class="search-filter-label">
+                            <span class="search-filter-icon">🔎</span>
+                            Search in Messages
+                        </label>
+                        <input
+                            type="text"
+                            class="search-filter-input"
+                            placeholder="Search within conversation content..."
+                            id="filterContentSearch"
+                        />
+                        <small style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 4px; display: block;">
+                            ⚠️ This may take longer for large conversations
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Panel Actions -->
+                <div class="search-panel-actions">
+                    <button class="search-btn search-btn-secondary" id="searchPanelReset">
+                        Reset
+                    </button>
+                    <button class="search-btn search-btn-primary" id="searchPanelApply">
+                        Search
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1227,6 +1914,10 @@
                     </button>
                 </div>
                 <div class="header-right">
+                    <button class="search-toggle-btn" id="chatSearchToggle">
+                        <span>🔍</span>
+                        <span>Search</span>
+                    </button>
                     <div class="tools-toggle" id="toolsToggle">
                         <span class="tools-toggle-label" onclick="document.getElementById('showToolsSwitch').click()">Show Tools</span>
                         <label class="toggle-switch">
@@ -1236,6 +1927,31 @@
                     </div>
                 </div>
             </div>
+
+            <!-- In-Conversation Search Bar -->
+            <div class="chat-search-bar" id="chatSearchBar">
+                <div class="chat-search-input-wrapper">
+                    <input
+                        type="text"
+                        class="chat-search-input"
+                        placeholder="Search in this conversation..."
+                        id="chatSearchInput"
+                    />
+                </div>
+                <div class="chat-search-controls">
+                    <span class="chat-search-counter" id="chatSearchCounter">0/0</span>
+                    <button class="chat-search-nav-btn" id="chatSearchPrev" title="Previous match (↑)">
+                        ↑
+                    </button>
+                    <button class="chat-search-nav-btn" id="chatSearchNext" title="Next match (↓)">
+                        ↓
+                    </button>
+                    <button class="chat-search-close-btn" id="chatSearchClose">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
             <div class="chat-messages" id="chatMessages">
                 <div class="no-conversations">
                     <div class="no-conversations-icon">💬</div>
@@ -1338,6 +2054,109 @@
                 const searchInput = document.getElementById('searchInput');
                 searchInput.addEventListener('input', (e) => {
                     this.filterConversations(e.target.value);
+                });
+
+                // Advanced search toggle
+                document.getElementById('advancedSearchToggle').addEventListener('click', () => {
+                    this.openAdvancedSearch();
+                });
+
+                // Advanced search panel close
+                document.getElementById('searchPanelClose').addEventListener('click', () => {
+                    this.closeAdvancedSearch();
+                });
+
+                // Close panel on overlay click
+                document.getElementById('searchPanelOverlay').addEventListener('click', (e) => {
+                    if (e.target.id === 'searchPanelOverlay') {
+                        this.closeAdvancedSearch();
+                    }
+                });
+
+                // Advanced search apply
+                document.getElementById('searchPanelApply').addEventListener('click', () => {
+                    this.applyAdvancedSearch();
+                });
+
+                // Advanced search reset
+                document.getElementById('searchPanelReset').addEventListener('click', () => {
+                    this.resetAdvancedSearch();
+                });
+
+                // Clear filters button
+                document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+                    this.clearAllFilters();
+                });
+
+                // Folder browser toggle
+                document.getElementById('folderBrowserToggle').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFolderBrowser();
+                });
+
+                // Folder browser search
+                document.getElementById('folderBrowserSearch').addEventListener('input', (e) => {
+                    this.filterFolderBrowserList(e.target.value);
+                });
+
+                // Close folder browser when clicking outside
+                document.addEventListener('click', (e) => {
+                    const dropdown = document.getElementById('folderBrowserDropdown');
+                    const toggle = document.getElementById('folderBrowserToggle');
+                    const wrapper = document.querySelector('.folder-browser-wrapper');
+
+                    if (dropdown.classList.contains('active') &&
+                        !wrapper.contains(e.target)) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+
+                // In-conversation search toggle
+                document.getElementById('chatSearchToggle').addEventListener('click', () => {
+                    this.toggleChatSearch();
+                });
+
+                // In-conversation search input (only search with 3+ characters)
+                document.getElementById('chatSearchInput').addEventListener('input', (e) => {
+                    const query = e.target.value.trim();
+                    if (query.length >= 3) {
+                        this.performChatSearch(query);
+                    } else if (query.length === 0) {
+                        // Clear search when input is empty
+                        this.clearChatSearch();
+                    } else {
+                        // Show message that minimum 3 characters are required
+                        this.updateSearchCounter(0, 0, true);
+                    }
+                });
+
+                // In-conversation search navigation
+                document.getElementById('chatSearchPrev').addEventListener('click', () => {
+                    this.navigateSearchResults('prev');
+                });
+
+                document.getElementById('chatSearchNext').addEventListener('click', () => {
+                    this.navigateSearchResults('next');
+                });
+
+                // In-conversation search close
+                document.getElementById('chatSearchClose').addEventListener('click', () => {
+                    this.closeChatSearch();
+                });
+
+                // Keyboard shortcuts for search
+                document.getElementById('chatSearchInput').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            this.navigateSearchResults('prev');
+                        } else {
+                            this.navigateSearchResults('next');
+                        }
+                    } else if (e.key === 'Escape') {
+                        this.closeChatSearch();
+                    }
                 });
 
                 // Show Tools toggle functionality
@@ -1717,22 +2536,26 @@
                     const scrollHeight = chatMessages.scrollHeight;
                     
                     // Prepend new messages
-                    const newMessagesHTML = messages.map(msg => this.renderMessage(msg)).join('');
+                    // Calculate message indices (considering we're prepending older messages)
+                    const startIndex = this.messagesPagination.currentPage * this.messagesPagination.limit;
+                    const newMessagesHTML = messages.map((msg, idx) =>
+                        this.renderMessage(msg, startIndex + idx)
+                    ).join('');
                     existingMessagesDiv.innerHTML = newMessagesHTML + existingMessagesDiv.innerHTML;
-                    
+
                     // Restore scroll position (account for new content)
                     const newScrollHeight = chatMessages.scrollHeight;
                     const scrollDiff = newScrollHeight - scrollHeight;
                     chatMessages.scrollTop = scrollTop + scrollDiff;
-                    
+
                 } else {
                     // Normal render (initial load or replace all)
                     const messageHTML = `
                         <div class="messages-list">
-                            ${messages.map(msg => this.renderMessage(msg)).join('')}
+                            ${messages.map((msg, idx) => this.renderMessage(msg, idx)).join('')}
                         </div>
                     `;
-                    
+
                     chatMessages.innerHTML = messageHTML;
                 }
             }
@@ -1800,17 +2623,17 @@
                 chatMessages.addEventListener('scroll', this.messagesScrollListener);
             }
 
-            renderMessage(message) {
+            renderMessage(message, messageIndex) {
                 const timestamp = this.formatRelativeTime(new Date(message.timestamp));
                 const fullTimestamp = new Date(message.timestamp).toLocaleString();
                 const isUser = message.role === 'user' && !message.isCompactSummary;
-                
+
                 // Detect if message contains tools (either in content or as correlated toolResults)
-                const hasToolsInContent = Array.isArray(message.content) && 
+                const hasToolsInContent = Array.isArray(message.content) &&
                                          message.content.some(block => block.type === 'tool_use');
                 const hasCorrelatedTools = message.toolResults && message.toolResults.length > 0;
                 const hasTools = hasToolsInContent || hasCorrelatedTools;
-                
+
                 // Debug logging for tool detection
                 if (hasTools) {
                     console.log('🔧 Rendering message with tools', {
@@ -1823,16 +2646,19 @@
                         willHaveHasToolsClass: !isUser && hasTools
                     });
                 }
-                
-                const toolCount = hasToolsInContent ? 
+
+                const toolCount = hasToolsInContent ?
                                  message.content.filter(block => block.type === 'tool_use').length :
                                  (hasCorrelatedTools ? message.toolResults.length : 0);
-                
+
                 // Add has-tools class to assistant messages that contain tools
                 const hasToolsClass = (!isUser && hasTools) ? ' has-tools' : '';
-                
+
+                // Add message index for search functionality
+                const messageIndexAttr = messageIndex !== undefined ? ` data-message-index="${messageIndex}"` : '';
+
                 return `
-                    <div class="message message-${isUser ? 'user' : 'assistant'}${hasToolsClass}" data-message-id="${message.id || ''}">
+                    <div class="message message-${isUser ? 'user' : 'assistant'}${hasToolsClass}" data-message-id="${message.id || ''}"${messageIndexAttr}>
                         <div class="message-bubble">
                             <div class="message-content">
                                 ${this.formatMessageContent(message.content, message)}
@@ -2200,13 +3026,632 @@
             filterConversations(searchTerm) {
                 const items = document.querySelectorAll('.conversation-item');
                 const term = searchTerm.toLowerCase();
-                
+
                 items.forEach(item => {
                     const name = item.querySelector('.conversation-name').textContent.toLowerCase();
                     const preview = item.querySelector('.conversation-preview').textContent.toLowerCase();
                     const matches = name.includes(term) || preview.includes(term);
                     item.style.display = matches ? 'flex' : 'none';
                 });
+            }
+
+            // Advanced Search Methods
+            openAdvancedSearch() {
+                const overlay = document.getElementById('searchPanelOverlay');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            }
+
+            closeAdvancedSearch() {
+                const overlay = document.getElementById('searchPanelOverlay');
+                overlay.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+
+            async applyAdvancedSearch() {
+                const conversationsList = document.getElementById('conversationsList');
+                const searchResultsInfo = document.getElementById('searchResultsInfo');
+                const searchResultsCount = document.getElementById('searchResultsCount');
+                const appliedFiltersContainer = document.getElementById('appliedFilters');
+
+                try {
+                    // Show loading state
+                    conversationsList.innerHTML = '<div class="loading-spinner" style="margin: 40px auto;"></div>';
+
+                    // Get filter values
+                    const filters = {
+                        query: document.getElementById('filterQuery').value.trim(),
+                        workingDirectory: document.getElementById('filterWorkingDirectory').value.trim(),
+                        dateFrom: document.getElementById('filterDateFrom').value,
+                        dateTo: document.getElementById('filterDateTo').value,
+                        contentSearch: document.getElementById('filterContentSearch').value.trim()
+                    };
+
+                    // Call the search API
+                    const response = await fetch('/api/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(filters)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Search failed: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Update conversations with search results
+                    this.conversations = data.results || [];
+
+                    // Get conversation states for the results
+                    const statesResponse = await fetch('/api/conversation-state');
+                    let states = {};
+                    if (statesResponse.ok) {
+                        const statesData = await statesResponse.json();
+                        states = statesData.activeStates || {};
+                    }
+
+                    // Render search results
+                    this.renderConversations(this.conversations, states);
+
+                    // Show search results info with applied filters
+                    searchResultsCount.textContent = data.count;
+                    this.renderAppliedFilters(filters, appliedFiltersContainer);
+                    searchResultsInfo.classList.add('active');
+
+                    // Close the search panel
+                    this.closeAdvancedSearch();
+
+                    console.log('🔍 Search completed:', data.count, 'results found');
+                } catch (error) {
+                    console.error('Error performing advanced search:', error);
+                    conversationsList.innerHTML = `
+                        <div class="no-conversations">
+                            <div class="no-conversations-icon">⚠️</div>
+                            <h3>Search Error</h3>
+                            <p>${error.message}</p>
+                            <button onclick="location.reload()" style="margin-top: 12px; padding: 8px 16px; background: var(--text-accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
+                        </div>
+                    `;
+                }
+            }
+
+            renderAppliedFilters(filters, container) {
+                container.innerHTML = '';
+
+                const filterTags = [];
+
+                // Quick search filter
+                if (filters.query) {
+                    filterTags.push({
+                        icon: '💬',
+                        label: 'Search',
+                        value: filters.query
+                    });
+                }
+
+                // Working directory filter
+                if (filters.workingDirectory) {
+                    // Shorten the path for display
+                    const shortPath = filters.workingDirectory.length > 30
+                        ? '...' + filters.workingDirectory.slice(-30)
+                        : filters.workingDirectory;
+                    filterTags.push({
+                        icon: '📁',
+                        label: 'Directory',
+                        value: shortPath
+                    });
+                }
+
+                // Date range filter
+                if (filters.dateFrom || filters.dateTo) {
+                    let dateValue = '';
+                    if (filters.dateFrom && filters.dateTo) {
+                        dateValue = `${this.formatDate(filters.dateFrom)} → ${this.formatDate(filters.dateTo)}`;
+                    } else if (filters.dateFrom) {
+                        dateValue = `From ${this.formatDate(filters.dateFrom)}`;
+                    } else if (filters.dateTo) {
+                        dateValue = `Until ${this.formatDate(filters.dateTo)}`;
+                    }
+                    filterTags.push({
+                        icon: '📅',
+                        label: 'Date',
+                        value: dateValue
+                    });
+                }
+
+                // Content search filter
+                if (filters.contentSearch) {
+                    filterTags.push({
+                        icon: '🔎',
+                        label: 'Content',
+                        value: filters.contentSearch
+                    });
+                }
+
+                // Render filter tags
+                filterTags.forEach(tag => {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'filter-tag';
+                    tagElement.innerHTML = `
+                        <span class="filter-tag-icon">${tag.icon}</span>
+                        <span class="filter-tag-label">${tag.label}:</span>
+                        <span class="filter-tag-value">${tag.value}</span>
+                    `;
+                    container.appendChild(tagElement);
+                });
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                const options = { month: 'short', day: 'numeric', year: 'numeric' };
+                return date.toLocaleDateString('en-US', options);
+            }
+
+            // Folder Browser Methods
+            async toggleFolderBrowser() {
+                const dropdown = document.getElementById('folderBrowserDropdown');
+                const isActive = dropdown.classList.contains('active');
+
+                if (isActive) {
+                    dropdown.classList.remove('active');
+                } else {
+                    // Load directories if not loaded yet
+                    if (!this.directories) {
+                        await this.loadDirectories();
+                    }
+                    dropdown.classList.add('active');
+                }
+            }
+
+            async loadDirectories() {
+                const listContainer = document.getElementById('folderBrowserList');
+
+                try {
+                    listContainer.innerHTML = '<div class="folder-browser-empty">Loading directories...</div>';
+
+                    const response = await fetch('/api/directories');
+                    if (!response.ok) {
+                        throw new Error('Failed to load directories');
+                    }
+
+                    const data = await response.json();
+                    this.directories = data.directories || [];
+
+                    // Count conversations per directory
+                    this.directoryCounts = {};
+                    this.conversations.forEach(conv => {
+                        if (conv.project) {
+                            this.directoryCounts[conv.project] = (this.directoryCounts[conv.project] || 0) + 1;
+                        }
+                    });
+
+                    this.renderFolderBrowserList(this.directories);
+                } catch (error) {
+                    console.error('Error loading directories:', error);
+                    listContainer.innerHTML = '<div class="folder-browser-empty">Error loading directories</div>';
+                }
+            }
+
+            renderFolderBrowserList(directories) {
+                const listContainer = document.getElementById('folderBrowserList');
+                const currentValue = document.getElementById('filterWorkingDirectory').value;
+
+                if (directories.length === 0) {
+                    listContainer.innerHTML = '<div class="folder-browser-empty">No directories found</div>';
+                    return;
+                }
+
+                listContainer.innerHTML = directories.map(dir => {
+                    const count = this.directoryCounts[dir] || 0;
+                    const isSelected = dir === currentValue;
+
+                    return `
+                        <div class="folder-item ${isSelected ? 'selected' : ''}" data-path="${this.escapeHtml(dir)}">
+                            <span class="folder-icon">📁</span>
+                            <span class="folder-path" title="${this.escapeHtml(dir)}">${this.escapeHtml(dir)}</span>
+                            <span class="folder-count">${count}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Add click handlers to folder items
+                listContainer.querySelectorAll('.folder-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const path = item.getAttribute('data-path');
+                        this.selectDirectory(path);
+                    });
+                });
+            }
+
+            selectDirectory(path) {
+                const input = document.getElementById('filterWorkingDirectory');
+                const dropdown = document.getElementById('folderBrowserDropdown');
+
+                input.value = path;
+                dropdown.classList.remove('active');
+
+                // Update UI to show selected folder
+                this.renderFolderBrowserList(this.directories);
+            }
+
+            filterFolderBrowserList(searchTerm) {
+                if (!this.directories) return;
+
+                const term = searchTerm.toLowerCase();
+                const filtered = this.directories.filter(dir =>
+                    dir.toLowerCase().includes(term)
+                );
+
+                this.renderFolderBrowserList(filtered);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // In-Conversation Search Methods
+            toggleChatSearch() {
+                const searchBar = document.getElementById('chatSearchBar');
+                const toggle = document.getElementById('chatSearchToggle');
+                const isActive = searchBar.classList.contains('active');
+
+                if (isActive) {
+                    this.closeChatSearch();
+                } else {
+                    searchBar.classList.add('active');
+                    toggle.classList.add('active');
+                    document.getElementById('chatSearchInput').focus();
+                }
+            }
+
+            closeChatSearch() {
+                const searchBar = document.getElementById('chatSearchBar');
+                const toggle = document.getElementById('chatSearchToggle');
+                const input = document.getElementById('chatSearchInput');
+
+                searchBar.classList.remove('active');
+                toggle.classList.remove('active');
+                input.value = '';
+
+                // Clear search state
+                this.chatSearchMatches = [];
+                this.chatSearchCurrentIndex = -1;
+                this.updateSearchCounter();
+                this.clearSearchHighlights();
+            }
+
+            clearChatSearch() {
+                // Clear search results but keep search bar open
+                this.chatSearchMatches = [];
+                this.chatSearchCurrentIndex = -1;
+                this.updateSearchCounter();
+                this.clearSearchHighlights();
+            }
+
+            async performChatSearch(query) {
+                if (!this.selectedConversationId || !query || query.trim().length === 0) {
+                    this.chatSearchMatches = [];
+                    this.chatSearchCurrentIndex = -1;
+                    this.updateSearchCounter();
+                    this.clearSearchHighlights();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/conversations/${this.selectedConversationId}/search`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ query: query.trim() })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Search failed');
+                    }
+
+                    const data = await response.json();
+                    this.chatSearchMatches = data.matches || [];
+                    this.chatSearchCurrentIndex = this.chatSearchMatches.length > 0 ? 0 : -1;
+
+                    console.log('🔍 Search results:', {
+                        query: query,
+                        totalMatches: this.chatSearchMatches.length,
+                        matches: this.chatSearchMatches
+                    });
+
+                    this.updateSearchCounter();
+                    this.highlightSearchResults(query);
+
+                    // Navigate to first match
+                    if (this.chatSearchMatches.length > 0) {
+                        await this.scrollToSearchMatch(0);
+                    }
+                } catch (error) {
+                    console.error('Error searching in conversation:', error);
+                }
+            }
+
+            async navigateSearchResults(direction) {
+                if (this.chatSearchMatches.length === 0) return;
+
+                if (direction === 'next') {
+                    this.chatSearchCurrentIndex = (this.chatSearchCurrentIndex + 1) % this.chatSearchMatches.length;
+                } else {
+                    this.chatSearchCurrentIndex = (this.chatSearchCurrentIndex - 1 + this.chatSearchMatches.length) % this.chatSearchMatches.length;
+                }
+
+                this.updateSearchCounter();
+                await this.scrollToSearchMatch(this.chatSearchCurrentIndex);
+            }
+
+            async scrollToSearchMatch(index) {
+                if (index < 0 || index >= this.chatSearchMatches.length) return;
+
+                const match = this.chatSearchMatches[index];
+                const messageId = match.messageId;
+                const messageIndex = match.messageIndex;
+
+                // Try to find the message by ID first (more reliable)
+                let messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+
+                // Fallback to index if ID doesn't work
+                if (!messageElement) {
+                    messageElement = document.querySelector(`[data-message-index="${messageIndex}"]`);
+                }
+
+                if (messageElement) {
+                    // Message is already in DOM, just scroll to it
+                    this.scrollToMessage(messageElement);
+                    this.highlightCurrentMatchById(messageId);
+                } else {
+                    // Message not loaded yet - need to load more messages
+                    // This handles the infinite scroll case
+                    await this.loadMessageById(messageId, messageIndex);
+                }
+            }
+
+            async loadMessageById(messageId, messageIndex) {
+                // Keep loading more messages until we find the target message by ID
+                let attempts = 0;
+                const maxAttempts = 10; // Prevent infinite loops
+
+                while (attempts < maxAttempts) {
+                    // Try to find by ID first
+                    let messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+
+                    if (messageElement) {
+                        // Found the message!
+                        this.scrollToMessage(messageElement);
+                        this.highlightCurrentMatchById(messageId);
+                        return;
+                    }
+
+                    // Try to load more messages
+                    if (this.messagesPagination.hasMore && !this.messagesPagination.isLoading) {
+                        console.log(`🔄 Loading more messages to find message ${messageId}...`);
+                        await this.loadMoreMessages(this.selectedConversationId, false);
+                        attempts++;
+
+                        // Wait a bit for messages to render
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } else {
+                        // No more messages to load or already loading
+                        console.warn('Could not find message with ID', messageId, 'after', attempts, 'attempts');
+                        break;
+                    }
+                }
+            }
+
+            scrollToMessage(messageElement) {
+                if (!messageElement) {
+                    console.warn('No message element to scroll to');
+                    return;
+                }
+
+                const messagesContainer = document.getElementById('chatMessages');
+                if (!messagesContainer) return;
+
+                // Get the absolute position of the message within the scrollable container
+                const containerTop = messagesContainer.getBoundingClientRect().top;
+                const messageTop = messageElement.getBoundingClientRect().top;
+                const containerHeight = messagesContainer.clientHeight;
+                const messageHeight = messageElement.offsetHeight;
+
+                // Calculate the current scroll position
+                const currentScroll = messagesContainer.scrollTop;
+
+                // Calculate the offset from the top of the container
+                const messageOffsetFromTop = messageTop - containerTop;
+
+                // Calculate target scroll position to center the message
+                // We want the message to be in the middle of the visible area
+                const targetScroll = currentScroll + messageOffsetFromTop - (containerHeight / 2) + (messageHeight / 2);
+
+                // Scroll to the target position
+                messagesContainer.scrollTo({
+                    top: Math.max(0, targetScroll), // Don't scroll to negative values
+                    behavior: 'smooth'
+                });
+
+                // Add a brief highlight animation to make it more visible
+                messageElement.style.transition = 'background-color 0.3s ease';
+                const originalBg = messageElement.style.backgroundColor;
+                messageElement.style.backgroundColor = 'rgba(255, 107, 53, 0.1)';
+
+                setTimeout(() => {
+                    messageElement.style.backgroundColor = originalBg;
+                    setTimeout(() => {
+                        messageElement.style.transition = '';
+                    }, 300);
+                }, 600);
+            }
+
+            highlightSearchResults(query) {
+                this.clearSearchHighlights();
+                const searchTerm = query.toLowerCase();
+                const messageElements = document.querySelectorAll('.message-content');
+
+                messageElements.forEach(element => {
+                    const text = element.textContent;
+                    if (text.toLowerCase().includes(searchTerm)) {
+                        const highlightedHTML = this.highlightText(element.innerHTML, query);
+                        element.innerHTML = highlightedHTML;
+                    }
+                });
+            }
+
+            highlightText(html, searchTerm) {
+                const text = document.createElement('div');
+                text.innerHTML = html;
+                const textContent = text.textContent;
+
+                if (!textContent.toLowerCase().includes(searchTerm.toLowerCase())) {
+                    return html;
+                }
+
+                // Use regex to find all occurrences (case-insensitive)
+                const regex = new RegExp(`(${this.escapeRegex(searchTerm)})`, 'gi');
+                const newHTML = textContent.replace(regex, '<span class="message-highlight">$1</span>');
+
+                return newHTML;
+            }
+
+            highlightCurrentMatch(messageIndex) {
+                // Remove previous current highlight
+                document.querySelectorAll('.message-current-highlight').forEach(el => {
+                    el.classList.remove('message-current-highlight');
+                    el.classList.add('message-highlight');
+                });
+
+                // Add current highlight to the current match
+                const messageElement = document.querySelector(`[data-message-index="${messageIndex}"]`);
+                if (messageElement) {
+                    const firstHighlight = messageElement.querySelector('.message-highlight');
+                    if (firstHighlight) {
+                        firstHighlight.classList.remove('message-highlight');
+                        firstHighlight.classList.add('message-current-highlight');
+
+                        // Scroll the highlight into view within the message
+                        // This ensures the actual highlighted text is visible
+                        setTimeout(() => {
+                            firstHighlight.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'nearest'
+                            });
+                        }, 100);
+                    }
+                }
+            }
+
+            highlightCurrentMatchById(messageId) {
+                // Remove previous current highlight
+                document.querySelectorAll('.message-current-highlight').forEach(el => {
+                    el.classList.remove('message-current-highlight');
+                    el.classList.add('message-highlight');
+                });
+
+                // Add current highlight to the current match (find by message ID)
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    const firstHighlight = messageElement.querySelector('.message-highlight');
+                    if (firstHighlight) {
+                        firstHighlight.classList.remove('message-highlight');
+                        firstHighlight.classList.add('message-current-highlight');
+
+                        // Scroll the highlight into view within the message
+                        // This ensures the actual highlighted text is visible
+                        setTimeout(() => {
+                            firstHighlight.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'nearest'
+                            });
+                        }, 100);
+                    }
+                }
+            }
+
+            clearSearchHighlights() {
+                document.querySelectorAll('.message-highlight, .message-current-highlight').forEach(el => {
+                    const parent = el.parentNode;
+                    parent.replaceChild(document.createTextNode(el.textContent), el);
+                    parent.normalize(); // Merge adjacent text nodes
+                });
+            }
+
+            updateSearchCounter(currentIndex = null, totalMatches = null, showMinCharsMessage = false) {
+                const counter = document.getElementById('chatSearchCounter');
+                const prevBtn = document.getElementById('chatSearchPrev');
+                const nextBtn = document.getElementById('chatSearchNext');
+
+                // Use provided values or fall back to instance values
+                const current = currentIndex !== null ? currentIndex : this.chatSearchCurrentIndex;
+                const total = totalMatches !== null ? totalMatches : this.chatSearchMatches.length;
+
+                console.log('📊 Updating counter:', {
+                    currentIndex: current,
+                    totalMatches: total,
+                    showMinCharsMessage: showMinCharsMessage
+                });
+
+                if (showMinCharsMessage) {
+                    counter.textContent = 'Min 3 chars';
+                    counter.classList.remove('has-results');
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                } else if (total === 0) {
+                    counter.textContent = '0/0';
+                    counter.classList.remove('has-results');
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                } else {
+                    counter.textContent = `${current + 1}/${total}`;
+                    counter.classList.add('has-results');
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                }
+            }
+
+            async getTotalMessageCount(conversationId) {
+                const conversation = this.conversations.find(c => c.id === conversationId);
+                return conversation ? conversation.messageCount : 0;
+            }
+
+            escapeRegex(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            resetAdvancedSearch() {
+                // Clear all filter inputs
+                document.getElementById('filterQuery').value = '';
+                document.getElementById('filterWorkingDirectory').value = '';
+                document.getElementById('filterDateFrom').value = '';
+                document.getElementById('filterDateTo').value = '';
+                document.getElementById('filterContentSearch').value = '';
+            }
+
+            async clearAllFilters() {
+                const searchResultsInfo = document.getElementById('searchResultsInfo');
+                const searchInput = document.getElementById('searchInput');
+
+                // Clear simple search
+                searchInput.value = '';
+
+                // Clear advanced search filters
+                this.resetAdvancedSearch();
+
+                // Hide search results info
+                searchResultsInfo.classList.remove('active');
+
+                // Reload all conversations
+                await this.loadConversations();
             }
 
             getStateLabel(state) {

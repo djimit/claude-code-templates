@@ -163,6 +163,10 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
     },
+    gtag: {
+      trackingID: 'G-YWW6FV2SGN',
+      anonymizeIP: true,
+    },
   } satisfies Preset.ThemeConfig,
 };
 

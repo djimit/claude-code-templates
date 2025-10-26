@@ -4,7 +4,12 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub stars](https://img.shields.io/github/stars/davila7/claude-code-templates.svg?style=social&label=Star)](https://github.com/davila7/claude-code-templates)
 
-<a href="https://trendshift.io/repositories/15113" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15113" alt="davila7%2Fclaude-code-templates | Trendshift" style="width: 200px; height: 40px;" width="125" height="40"/></a>
+<p align="center">
+  <a href="https://trendshift.io/repositories/15113" target="_blank">
+    <img src="https://trendshift.io/api/badge/repositories/15113" alt="davila7%2Fclaude-code-templates | Trendshift" style="width: 200px; height: 40px;" width="125" height="40"/>
+  </a>
+</p>
+
 
 # Claude Code Templates ([aitmpl.com](https://aitmpl.com))
 

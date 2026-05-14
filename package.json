@@ -25,11 +25,12 @@
     "inquirer": "^8.2.6",
     "open": "^8.4.2",
     "ora": "^5.4.1",
+    "undici": "^5.29.0",
     "uuid": "^11.1.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
-    "@vercel/node": "^5.6.22"
+    "@vercel/node": "^4.0.0"
   },
   "keywords": [
     "claude-code",

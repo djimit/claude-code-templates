@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-const { spawn, exec } = require('child_process');
+const { spawn } = require('child_process');
 const WebSocket = require('ws');
 const EventEmitter = require('events');
 const fs = require('fs');
@@ -493,57 +493,14 @@ Do you want to proceed?
       return;
     }
     
-    try {
-      // Try different approaches to send input to the terminal
-      
-      // Method 1: Use expect script to send input
-      const expectScript = `
-        spawn -open [open ${this.terminalDevice} w]
-        send "${text.replace(/"/g, '\\"')}"
-        close
-      `;
-      
-      exec(`expect -c '${expectScript}'`, (error, stdout, stderr) => {
-        if (error) {
-          console.log(chalk.yellow('⚠️ Expect method failed, trying alternative...'));
-          this.tryAlternativeInput(text);
-        } else {
-          console.log(chalk.green('✅ Input sent via expect'));
-        }
-      });
-      
-    } catch (error) {
-      console.error(chalk.red('❌ Error writing to terminal:'), error);
-      this.tryAlternativeInput(text);
-    }
-  }
-
-  /**
-   * Try alternative method to send input
-   * @param {string} text - Text to send
-   */
-  tryAlternativeInput(text) {
-    // Method 2: Try using osascript (AppleScript on macOS) to send keystrokes
-    if (process.platform === 'darwin') {
-      const script = `
-        tell application "Terminal"
-          do script "${text.replace(/"/g, '\\"').replace(/\n/g, '\\n')}" in front window
-        end tell
-      `;
-      
-      exec(`osascript -e '${script}'`, (error) => {
-        if (error) {
-          console.log(chalk.yellow('⚠️ AppleScript method failed, falling back to simulation'));
-          this.simulateResponse({ type: 'choice', value: parseInt(text) - 1, text: text.trim() });
-        } else {
-          console.log(chalk.green('✅ Input sent via AppleScript'));
-        }
-      });
-    } else {
-      // On Linux, try using xdotool or similar
-      console.log(chalk.yellow('⚠️ Non-macOS platform - input simulation not implemented'));
+    fs.writeFile(this.terminalDevice, text, { flag: 'a' }, (error) => {
+      if (error) {
+        console.log(chalk.yellow('⚠️ Terminal write failed, falling back to simulation'));
       this.simulateResponse({ type: 'choice', value: parseInt(text) - 1, text: text.trim() });
-    }
+      } else {
+        console.log(chalk.green('✅ Input sent to terminal'));
+      }
+    });
   }
 
   /**

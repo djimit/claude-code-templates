@@ -33,7 +33,8 @@
   },
   "overrides": {
     "js-yaml": "^4.3.0",
-    "undici": "^6.27.0"
+    "qs": "^6.16.0",
+    "undici": "^6.28.1"
   },
   "keywords": [
     "claude-code",

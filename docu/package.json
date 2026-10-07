@@ -45,8 +45,10 @@
     "node": ">=18.0"
   },
   "overrides": {
+    "postcss-selector-parser": "^7.1.6",
     "websocket-driver": "^0.7.5",
     "proxy-addr": "^2.0.8",
+    "qs": "^6.16.0",
     "tinypool": "^2.1.2"
   }
 }

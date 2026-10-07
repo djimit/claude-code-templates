@@ -45,6 +45,8 @@
     "node": ">=18.0"
   },
   "overrides": {
-    "websocket-driver": "^0.7.5"
+    "websocket-driver": "^0.7.5",
+    "proxy-addr": "^2.0.8",
+    "tinypool": "^2.1.2"
   }
 }

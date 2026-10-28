@@ -34,8 +34,10 @@
   "overrides": {
     "js-yaml": "^4.3.0",
     "qs": "6.16.1",
-    "undici": "^6.28.1",
-    "body-parser@>=1 <2": "1.20.9"
+    "undici": "^6.29.1",
+    "body-parser@>=1 <2": "1.20.9",
+    "path-to-regexp@>=6 <7": "6.3.0",
+    "ajv@>=8 <9": "^8.18.0"
   },
   "keywords": [
     "claude-code",

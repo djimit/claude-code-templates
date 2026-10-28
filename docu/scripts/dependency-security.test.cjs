@@ -27,7 +27,7 @@ try {
  }
  calls=[];fs.existsSync = value => { checks++;return exists(value); };
  Object.defineProperty(process,'platform',{...platform,value:'win32'});
- path.resolve = (...args) => path.win32.resolve(...args);
+ if (platform.value !== 'win32') path.resolve = (...args) => path.win32.resolve(...args);
  launch('\\\\server\\share\\normal.js','code',(_file,message) => { rejected=message; });
  assert.match(rejected,/UNC paths are not supported/);assert.equal(checks,0);assert.equal(calls.length,0);
  console.log('PASS normal path/line/column preserved with mocked process; Windows UNC rejected before filesystem access; no editor/shell/network launched');

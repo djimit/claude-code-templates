@@ -242,7 +242,7 @@ class ChatsMobile {
     });
 
     // Fallback for any other routes (but not for API or static files)
-    this.app.get('*', (req, res) => {
+    this.app.get(/.*/, (req, res) => {
       // Don't redirect API calls or static files
       if (req.path.startsWith('/api/') || 
           req.path.startsWith('/services/') || 

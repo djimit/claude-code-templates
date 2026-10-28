@@ -1,10 +1,10 @@
 name: Dependency regressions
 on:
   pull_request:
-    paths: ['package*.json', 'scripts/**', 'cli-tool/package*.json', 'cli-tool/scripts/**', 'docu/**', '.github/workflows/dependency-regressions.yml']
+    paths: ['package*.json', 'scripts/**', 'cli-tool/package*.json', 'cli-tool/scripts/**', 'cli-tool/src/chats-mobile.js', 'docu/**', '.github/workflows/dependency-regressions.yml']
   push:
     branches: [main]
-    paths: ['package*.json', 'scripts/**', 'cli-tool/package*.json', 'cli-tool/scripts/**', 'docu/**', '.github/workflows/dependency-regressions.yml']
+    paths: ['package*.json', 'scripts/**', 'cli-tool/package*.json', 'cli-tool/scripts/**', 'cli-tool/src/chats-mobile.js', 'docu/**', '.github/workflows/dependency-regressions.yml']
 permissions:
   contents: read
 jobs:
@@ -29,6 +29,8 @@ jobs:
           node-version: '22'
       - run: npx --yes --package=npm@12.2.1 npm ci --ignore-scripts
       - run: node --test scripts/*.test.cjs
+      - if: matrix.graph == '.'
+        run: npm audit --audit-level=high
       - if: matrix.graph == 'docu'
         run: npm run typecheck
       - if: matrix.graph == 'docu'
